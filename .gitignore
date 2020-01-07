@@ -20,8 +20,8 @@ build/*
 *.ipr
 *.iws
 /.idea/
-
-
+#ignoring battlecode version number
+version.txt
 # User-specific stuff:
 battlecode-scaffold.iws
 

@@ -21,12 +21,6 @@ build/*
 *.iws
 /.idea/
 
-#ignoring battlecode version number
-version.txt
-
-#ignoring run cofig file
-gradle.properties
-
 # User-specific stuff:
 battlecode-scaffold.iws
 

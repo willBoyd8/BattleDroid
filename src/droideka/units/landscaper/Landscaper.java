@@ -1,7 +1,9 @@
-package bb8.units.landscaper;
+package droideka.units.landscaper;
 
-import battlecode.common.*;
-import bb8.units.*;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
+import droideka.units.MobileUnit;
 
 public class Landscaper extends MobileUnit {
     public Landscaper(RobotController rc){

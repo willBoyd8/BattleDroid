@@ -1,5 +1,4 @@
 package droids.bb8;
-import base.Unit;
 import battlecode.common.*;
 import units.genericdeliverydrone.GenericDeliveryDrone;
 import units.genericdesignschool.GenericDesignSchool;
@@ -11,26 +10,26 @@ import units.genericnetgun.GenericNetGun;
 import units.genericrefinery.GenericRefinery;
 import units.genericvaporator.GenericVaporator;
 
-
-public strictfp class RobotPlayer extends base.RobotPlayer {
+public strictfp class RobotPlayer {
 
     /**
-     * <img src="bb8.jpg">
-     * <br/>
-     *
-     * Creates a new BB-8 Droid
-     */
-    public RobotPlayer() {
-        super(
-                GenericHeadquarters.class,
-                GenericMiner.class,
-                GenericRefinery.class,
-                GenericVaporator.class,
-                GenericDesignSchool.class,
-                GenericFulfillmentCenter.class,
-                GenericLandscaper.class,
-                GenericDeliveryDrone.class,
-                GenericNetGun.class
-        );
+     * run() is the method that is called when a robot is instantiated in the Battlecode world.
+     * If this method returns, the robot dies!
+     **/
+    @SuppressWarnings("unused")
+    public static void run(RobotController rc) throws GameActionException {
+
+        switch (rc.getType()) {
+            case HQ:                 new GenericHeadquarters(rc).run();        break;
+            case MINER:              new GenericMiner(rc).run();               break;
+            case REFINERY:           new GenericRefinery(rc).run();            break;
+            case VAPORATOR:          new GenericVaporator(rc).run();           break;
+            case DESIGN_SCHOOL:      new GenericDesignSchool(rc).run();        break;
+            case FULFILLMENT_CENTER: new GenericFulfillmentCenter(rc).run();   break;
+            case LANDSCAPER:         new GenericLandscaper(rc).run();          break;
+            case DELIVERY_DRONE:     new GenericDeliveryDrone(rc).run();       break;
+            case NET_GUN:            new GenericNetGun(rc).run();              break;
+        }
+
     }
 }

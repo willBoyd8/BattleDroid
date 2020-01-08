@@ -7,6 +7,8 @@ This repo houses UAH Battlecode's source for Battlecode 2020.
 ## Table of Contents
 
 - [Our stuff](#our-stuff)
+  - [Organization](#Organization)
+  - [Making a new `Droid`](#Making-a-new-Droid)
 - [Their Stuff](#their-stuff)
   - [Battlecode 2020 Scaffold](#Battlecode-2020-Scaffold)
     - [Project Structure](#Project-Structure)
@@ -28,7 +30,7 @@ This repo houses UAH Battlecode's source for Battlecode 2020.
 3. `droids`: These components represent collections of units. Each `Droid` *MUST* have a `RobotPlayer.java` file. See the BattleCode docs for more details on that
 4. `utility`: General utility features that any class might use
 
-### Making a new `Droid`
+### Making a new Droid
 
 Start by making a new package in the `src.droids` package. You can copy `RobotPlayer.java` from the `bb8` droid. Next, implement
 any special unit types in the `src.units` package. The `Generic<UNIT_TYPE>` packages are good examples of unit implementations.

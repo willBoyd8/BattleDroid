@@ -1,4 +1,4 @@
-package bb8.tools;
+package utility;
 
 import battlecode.common.Direction;
 import battlecode.common.RobotType;

@@ -1,4 +1,4 @@
-package bb8.units;
+package base;
 import battlecode.common.*;
 
 public abstract class MobileUnit extends Unit {

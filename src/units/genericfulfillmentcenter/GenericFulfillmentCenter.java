@@ -1,12 +1,12 @@
-package bb8.units.fulfillmentcenter;
+package units.genericfulfillmentcenter;
 
+import base.Building;
 import battlecode.common.*;
-import bb8.tools.Constants;
-import bb8.units.*;
-import bb8.tools.*;
+import utility.ActionHelper;
+import utility.Constants;
 
-public class FulfillmentCenter extends Building {
-    public FulfillmentCenter(RobotController rc){
+public class GenericFulfillmentCenter extends Building {
+    public GenericFulfillmentCenter(RobotController rc){
         super(rc);
     }
 

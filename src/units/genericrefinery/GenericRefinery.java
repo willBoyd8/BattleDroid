@@ -1,10 +1,10 @@
-package bb8.units.refinery;
+package units.genericrefinery;
 
+import base.Building;
 import battlecode.common.*;
-import bb8.units.*;
 
-public class Refinery extends Building {
-    public Refinery(RobotController rc){
+public class GenericRefinery extends Building {
+    public GenericRefinery(RobotController rc){
         super(rc);
     }
 

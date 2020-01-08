@@ -1,4 +1,4 @@
-package examplefuncsplayer;
+package droids.examplefuncsplayer;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {

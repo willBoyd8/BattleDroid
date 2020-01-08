@@ -1,13 +1,15 @@
-package bb8.units.miner;
+package units.genericminer;
 
+import base.MobileUnit;
 import battlecode.common.*;
-import bb8.units.*;
-import static bb8.tools.ActionHelper.*;
-import static bb8.tools.Unsorted.*;
-import bb8.tools.*;
 
-public class Miner extends MobileUnit{
-    public Miner(RobotController rc){
+import static utility.ActionHelper.*;
+import static utility.Unsorted.*;
+
+import utility.Constants;
+
+public class GenericMiner extends MobileUnit {
+    public GenericMiner(RobotController rc){
         super(rc);
     }
 

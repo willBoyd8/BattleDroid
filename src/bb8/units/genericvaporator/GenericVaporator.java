@@ -1,6 +1,6 @@
-package units.genericvaporator;
+package bb8.units.genericvaporator;
 
-import base.Building;
+import bb8.base.Building;
 import battlecode.common.*;
 
 public class GenericVaporator extends Building {

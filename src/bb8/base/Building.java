@@ -1,4 +1,4 @@
-package base;
+package bb8.base;
 import battlecode.common.*;
 
 public abstract class Building extends Unit{

@@ -1,6 +1,6 @@
-package units.genericlandscaper;
+package bb8.units.genericlandscaper;
 
-import base.MobileUnit;
+import bb8.base.MobileUnit;
 import battlecode.common.*;
 
 public class GenericLandscaper extends MobileUnit {

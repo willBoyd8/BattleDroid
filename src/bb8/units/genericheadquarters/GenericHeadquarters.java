@@ -1,9 +1,9 @@
-package units.genericheadquarters;
+package bb8.units.genericheadquarters;
 
-import base.Building;
+import bb8.base.Building;
 import battlecode.common.*;
-import utility.ActionHelper;
-import utility.Constants;
+import bb8.utility.ActionHelper;
+import bb8.utility.Constants;
 
 public class GenericHeadquarters extends Building {
     public GenericHeadquarters(RobotController rc){

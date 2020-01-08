@@ -29,3 +29,10 @@ battlecode-scaffold.iws
 .classpath
 .project
 .settings/
+
+# ADDED
+# We need to include the gradle-wrapper.jar, even though we
+# ignore other .jars. See
+# https://discordapp.com/channels/654065706568122398/664156740559831099/664162262537338922
+# for details
+!gradle/wrapper/gradle-wrapper.jar

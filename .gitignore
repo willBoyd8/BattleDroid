@@ -20,7 +20,7 @@ build/*
 *.ipr
 *.iws
 /.idea/
-*.zip
+/uploads/
 
 # User-specific stuff:
 battlecode-scaffold.iws

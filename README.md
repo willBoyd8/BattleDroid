@@ -14,6 +14,65 @@ This repo houses UAH Battlecode's source for Battlecode 2020.
 ## Our Stuff
 > Put stuff we need to document here. Don't forget to add your links in the TOC
 
+`BattleDroid` is organized by `Droids`, which define the 
+[`RobotController`](https://2020.battlecode.org/javadoc/battlecode/common/RobotController.html) class. 
+`Droids` need to be told which `Units` to use, and will need one unit for every type defined in the 
+[`RobotType`](https://2020.battlecode.org/javadoc/battlecode/common/RobotType.html) enum (excluding 
+`RobotType.COW`). 
+
+### Organization
+`BattleDroid` is split into four main components:
+
+1. `base`: These components are base classes for `BattleDroid`
+2. `units`: These components represent individual units. For example, the `units.genericminer` represents a module with a generic miner. `units.myawesomeminer` might represent a *different* implementation of `Miner` that does something super cool
+3. `droids`: These components represent collections of units. Each `Droid` *MUST* have a `RobotPlayer.java` file. See the BattleCode docs for more details on that
+4. `utility`: General utility features that any class might use
+
+### Making a new `Droid`
+
+Start by making a new package in the `src.droids` package. You can copy `RobotPlayer.java` from the `bb8` droid. Next, implement
+any special unit types in the `src.units` package. The `Generic<UNIT_TYPE>` packages are good examples of unit implementations.
+Finally, open the `RobotPlayer.java` for the new droid and change the relevant classes in `run`. For example, if you use all 
+the generic units except for your custom `AwesomeNetGun` unit, the original `RobotPlayer.java` might go from 
+
+```java
+// In RobotPlayer.java...
+public static void run(RobotController rc) throws GameActionException {
+    switch (rc.getType()) {
+        case HQ:                 new GenericHeadquarters(rc).run();        break;
+        case MINER:              new GenericMiner(rc).run();               break;
+        case REFINERY:           new GenericRefinery(rc).run();            break;
+        case VAPORATOR:          new GenericVaporator(rc).run();           break;
+        case DESIGN_SCHOOL:      new GenericDesignSchool(rc).run();        break;
+        case FULFILLMENT_CENTER: new GenericFulfillmentCenter(rc).run();   break;
+        case LANDSCAPER:         new GenericLandscaper(rc).run();          break;
+        case DELIVERY_DRONE:     new GenericDeliveryDrone(rc).run();       break;
+        case NET_GUN:            new GenericNetGun(rc).run();              break;
+    }
+}
+```
+
+to 
+
+```java
+// In RobotPlayer.java...
+public static void run(RobotController rc) throws GameActionException {
+    switch (rc.getType()) {
+        case HQ:                 new GenericHeadquarters(rc).run();        break;
+        case MINER:              new GenericMiner(rc).run();               break;
+        case REFINERY:           new GenericRefinery(rc).run();            break;
+        case VAPORATOR:          new GenericVaporator(rc).run();           break;
+        case DESIGN_SCHOOL:      new GenericDesignSchool(rc).run();        break;
+        case FULFILLMENT_CENTER: new GenericFulfillmentCenter(rc).run();   break;
+        case LANDSCAPER:         new GenericLandscaper(rc).run();          break;
+        case DELIVERY_DRONE:     new GenericDeliveryDrone(rc).run();       break;
+        // Note the change below, telling our new droid to use the AwesomeNetGun
+        // class instead of the GenericNetGun class
+        case NET_GUN:            new AwesomeNetGun(rc).run();              break;
+    }
+}
+```
+
 ### Building
 To build, open the `Gradle` side bar in Idea and select `battlecode20-scaffold > Tasks > battlecode > build`
 

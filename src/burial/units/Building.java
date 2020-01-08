@@ -1,7 +1,8 @@
-package bb8.units;
-import battlecode.common.*;
+package burial.units;
 
-public abstract class Building extends Unit{
+import battlecode.common.RobotController;
+
+public abstract class Building extends Unit {
     public Building(RobotController rc){
         super(rc);
     }

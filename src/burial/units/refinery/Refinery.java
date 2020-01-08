@@ -1,7 +1,8 @@
-package bb8.units.refinery;
+package burial.units.refinery;
 
-import battlecode.common.*;
-import bb8.units.*;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import burial.units.Building;
 
 public class Refinery extends Building {
     public Refinery(RobotController rc){

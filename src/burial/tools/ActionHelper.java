@@ -1,6 +1,9 @@
-package bb8.tools;
+package burial.tools;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 
 public class ActionHelper {
 

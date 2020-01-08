@@ -5,7 +5,6 @@ import bb8.units.designschool.DesignSchool;
 import bb8.units.fulfillmentcenter.FulfillmentCenter;
 import bb8.units.headquarters.Headquarters;
 import bb8.units.landscaper.Landscaper;
-import bb8.units.miner.Miner;
 import bb8.units.netgun.NetGun;
 import bb8.units.refinery.Refinery;
 import bb8.units.vaporator.Vaporator;

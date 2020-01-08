@@ -1,7 +1,8 @@
-package bb8.units.netgun;
+package burial.units.netgun;
 
-import battlecode.common.*;
-import bb8.units.*;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import burial.units.Building;
 
 public class NetGun extends Building {
     public NetGun(RobotController rc){

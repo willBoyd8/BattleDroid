@@ -1,7 +1,8 @@
-package bb8.units.designschool;
+package burial.units.designschool;
 
-import battlecode.common.*;
-import bb8.units.*;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import burial.units.Building;
 
 public class DesignSchool extends Building {
     public DesignSchool(RobotController rc){

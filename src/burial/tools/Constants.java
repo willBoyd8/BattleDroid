@@ -1,4 +1,4 @@
-package bb8.tools;
+package burial.tools;
 
 import battlecode.common.Direction;
 import battlecode.common.RobotType;

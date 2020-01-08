@@ -1,4 +1,4 @@
-package bb8.units;
+package burial.units;
 import battlecode.common.*;
 
 public abstract class Unit {

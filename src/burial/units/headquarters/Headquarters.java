@@ -1,8 +1,12 @@
-package bb8.units.headquarters;
+package burial.units.headquarters;
 
-import battlecode.common.*;
-import bb8.units.*;
-import bb8.tools.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import battlecode.common.RobotType;
+import burial.tools.ActionHelper;
+import burial.tools.Constants;
+import burial.units.Building;
 
 public class Headquarters extends Building {
     public Headquarters(RobotController rc){

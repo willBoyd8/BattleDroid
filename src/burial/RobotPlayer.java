@@ -1,13 +1,16 @@
-package bb8;
-import battlecode.common.*;
-import bb8.units.deliverydrone.DeliveryDrone;
-import bb8.units.designschool.DesignSchool;
-import bb8.units.fulfillmentcenter.FulfillmentCenter;
-import bb8.units.headquarters.Headquarters;
-import bb8.units.landscaper.Landscaper;
-import bb8.units.netgun.NetGun;
-import bb8.units.refinery.Refinery;
-import bb8.units.vaporator.Vaporator;
+package burial;
+
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import burial.units.deliverydrone.DeliveryDrone;
+import burial.units.designschool.DesignSchool;
+import burial.units.fulfillmentcenter.FulfillmentCenter;
+import burial.units.headquarters.Headquarters;
+import burial.units.landscaper.Landscaper;
+import burial.units.netgun.NetGun;
+import burial.units.refinery.Refinery;
+import burial.units.vaporator.Vaporator;
+import burial.units.miner.Miner;
 
 public strictfp class RobotPlayer {
 

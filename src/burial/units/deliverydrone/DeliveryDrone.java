@@ -1,9 +1,10 @@
-package bb8.units.deliverydrone;
-import battlecode.common.*;
-import bb8.units.*;
+package burial.units.deliverydrone;
 
-import static bb8.tools.ActionHelper.*;
-import static bb8.tools.Unsorted.*;
+import battlecode.common.*;
+import burial.units.MobileUnit;
+
+import static bb8.tools.ActionHelper.tryMove;
+import static bb8.tools.Unsorted.randomDirection;
 
 public class DeliveryDrone extends MobileUnit {
     public DeliveryDrone(RobotController rc){

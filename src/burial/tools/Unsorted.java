@@ -1,6 +1,7 @@
-package bb8.tools;
+package burial.tools;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.RobotType;
 
 public class Unsorted {
     /**

@@ -25,7 +25,7 @@ public class ActionHelper {
      *
      * @param dir The intended direction of movement
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     public static boolean tryMove(Direction dir, RobotController rc) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
@@ -41,7 +41,7 @@ public class ActionHelper {
      * @param type The type of the robot to build
      * @param dir The intended direction of movement
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     public static boolean tryBuild(RobotType type, Direction dir, RobotController rc) throws GameActionException {
         if (rc.isReady() && rc.canBuildRobot(type, dir)) {
@@ -55,7 +55,7 @@ public class ActionHelper {
      *
      * @param dir The intended direction of mining
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     public static boolean tryMine(Direction dir, RobotController rc) throws GameActionException {
         if (rc.isReady() && rc.canMineSoup(dir)) {
@@ -69,7 +69,7 @@ public class ActionHelper {
      *
      * @param dir The intended direction of refining
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     public static boolean tryRefine(Direction dir, RobotController rc) throws GameActionException {
         if (rc.isReady() && rc.canDepositSoup(dir)) {

@@ -24,6 +24,7 @@ public strictfp class RobotPlayer {
         turnCount = 0;
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
+        //noinspection InfiniteLoopStatement
         while (true) {
             turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
@@ -155,7 +156,7 @@ public strictfp class RobotPlayer {
      *
      * @param dir The intended direction of movement
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     static boolean tryMove(Direction dir) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
@@ -171,7 +172,7 @@ public strictfp class RobotPlayer {
      * @param type The type of the robot to build
      * @param dir The intended direction of movement
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canBuildRobot(type, dir)) {
@@ -185,7 +186,7 @@ public strictfp class RobotPlayer {
      *
      * @param dir The intended direction of mining
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     static boolean tryMine(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canMineSoup(dir)) {
@@ -199,7 +200,7 @@ public strictfp class RobotPlayer {
      *
      * @param dir The intended direction of refining
      * @return true if a move was performed
-     * @throws GameActionException
+     * @throws GameActionException if the game world can't handle our action
      */
     static boolean tryRefine(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canDepositSoup(dir)) {

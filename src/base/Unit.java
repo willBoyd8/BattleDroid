@@ -21,6 +21,7 @@ public abstract class Unit {
     public final void run(){
         System.out.println("I'm a " + rc.getType().toString());
 
+        //noinspection InfiniteLoopStatement
         while(true){
             try{
                 preStart();

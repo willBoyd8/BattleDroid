@@ -25,17 +25,17 @@ This repo houses UAH Battlecode's source for Battlecode 2020.
 ### Organization
 `BattleDroid` is split into four main components:
 
-1. `base`: These components are base classes for `BattleDroid`
-2. `units`: These components represent individual units. For example, the `units.genericminer` represents a module with a generic miner. `units.myawesomeminer` might represent a *different* implementation of `Miner` that does something super cool
-3. `droids`: These components represent collections of units. Each `Droid` *MUST* have a `RobotPlayer.java` file. See the BattleCode docs for more details on that
-4. `utility`: General utility features that any class might use
+1. `bb8.base`: These components are bb8.base classes for `BattleDroid`
+2. `bb8.units`: These components represent individual bb8.units. For example, the `bb8.units.genericminer` represents a module with a generic miner. `bb8.units.myawesomeminer` might represent a *different* implementation of `Miner` that does something super cool
+3. `droids`: These components represent collections of bb8.units. Each `Droid` *MUST* have a `RobotPlayer.java` file. See the BattleCode docs for more details on that
+4. `bb8.utility`: General bb8.utility features that any class might use
 
 ### Making a new Droid
 
 Start by making a new package in the `src.droids` package. You can copy `RobotPlayer.java` from the `bb8` droid. Next, implement
-any special unit types in the `src.units` package. The `Generic<UNIT_TYPE>` packages are good examples of unit implementations.
+any special unit types in the `src.bb8.units` package. The `Generic<UNIT_TYPE>` packages are good examples of unit implementations.
 Finally, open the `RobotPlayer.java` for the new droid and change the relevant classes in `run`. For example, if you use all 
-the generic units except for your custom `AwesomeNetGun` unit, the original `RobotPlayer.java` might go from 
+the generic bb8.units except for your custom `AwesomeNetGun` unit, the original `RobotPlayer.java` might go from 
 
 ```java
 // In RobotPlayer.java...

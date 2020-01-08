@@ -1,14 +1,14 @@
-package droids.bb8;
+package bb8;
 import battlecode.common.*;
-import units.genericdeliverydrone.GenericDeliveryDrone;
-import units.genericdesignschool.GenericDesignSchool;
-import units.genericfulfillmentcenter.GenericFulfillmentCenter;
-import units.genericheadquarters.GenericHeadquarters;
-import units.genericlandscaper.GenericLandscaper;
-import units.genericminer.GenericMiner;
-import units.genericnetgun.GenericNetGun;
-import units.genericrefinery.GenericRefinery;
-import units.genericvaporator.GenericVaporator;
+import bb8.units.genericdeliverydrone.GenericDeliveryDrone;
+import bb8.units.genericdesignschool.GenericDesignSchool;
+import bb8.units.genericfulfillmentcenter.GenericFulfillmentCenter;
+import bb8.units.genericheadquarters.GenericHeadquarters;
+import bb8.units.genericlandscaper.GenericLandscaper;
+import bb8.units.genericminer.GenericMiner;
+import bb8.units.genericnetgun.GenericNetGun;
+import bb8.units.genericrefinery.GenericRefinery;
+import bb8.units.genericvaporator.GenericVaporator;
 
 public strictfp class RobotPlayer {
 

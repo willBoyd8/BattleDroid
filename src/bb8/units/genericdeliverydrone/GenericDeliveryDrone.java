@@ -1,9 +1,9 @@
-package units.genericdeliverydrone;
-import base.MobileUnit;
+package bb8.units.genericdeliverydrone;
+import bb8.base.MobileUnit;
 import battlecode.common.*;
 
-import static utility.ActionHelper.*;
-import static utility.Unsorted.*;
+import static bb8.utility.ActionHelper.*;
+import static bb8.utility.Unsorted.*;
 
 public class GenericDeliveryDrone extends MobileUnit {
     public GenericDeliveryDrone(RobotController rc){

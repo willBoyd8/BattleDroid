@@ -1,4 +1,4 @@
-package utility;
+package bb8.utility;
 
 import battlecode.common.*;
 

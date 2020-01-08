@@ -1,6 +1,6 @@
-package units.genericdesignschool;
+package bb8.units.genericdesignschool;
 
-import base.Building;
+import bb8.base.Building;
 import battlecode.common.*;
 
 public class GenericDesignSchool extends Building {

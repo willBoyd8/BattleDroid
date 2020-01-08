@@ -7,7 +7,9 @@ The HQ is going to occasionally broadcast it's location so the landscapers know 
 will happen in response to a request from the landscaper for information. This broadcast neads to include at least 2 pieces of information:
  - The Location of the HQ
  - The current level of the wall<br>
- 
+
+The HQ will maintain the list of of locations that need dirt, and will broadcast this information as needed (at one soup level).
+
 Additionally, they will produce miners somewhat frequently
 
 #### Miners
@@ -23,8 +25,7 @@ and then will be returning whenever they have a sizable inventory to increase th
 in a slope going both in and out (for now). This means as the wall gets taller, a larger and larger "safe" area will be 
 built inside the ring. This will continue outwards over time.<br>
 <br>
-As a landscaper comes back, they will generate a list of all the locations they want to place dirt. They will check these
-spots to see if they need to place any pieces of dirt there.<br>
+The Landscaper will be listening to the HQ for information about how much dirt needs to be put in certain locations.
 <br>
 Messages:<br>
  - A bot may need to know where the HQ is, they will send a message to request this location

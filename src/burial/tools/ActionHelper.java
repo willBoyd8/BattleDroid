@@ -1,6 +1,8 @@
 package burial.tools;
 
+
 import battlecode.common.*;
+
 
 public class ActionHelper {
 
@@ -78,12 +80,23 @@ public class ActionHelper {
         } else return false;
     }
 
-    public static boolean getVisibleTiles(RobotController rc) throws GameActionException {
+    public static MapLocation getVisibleTiles(RobotController rc) throws GameActionException {
         if (rc.isReady()) {
             MapLocation currentLoc = rc.getLocation();
+            int unitPollution = rc.sensePollution(currentLoc);
+            int sensorRadius = rc.getType().sensorRadiusSquared;
+            float sensorRadiusActual = sensorRadius * GameConstants.getSensorRadiusPollutionCoefficient(unitPollution);
+            int i_sensorActual = (int) sensorRadiusActual;
+            int lowXLimit = currentLoc.x - i_sensorActual;
+            int highXLimit = currentLoc.x + i_sensorActual;
+            int lowYLimit = currentLoc.y - i_sensorActual;
+            int highYLimit = currentLoc.y + i_sensorActual;
 
-            return true;
-        } else return false;
+            for (int i = 0; i < (5); i++){
+                //int x = rc.getMapWth();
+            }
+            return currentLoc;
+        } else return rc.getLocation();
     }
 
 }

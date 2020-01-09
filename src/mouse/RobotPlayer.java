@@ -13,6 +13,7 @@ import mouse.units.genericrefinery.GenericRefinery;
 import mouse.units.genericvaporator.GenericVaporator;
 import mouse.units.mousedesignschool.MouseDesignSchool;
 import mouse.units.mouseheadquarters.MouseHeadquarters;
+import mouse.units.mouselandscaper.MouseLandscaper;
 import mouse.units.mouseminer.MouseMiner;
 
 public strictfp class RobotPlayer {
@@ -25,15 +26,15 @@ public strictfp class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
 
         switch (rc.getType()) {
-            case HQ:                 new MouseHeadquarters(rc).run();        break;
-            case MINER:              new MouseMiner(rc).run();               break;
-            case REFINERY:           new GenericRefinery(rc).run();            break;
-            case VAPORATOR:          new GenericVaporator(rc).run();           break;
-            case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();        break;
-            case FULFILLMENT_CENTER: new GenericFulfillmentCenter(rc).run();   break;
-            case LANDSCAPER:         new GenericLandscaper(rc).run();          break;
-            case DELIVERY_DRONE:     new GenericDeliveryDrone(rc).run();       break;
-            case NET_GUN:            new GenericNetGun(rc).run();              break;
+            case HQ:                 new MouseHeadquarters(rc).run();           break;
+            case MINER:              new MouseMiner(rc).run();                  break;
+            case REFINERY:           new GenericRefinery(rc).run();             break;
+            case VAPORATOR:          new GenericVaporator(rc).run();            break;
+            case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;
+            case FULFILLMENT_CENTER: new GenericFulfillmentCenter(rc).run();    break;
+            case LANDSCAPER:         new MouseLandscaper(rc).run();             break;
+            case DELIVERY_DRONE:     new GenericDeliveryDrone(rc).run();        break;
+            case NET_GUN:            new GenericNetGun(rc).run();               break;
         }
 
     }

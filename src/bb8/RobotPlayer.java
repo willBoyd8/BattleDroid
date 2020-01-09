@@ -8,6 +8,7 @@ import bb8.units.landscaper.Landscaper;
 import bb8.units.netgun.NetGun;
 import bb8.units.refinery.Refinery;
 import bb8.units.vaporator.Vaporator;
+import bb8.units.miner.Miner;
 
 public strictfp class RobotPlayer {
 

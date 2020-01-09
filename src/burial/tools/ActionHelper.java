@@ -2,6 +2,9 @@ package burial.tools;
 
 
 import battlecode.common.*;
+import burial.units.miner.Miner;
+
+import java.util.ArrayList;
 
 
 public class ActionHelper {
@@ -80,23 +83,55 @@ public class ActionHelper {
         } else return false;
     }
 
-    public static MapLocation getVisibleTiles(RobotController rc) throws GameActionException {
+    public static MapLocation[] getVisibleTiles(RobotType rt, RobotController rc) throws GameActionException {
         if (rc.isReady()) {
             MapLocation currentLoc = rc.getLocation();
-            int unitPollution = rc.sensePollution(currentLoc);
-            int sensorRadius = rc.getType().sensorRadiusSquared;
-            float sensorRadiusActual = sensorRadius * GameConstants.getSensorRadiusPollutionCoefficient(unitPollution);
-            int i_sensorActual = (int) sensorRadiusActual;
+            //int unitPollution = rc.sensePollution(currentLoc);
+            //int sensorRadius = rc.getType().sensorRadiusSquared;
+            //float sensorRadiusActual = sensorRadius * GameConstants.getSensorRadiusPollutionCoefficient(unitPollution);
+            int i_sensorActual = 4;
+            if (rt == RobotType.MINER){
+                i_sensorActual = 5;
+            }
             int lowXLimit = currentLoc.x - i_sensorActual;
             int highXLimit = currentLoc.x + i_sensorActual;
             int lowYLimit = currentLoc.y - i_sensorActual;
             int highYLimit = currentLoc.y + i_sensorActual;
 
-            for (int i = 0; i < (5); i++){
-                //int x = rc.getMapWth();
+            ArrayList<MapLocation> sensedTiles = new ArrayList<>();
+            for (int i = lowXLimit; i < highXLimit; i++){
+                for (int j = lowYLimit; i < highYLimit; j++){
+                    MapLocation temp = new MapLocation(i , j);
+                    if (rc.canSenseLocation(temp)){
+                        sensedTiles.add(temp);
+                    }
+                }
             }
-            return currentLoc;
-        } else return rc.getLocation();
+            int numTiles = sensedTiles.size();
+            MapLocation visibleTiles[] = new MapLocation[numTiles];
+            for (int i = 0; i < numTiles; i++){
+                visibleTiles[i] = sensedTiles.get(i);
+            }
+            return visibleTiles;
+        }
+        else{
+            MapLocation visibleTiles[] = new MapLocation[0];
+            return visibleTiles;
+        }
+    }
+
+    public static MapLocation[] getSoupTiles(MapLocation[] visibleTiles, RobotController rc) throws GameActionException {
+        ArrayList<MapLocation> soups = new ArrayList<>();
+        for (int i = 0; i < visibleTiles.length; i++) {
+            if (rc.senseSoup(visibleTiles[i]) > 0) {
+                soups.add(visibleTiles[i]);
+            }
+        }
+        MapLocation soupTiles[] = new MapLocation[soups.size()];
+        for (int i = 0; i < soups.size(); i++){
+            soupTiles[i] = soups.get(i);
+        }
+        return soupTiles;
     }
 
 }

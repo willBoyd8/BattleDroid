@@ -29,7 +29,10 @@ public class Miner extends MobileUnit {
            switch (state)
            {
                case 0: //Mine Mode
+                    MapLocation[] visibleTiles = ActionHelper.getVisibleTiles(RobotType.MINER, rc);
+                    for (int i = 0; i < visibleTiles.length; i++){
 
+                    }
                    break;
 
                case 1: //Builder Mode

@@ -1,7 +1,7 @@
 package mouse.units.mouseminer;
 
 import battlecode.common.*;
-import bb8.base.MobileUnit;
+import mouse.base.MobileUnit;
 
 import static mouse.utility.ActionHelper.tryBuild;
 

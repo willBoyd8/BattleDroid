@@ -7,8 +7,8 @@ import battlecode.common.RobotType;
 import mouse.base.MobileUnit;
 import mouse.utility.Constants;
 
-import static bb8.utility.ActionHelper.*;
-import static bb8.utility.Unsorted.randomDirection;
+import static mouse.utility.ActionHelper.*;
+import static mouse.utility.Unsorted.randomDirection;
 
 public class GenericMiner extends MobileUnit {
     public GenericMiner(RobotController rc){

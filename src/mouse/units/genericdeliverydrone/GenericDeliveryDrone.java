@@ -3,8 +3,8 @@ package mouse.units.genericdeliverydrone;
 import battlecode.common.*;
 import mouse.base.MobileUnit;
 
-import static bb8.utility.ActionHelper.tryMove;
-import static bb8.utility.Unsorted.randomDirection;
+import static mouse.utility.ActionHelper.tryMove;
+import static mouse.utility.Unsorted.randomDirection;
 
 public class GenericDeliveryDrone extends MobileUnit {
     public GenericDeliveryDrone(RobotController rc){

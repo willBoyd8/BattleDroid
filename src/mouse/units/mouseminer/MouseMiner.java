@@ -24,10 +24,10 @@ public class MouseMiner extends MobileUnit {
 
         if(hq != null && rc.getLocation().directionTo(hq.getLocation()) == Direction.SOUTH) {
             tryBuild(RobotType.DESIGN_SCHOOL, Direction.SOUTHEAST, rc);
-            tryBuild(RobotType.DESIGN_SCHOOL, Direction.SOUTHWEST, rc);
+            tryBuild(RobotType.NET_GUN, Direction.SOUTHWEST, rc);
         } else {
             tryBuild(RobotType.DESIGN_SCHOOL, Direction.NORTHEAST, rc);
-            tryBuild(RobotType.DESIGN_SCHOOL, Direction.NORTHWEST, rc);
+            tryBuild(RobotType.NET_GUN, Direction.NORTHWEST, rc);
         }
 
     }

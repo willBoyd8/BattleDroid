@@ -11,6 +11,7 @@ import mouse.units.genericminer.GenericMiner;
 import mouse.units.genericnetgun.GenericNetGun;
 import mouse.units.genericrefinery.GenericRefinery;
 import mouse.units.genericvaporator.GenericVaporator;
+import mouse.units.mouseheadquarters.MouseHeadquarters;
 
 public strictfp class RobotPlayer {
 
@@ -22,7 +23,7 @@ public strictfp class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
 
         switch (rc.getType()) {
-            case HQ:                 new GenericHeadquarters(rc).run();        break;
+            case HQ:                 new MouseHeadquarters(rc).run();        break;
             case MINER:              new GenericMiner(rc).run();               break;
             case REFINERY:           new GenericRefinery(rc).run();            break;
             case VAPORATOR:          new GenericVaporator(rc).run();           break;

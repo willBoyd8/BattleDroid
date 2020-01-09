@@ -1,9 +1,6 @@
 package burial.tools;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public class ActionHelper {
 
@@ -77,6 +74,14 @@ public class ActionHelper {
     public static boolean tryRefine(Direction dir, RobotController rc) throws GameActionException {
         if (rc.isReady() && rc.canDepositSoup(dir)) {
             rc.depositSoup(dir, rc.getSoupCarrying());
+            return true;
+        } else return false;
+    }
+
+    public static boolean getVisibleTiles(RobotController rc) throws GameActionException {
+        if (rc.isReady()) {
+            MapLocation currentLoc = rc.getLocation();
+
             return true;
         } else return false;
     }

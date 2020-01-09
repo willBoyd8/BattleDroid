@@ -1,9 +1,6 @@
 package mouse.units.mousedesignschool;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import mouse.base.Building;
 
 import static mouse.utility.ActionHelper.tryBuild;
@@ -16,12 +13,13 @@ public class MouseDesignSchool extends Building {
         hasBuilt = false;
     }
 
-    public void turn() throws GameActionException{
-        if(hasBuilt){
-            tryBuild(RobotType.LANDSCAPER, Direction.NORTH, rc);
-            tryBuild(RobotType.LANDSCAPER, Direction.SOUTH, rc);
+    public void turn() throws GameActionException {
+        if (rc.senseElevation(rc.getLocation()) + GameConstants.MAX_DIRT_DIFFERENCE > rc.senseElevation(rc.getLocation().add(Direction.EAST))) {
+            tryBuild(RobotType.LANDSCAPER, Direction.EAST, rc);
+            return;
         } else {
-            hasBuilt = tryBuild(RobotType.LANDSCAPER, Direction.SOUTH, rc);
+            tryBuild(RobotType.LANDSCAPER, Direction.SOUTH, rc);
+            return;
         }
 
     }

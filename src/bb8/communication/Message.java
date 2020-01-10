@@ -39,13 +39,15 @@ public class Message {
         data = 0;
     }
 
-    public void loadBlock(int blk) {
+    public void loadBlock(int blk) throws Exception{
         msg_type = 0;
         bot_type = 0;
         command = 0;
         bot_id = 0;
         data = 0;
-
+        if(!checkParity(blk)) {
+            throw new Exception("parity bit is not correct, not loading block");
+        }
         block = blk;
         msg_type = getMessageType();
         bot_type = getBotType();
@@ -89,14 +91,18 @@ public class Message {
     }
 
     private int extractBits(int v, int begin, int end) {
-        return ((v)>>(end)) % (1 << ((begin)-(end)+1))
+        return ((v)>>(end)) % (1 << ((begin)-(end)+1));
     }
 
     private int extractBitAt(int v, int pos) {
         return (v >> pos) % 2;
     }
 
-    private boolean checkParity()
+    private boolean checkParity(int blk) {
+        int ones = countOneSetBits(blk);
+        // make sure there are an even number of ones
+        return ((ones % 2) == 0);
+    }
 
     public int createMessage(int msg_type, int bot_type, int command_type, int bot_id, int data) {
         block = 0; // zero out block
@@ -114,7 +120,7 @@ public class Message {
             System.err.println("command_type is not 0 or 1, failing");
             return -1;
         }
-        block = block | ((command_type << 25);
+        block = block | (command_type << 25);
         if(this.bot_id >= 128) {
             System.err.println("bot_id too long, failing");
             return -1;

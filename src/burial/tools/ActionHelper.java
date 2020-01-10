@@ -134,4 +134,38 @@ public class ActionHelper {
         return soupTiles;
     }
 
+    public static MapLocation getClosestTile(MapLocation[] tiles, MapLocation currentLoc, RobotController rc) throws GameActionException {
+        int closestDist = 9999;
+        MapLocation closestPoint = currentLoc;
+        for (int i = 0; i < tiles.length; i++){
+            if (tiles[i].distanceSquaredTo(currentLoc) < closestDist){
+                closestDist = tiles[i].distanceSquaredTo(currentLoc);
+                closestPoint = tiles[i];
+            }
+        }
+        return closestPoint;
+    }
+
+    public static Boolean checkForUnitsofTypeandTeam(RobotInfo[] nearbyRobots, RobotType rt, Team team, RobotController rc) throws GameActionException {
+        for (int i = 0; i < nearbyRobots.length; i++){
+            if ((nearbyRobots[i].type == rt)&&(nearbyRobots[i].team == team)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static RobotInfo getClosestUnitofTypeandTeam(RobotInfo[] nearbyRobots, RobotType rt, Team team, MapLocation currentLoc, RobotController rc) throws GameActionException {
+        int closestDist = 9999;
+        RobotInfo closestUnit = null;
+        for (int i = 0; i < nearbyRobots.length; i++){
+            if ((nearbyRobots[i].location.distanceSquaredTo(currentLoc) < closestDist)&&(nearbyRobots[i].type == rt)&&(nearbyRobots[i].team == team)){
+                closestDist = nearbyRobots[i].location.distanceSquaredTo(currentLoc);
+                closestUnit = nearbyRobots[i];
+            }
+        }
+        return closestUnit;
+
+    }
+
 }

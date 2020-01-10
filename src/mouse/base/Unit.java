@@ -1,5 +1,8 @@
 package mouse.base;
 import battlecode.common.*;
+import mouse.utility.ActionHelper;
+
+import java.util.Random;
 
 public abstract class Unit {
     public RobotController rc;
@@ -8,12 +11,19 @@ public abstract class Unit {
     public Team myTeam;
     public int age; // The number of rounds this unit has been alive
     public int birthday;
+    public MapLocation hqLocation;
+    public Random rand;
 
     public Unit(RobotController rc){
         this.rc = rc;
         spawn = rc.getLocation();
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
+        rand = new Random();
+
+        if(rc.getType() != RobotType.HQ) {
+            hqLocation = ActionHelper.findHQ(rc).getLocation();
+        }
 
         age = 0;
     }
@@ -30,7 +40,8 @@ public abstract class Unit {
                 preEnd();
                 roundEnd();
             } catch(KillMeNowException e) {
-                throw new KillMeNowException();
+                return;
+                //throw new KillMeNowException();
             } catch (Exception e){
                 System.out.println(rc.getType().toString() + " Exception");
                 e.printStackTrace();

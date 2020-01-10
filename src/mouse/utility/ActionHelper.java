@@ -1,26 +1,16 @@
 package mouse.utility;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class ActionHelper {
 
     public static boolean tryMove(RobotController rc) throws GameActionException {
-        for (Direction dir : Constants.DIRECTIONS)
-            if (tryMove(dir, rc))
-                return true;
-        return false;
-        // MapLocation loc = rc.getLocation();
-        // if (loc.x < 10 && loc.x < loc.y)
-        //     return tryMove(Direction.EAST);
-        // else if (loc.x < 10)
-        //     return tryMove(Direction.SOUTH);
-        // else if (loc.x > loc.y)
-        //     return tryMove(Direction.WEST);
-        // else
-        //     return tryMove(Direction.NORTH);
+        Random rand = new Random();
+        int dir = rand.nextInt(Constants.DIRECTIONS.length);
+        return tryMove(Constants.DIRECTIONS[dir], rc);
     }
 
     /**
@@ -81,4 +71,51 @@ public class ActionHelper {
         } else return false;
     }
 
+    public static ArrayList<MapLocation> getSoupLocations(RobotController rc) throws GameActionException {
+        MapLocation currentLoc = rc.getLocation();
+
+        int i_sensorActual = (int)Math.sqrt(RobotType.MINER.sensorRadiusSquared);
+
+        // TODO: Fix this because we check a lot of unneed tiles (or not visible ones)
+        int lowXLimit = currentLoc.x - i_sensorActual;
+        int highXLimit = currentLoc.x + i_sensorActual;
+        int lowYLimit = currentLoc.y - i_sensorActual;
+        int highYLimit = currentLoc.y + i_sensorActual;
+
+        ArrayList<MapLocation> soupTiles = new ArrayList<>();
+        for (int i = lowXLimit; i < highXLimit; i++){
+            //System.out.println("getVisibleTiles: x");
+            for (int j = lowYLimit; j < highYLimit; j++){
+                //System.out.println("getVisibleTiles: y");
+                MapLocation temp = new MapLocation(i , j);
+                if (rc.canSenseLocation(temp)){
+                    if(rc.senseSoup(temp) > 0){
+                        soupTiles.add(temp);
+                    }
+                }
+            }
+        }
+
+        return soupTiles;
+    }
+
+    public static RobotInfo findHQ(RobotController rc){
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam());
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.HQ){
+                return robot;
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean tryDeposit(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDepositSoup(dir)){
+            rc.depositSoup(dir, rc.getSoupCarrying());
+            return true;
+        }
+        return false;
+    }
 }

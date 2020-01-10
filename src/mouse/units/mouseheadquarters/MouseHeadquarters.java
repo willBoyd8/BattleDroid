@@ -17,9 +17,13 @@ public class MouseHeadquarters extends Building {
     }
 
     public void turn() throws GameActionException{
-        //tryBuild(RobotType.MINER, Direction.NORTH, rc);
-        if(!hasBuilt) {
-            hasBuilt = tryBuild(RobotType.MINER, Direction.SOUTH, rc);
+        if(rc.getRoundNum() >= 500){
+            if(!hasBuilt) {
+                hasBuilt = tryBuild(RobotType.MINER, Direction.SOUTH, rc);
+            }
+        } else {
+            tryBuild(RobotType.MINER, Direction.NORTH, rc);
         }
+
     }
 }

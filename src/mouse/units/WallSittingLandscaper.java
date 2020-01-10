@@ -10,9 +10,10 @@ import static mouse.utility.ActionHelper.tryMove;
 public class WallSittingLandscaper extends MobileUnit {
     ArrayList<Direction> path;
     boolean moving;
+    boolean hasResetPath;
     int totalMoves;
     public static int maxMoves = Integer.MAX_VALUE;
-    MapLocation hq;
+
 
     public WallSittingLandscaper(RobotController rc){
         super(rc);
@@ -34,22 +35,16 @@ public class WallSittingLandscaper extends MobileUnit {
         path.add(Direction.SOUTH);
         path.add(Direction.SOUTH);
         moving = false;
+        hasResetPath = false;
         totalMoves = 0;
 
-        RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
 
-        for(RobotInfo robot : robots){
-            if(robot.getType() == RobotType.HQ){
-                hq = robot.getLocation();
-                break;
-            }
-
-        }
     }
 
     public void turn() throws GameActionException {
 
-        if(rc.getLocation().add(Direction.NORTHWEST).equals(hq)){
+        if(!hasResetPath && !(spawn.directionTo(hqLocation) == Direction.WEST)) {
+        //if(rc.getLocation().add(Direction.NORTHWEST).equals(hqLocation) || rc.getLocation().add(Direction.NORTH).equals(hqLocation)){
             path.clear();
             path.add(Direction.WEST);
             path.add(Direction.WEST);
@@ -67,6 +62,13 @@ public class WallSittingLandscaper extends MobileUnit {
             path.add(Direction.SOUTH);
             path.add(Direction.WEST);
             path.add(Direction.WEST);
+            hasResetPath = true;
+
+        }
+
+        if (Math.abs((rc.getLocation().x)-hqLocation.x) == 2 || Math.abs((rc.getLocation().y)-hqLocation.y) == 2){
+
+        } else {
             return;
         }
 

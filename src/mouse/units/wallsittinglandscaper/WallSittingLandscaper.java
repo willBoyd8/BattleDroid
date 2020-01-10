@@ -1,7 +1,8 @@
-package mouse.units;
+package mouse.units.wallsittinglandscaper;
 
 import battlecode.common.*;
 import mouse.base.MobileUnit;
+import mouse.utility.Constants;
 
 import java.util.ArrayList;
 
@@ -10,9 +11,11 @@ import static mouse.utility.ActionHelper.tryMove;
 public class WallSittingLandscaper extends MobileUnit {
     ArrayList<Direction> path;
     boolean moving;
+    boolean hasResetPath;
     int totalMoves;
     public static int maxMoves = Integer.MAX_VALUE;
-    MapLocation hq;
+    ArrayList<MapLocation> hqTiles;
+
 
     public WallSittingLandscaper(RobotController rc){
         super(rc);
@@ -34,22 +37,18 @@ public class WallSittingLandscaper extends MobileUnit {
         path.add(Direction.SOUTH);
         path.add(Direction.SOUTH);
         moving = false;
+        hasResetPath = false;
         totalMoves = 0;
+        hqTiles = new ArrayList<MapLocation>();
 
-        RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
+        generateHQTiles();
 
-        for(RobotInfo robot : robots){
-            if(robot.getType() == RobotType.HQ){
-                hq = robot.getLocation();
-                break;
-            }
-
-        }
     }
 
     public void turn() throws GameActionException {
 
-        if(rc.getLocation().add(Direction.NORTHWEST).equals(hq)){
+        if(!hasResetPath && !(spawn.directionTo(hqLocation) == Direction.WEST)) {
+        //if(rc.getLocation().add(Direction.NORTHWEST).equals(hqLocation) || rc.getLocation().add(Direction.NORTH).equals(hqLocation)){
             path.clear();
             path.add(Direction.WEST);
             path.add(Direction.WEST);
@@ -67,7 +66,28 @@ public class WallSittingLandscaper extends MobileUnit {
             path.add(Direction.SOUTH);
             path.add(Direction.WEST);
             path.add(Direction.WEST);
+            hasResetPath = true;
+
+        }
+
+        if (Math.abs((rc.getLocation().x)-hqLocation.x) == 2 || Math.abs((rc.getLocation().y)-hqLocation.y) == 2){
+
+        } else {
             return;
+        }
+
+        for(MapLocation loc : hqTiles){
+            if(loc.isAdjacentTo(rc.getLocation())){
+                if(rc.senseElevation(loc) < hqElevation && rc.senseFlooding(loc)){
+                    if(rc.getDirtCarrying() > 0){
+                        tryDeposit(rc.getLocation().directionTo(loc));
+                        return;
+                    } else {
+                        tryDig(path.get(0).rotateLeft());
+                        return;
+                    }
+                }
+            }
         }
 
         if(moving && totalMoves < maxMoves){
@@ -79,7 +99,7 @@ public class WallSittingLandscaper extends MobileUnit {
                 totalMoves++;
 
             } else{
-                if(rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())){
+                if((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))) == null){
                     if(rc.getDirtCarrying() > 0) {
                         tryDeposit(path.get(0));
                     } else {
@@ -118,6 +138,12 @@ public class WallSittingLandscaper extends MobileUnit {
             return true;
         }
         return false;
+    }
+
+    public void generateHQTiles(){
+        for(Direction dir : Constants.DIRECTIONS){
+            hqTiles.add(hqLocation.add(dir));
+        }
     }
 }
 

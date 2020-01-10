@@ -2,22 +2,17 @@ package mouse;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import mouse.units.WallSittingLandscaper;
-import mouse.units.genericdeliverydrone.GenericDeliveryDrone;
-import mouse.units.genericdesignschool.GenericDesignSchool;
-import mouse.units.genericfulfillmentcenter.GenericFulfillmentCenter;
-import mouse.units.genericheadquarters.GenericHeadquarters;
-import mouse.units.genericlandscaper.GenericLandscaper;
-import mouse.units.genericminer.GenericMiner;
+import mouse.base.KillMeNowException;
+import mouse.units.wallsittinglandscaper.WallSittingLandscaper;
 import mouse.units.genericnetgun.GenericNetGun;
 import mouse.units.genericrefinery.GenericRefinery;
 import mouse.units.genericvaporator.GenericVaporator;
+import mouse.units.miningminer.MiningMiner;
 import mouse.units.mousedeliverydrone.MouseDeliveryDrone;
 import mouse.units.mousedesignschool.MouseDesignSchool;
 import mouse.units.mousefulfillmentcenter.MouseFulfillmentCenter;
 import mouse.units.mouseheadquarters.MouseHeadquarters;
-import mouse.units.mouselandscaper.MouseLandscaper;
-import mouse.units.mouseminer.MouseMiner;
+import mouse.units.buildingminer.BuildingMiner;
 
 public strictfp class RobotPlayer {
 
@@ -26,11 +21,17 @@ public strictfp class RobotPlayer {
      * If this method returns, the robot dies!
      **/
     @SuppressWarnings("unused")
-    public static void run(RobotController rc) throws GameActionException {
+    public static void run(RobotController rc) throws GameActionException, KillMeNowException {
 
         switch (rc.getType()) {
             case HQ:                 new MouseHeadquarters(rc).run();           break;
-            case MINER:              new MouseMiner(rc).run();                  break;
+            case MINER:
+                if(rc.getRoundNum() < 500) {
+                    new MiningMiner(rc).run();
+                } else {
+                    new BuildingMiner(rc).run();
+                }
+                break;
             case REFINERY:           new GenericRefinery(rc).run();             break;
             case VAPORATOR:          new GenericVaporator(rc).run();            break;
             case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;

@@ -1,5 +1,8 @@
 package mouse.base;
 import battlecode.common.*;
+import mouse.utility.ActionHelper;
+
+import java.util.Random;
 
 public abstract class Unit {
     public RobotController rc;
@@ -8,17 +11,35 @@ public abstract class Unit {
     public Team myTeam;
     public int age; // The number of rounds this unit has been alive
     public int birthday;
+    public MapLocation hqLocation;
+    public Random rand;
+    public int hqElevation;
+    public RobotInfo hqInfo;
 
     public Unit(RobotController rc){
         this.rc = rc;
         spawn = rc.getLocation();
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
+        rand = new Random();
+        hqElevation = 5;
+
+        if(rc.getType() != RobotType.HQ) {
+            hqInfo = ActionHelper.findHQ(rc);
+            hqLocation = hqInfo.getLocation();
+            try {
+                if(rc.canSenseLocation(hqLocation)){
+                    hqElevation = rc.senseElevation(hqLocation);
+                }
+            } catch (Exception e){
+                hqElevation = 5;
+            }
+        }
 
         age = 0;
     }
 
-    public final void run(){
+    public final void run() throws KillMeNowException {
         System.out.println("I'm a " + rc.getType().toString());
 
         //noinspection InfiniteLoopStatement
@@ -29,6 +50,9 @@ public abstract class Unit {
                 turn();
                 preEnd();
                 roundEnd();
+            } catch(KillMeNowException e) {
+                return;
+                //throw new KillMeNowException();
             } catch (Exception e){
                 System.out.println(rc.getType().toString() + " Exception");
                 e.printStackTrace();
@@ -43,7 +67,7 @@ public abstract class Unit {
      * This is effectively where the individual unique unit types "strategy" should go.
      * @throws GameActionException
      */
-    public abstract void turn() throws GameActionException;
+    public abstract void turn() throws GameActionException, KillMeNowException;
 
     /**
      * This method is run at the start of every round for every unit we own

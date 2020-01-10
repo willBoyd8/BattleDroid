@@ -9,6 +9,9 @@ public class MouseHeadquarters extends Building {
     boolean horizontal;
     boolean vertical;
     boolean hasBuilt;
+    public int minerCounter;
+    public static int maxMiners = 10;
+
     public MouseHeadquarters(RobotController rc){
         super(rc);
         this.horizontal = false;
@@ -17,9 +20,17 @@ public class MouseHeadquarters extends Building {
     }
 
     public void turn() throws GameActionException{
-        //tryBuild(RobotType.MINER, Direction.NORTH, rc);
-        if(!hasBuilt) {
-            hasBuilt = tryBuild(RobotType.MINER, Direction.SOUTH, rc);
+        if(rc.getRoundNum() >= 500){
+            if(!hasBuilt) {
+                hasBuilt = tryBuild(RobotType.MINER, Direction.SOUTH, rc);
+            }
+        } else {
+            if(minerCounter < maxMiners) {
+                if(tryBuild(RobotType.MINER, Direction.NORTH, rc)){
+                    minerCounter++;
+                }
+            }
         }
+
     }
 }

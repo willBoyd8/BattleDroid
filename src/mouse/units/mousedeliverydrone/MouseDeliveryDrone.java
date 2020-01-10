@@ -4,6 +4,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
+import mouse.base.KillMeNowException;
 import mouse.base.MobileUnit;
 
 import static mouse.utility.ActionHelper.tryMove;
@@ -21,7 +22,7 @@ public class MouseDeliveryDrone extends MobileUnit {
         hasDropped = false;
     }
 
-    public void turn() throws GameActionException {
+    public void turn() throws GameActionException, KillMeNowException {
         if(!hasHelped){
             RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.EAST));
             if(robot == null){
@@ -45,7 +46,8 @@ public class MouseDeliveryDrone extends MobileUnit {
             }
             return;
         } else {
-            tryMove(Direction.EAST, rc);
+            // TODO: implement raiding mode
+            throw new KillMeNowException();
         }
     }
 }

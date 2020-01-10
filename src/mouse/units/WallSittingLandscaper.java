@@ -49,7 +49,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public void turn() throws GameActionException {
 
-        if(rc.getLocation().add(Direction.NORTHWEST).equals(hq)){
+        if(rc.getLocation().add(Direction.NORTHWEST).equals(hqLocation) || rc.getLocation().add(Direction.NORTH).equals(hqLocation)){
             path.clear();
             path.add(Direction.WEST);
             path.add(Direction.WEST);

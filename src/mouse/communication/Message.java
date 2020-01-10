@@ -1,4 +1,4 @@
-package bb8.communication;
+package mouse.communication;
 
 /*
                                                     BATTLECODE COMMUNICATION

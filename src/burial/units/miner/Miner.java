@@ -24,8 +24,8 @@ public class Miner extends MobileUnit {
     public Miner(RobotController rc){
         super(rc);
         if (rc.getRoundNum() <= 0){ //Builder Mode but only for the first unit spawned
-            System.out.println("Entering Builder Mode");
-            state = 1;
+            //System.out.println("Entering Builder Mode");
+            //state = 1;
         }
     }
 
@@ -48,6 +48,11 @@ public class Miner extends MobileUnit {
                        MapLocation[] soupTiles = ActionHelper.getSoupTiles(visibleTiles, rc);
 
                        if (soupTiles[0] == null){
+                           for (int i = 0; i < 10; i++){
+                               ActionHelper.tryMove(rc);
+                           }
+
+                           /*
                            Direction toHQ = rc.getLocation().directionTo(friendlyHQ);
                            Direction awayFromHQ = toHQ.opposite();
                            Random r = new Random();
@@ -80,6 +85,7 @@ public class Miner extends MobileUnit {
                            }
 
                            break;
+                       }*/
                        }
 
                        MapLocation closestPoint = ActionHelper.getClosestTile(soupTiles, rc.getLocation(), rc);
@@ -132,9 +138,9 @@ public class Miner extends MobileUnit {
 
                    break;
 
-               case 1: //Builder Mode
+               /*case 1: //Builder Mode
                    if (REFINERY == false){ //Using boolean variable as a flag for whether or not Design school has already been built
-                       tryMove(randomDirection()/*MapLocation.directionTo()*/, rc);
+                       tryMove(randomDirection(), rc);
                        for (Direction dir : Constants.DIRECTIONS){
                            if (ActionHelper.tryBuild(RobotType.REFINERY, randomDirection(), rc)){
                                System.out.println("Refinery Built");
@@ -144,7 +150,7 @@ public class Miner extends MobileUnit {
 
                    }
                    else if (FC == false){ //Using boolean variable as a flag for whether or not Design school has already been built
-                       tryMove(randomDirection()/*MapLocation.directionTo()*/, rc);
+                       tryMove(randomDirection(), rc);
                        for (Direction dir : Constants.DIRECTIONS){
                            if (ActionHelper.tryBuild(RobotType.FULFILLMENT_CENTER, randomDirection(), rc)){
                                System.out.println("Fulfillment Center Built");
@@ -154,7 +160,7 @@ public class Miner extends MobileUnit {
 
                    }
                    else if (DS == false){ //Using boolean variable as a flag for whether or not Design school has already been built
-                       tryMove(randomDirection()/*MapLocation.directionTo()*/, rc);
+                       tryMove(randomDirection(), rc);
                        for (Direction dir : Constants.DIRECTIONS){
                            if (ActionHelper.tryBuild(RobotType.DESIGN_SCHOOL, randomDirection(), rc)){
                                System.out.println("Design School Built");
@@ -172,7 +178,7 @@ public class Miner extends MobileUnit {
 
                case 2:
 
-                   break;
+                   break;*/
            }
 
            //tryMove(randomDirection(), rc);

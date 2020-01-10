@@ -40,7 +40,8 @@ public abstract class Unit {
                 preEnd();
                 roundEnd();
             } catch(KillMeNowException e) {
-                throw new KillMeNowException();
+                return;
+                //throw new KillMeNowException();
             } catch (Exception e){
                 System.out.println(rc.getType().toString() + " Exception");
                 e.printStackTrace();

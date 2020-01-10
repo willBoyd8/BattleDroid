@@ -1,6 +1,7 @@
 package mouse.units.miningminer;
 
 import battlecode.common.*;
+import mouse.base.KillMeNowException;
 import mouse.base.MobileUnit;
 import mouse.utility.ActionHelper;
 
@@ -33,7 +34,7 @@ public class MiningMiner extends MobileUnit {
         FLOODING,
     }
 
-    public void turn() throws GameActionException {
+    public void turn() throws GameActionException, KillMeNowException {
         if(rc.getRoundNum() > 500){
             state = MiningState.FLOODING;
         }
@@ -157,9 +158,8 @@ public class MiningMiner extends MobileUnit {
         }
     }
 
-    private void protocal13() throws GameActionException {
-        // TODO: Implement Suicide
-        ActionHelper.tryMove(rc.getLocation().directionTo(hqLocation).opposite(), rc);
+    private void protocal13() throws GameActionException, KillMeNowException {
+        throw new KillMeNowException();
     }
 
     private void search() throws GameActionException {

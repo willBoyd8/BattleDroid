@@ -63,11 +63,13 @@ public class WallSittingLandscaper extends MobileUnit {
             path.add(Direction.WEST);
             path.add(Direction.WEST);
             hasResetPath = true;
-            if (Math.abs((rc.getLocation().x)-hqLocation.x) == 2 || Math.abs((rc.getLocation().y)-hqLocation.y) == 2){
 
-            } else {
-                return;
-            }
+        }
+
+        if (Math.abs((rc.getLocation().x)-hqLocation.x) == 2 || Math.abs((rc.getLocation().y)-hqLocation.y) == 2){
+
+        } else {
+            return;
         }
 
         if(moving && totalMoves < maxMoves){

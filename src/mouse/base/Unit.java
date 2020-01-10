@@ -43,7 +43,7 @@ public abstract class Unit {
      * Run once on startup, immediately before the main loop begins
      * @throws GameActionException
      */
-    public abstract void onInitialization() throws GameActionException;
+    public void onInitialization() throws GameActionException {}
 
     /**
      * This method should be implemented for every bot. This is the code that the bot will run every round

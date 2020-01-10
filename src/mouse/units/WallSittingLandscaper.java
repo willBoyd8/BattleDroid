@@ -78,11 +78,13 @@ public class WallSittingLandscaper extends MobileUnit {
 
         for(MapLocation loc : hqTiles){
             if(loc.isAdjacentTo(rc.getLocation())){
-                if(rc.senseElevation(loc) < hqElevation){
+                if(rc.senseElevation(loc) < hqElevation && rc.senseFlooding(loc)){
                     if(rc.getDirtCarrying() > 0){
                         tryDeposit(rc.getLocation().directionTo(loc));
+                        return;
                     } else {
                         tryDig(path.get(0).rotateLeft());
+                        return;
                     }
                 }
             }
@@ -97,7 +99,7 @@ public class WallSittingLandscaper extends MobileUnit {
                 totalMoves++;
 
             } else{
-                if(rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())){
+                if((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))) == null){
                     if(rc.getDirtCarrying() > 0) {
                         tryDeposit(path.get(0));
                     } else {

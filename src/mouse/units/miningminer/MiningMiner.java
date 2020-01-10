@@ -5,6 +5,7 @@ import mouse.base.MobileUnit;
 import mouse.utility.ActionHelper;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MiningMiner extends MobileUnit {
     public MiningState state;
@@ -71,7 +72,18 @@ public class MiningMiner extends MobileUnit {
             arrived();
             return;
         } else {
-            ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation), rc);
+            // Tries to move straight towards destination, but jiggle paths if it needs to.
+            if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation), rc)){
+                if(rand.nextBoolean()){
+                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc)){
+                        ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc);
+                    }
+                } else {
+                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc)){
+                        ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc);
+                    }
+                }
+            }
         }
     }
 
@@ -112,7 +124,18 @@ public class MiningMiner extends MobileUnit {
             deposit();
             return;
         } else {
-            ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)), rc);
+            // Tries to move straight towards destination, but jiggle paths if it needs to.
+            if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)), rc)){
+                if(rand.nextBoolean()){
+                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
+                        ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc);
+                    }
+                } else {
+                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
+                        ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc);
+                    }
+                }
+            }
         }
     }
 

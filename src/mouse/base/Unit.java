@@ -2,6 +2,8 @@ package mouse.base;
 import battlecode.common.*;
 import mouse.utility.ActionHelper;
 
+import java.util.Random;
+
 public abstract class Unit {
     public RobotController rc;
     public MapLocation spawn;
@@ -10,12 +12,14 @@ public abstract class Unit {
     public int age; // The number of rounds this unit has been alive
     public int birthday;
     public MapLocation hqLocation;
+    public Random rand;
 
     public Unit(RobotController rc){
         this.rc = rc;
         spawn = rc.getLocation();
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
+        rand = new Random();
 
         if(rc.getType() != RobotType.HQ) {
             hqLocation = ActionHelper.findHQ(rc).getLocation();

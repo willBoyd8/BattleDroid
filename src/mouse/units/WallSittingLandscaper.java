@@ -2,6 +2,7 @@ package mouse.units;
 
 import battlecode.common.*;
 import mouse.base.MobileUnit;
+import mouse.utility.Constants;
 
 import java.util.ArrayList;
 
@@ -13,6 +14,7 @@ public class WallSittingLandscaper extends MobileUnit {
     boolean hasResetPath;
     int totalMoves;
     public static int maxMoves = Integer.MAX_VALUE;
+    ArrayList<MapLocation> hqTiles;
 
 
     public WallSittingLandscaper(RobotController rc){
@@ -37,7 +39,9 @@ public class WallSittingLandscaper extends MobileUnit {
         moving = false;
         hasResetPath = false;
         totalMoves = 0;
+        hqTiles = new ArrayList<MapLocation>();
 
+        generateHQTiles();
 
     }
 
@@ -70,6 +74,18 @@ public class WallSittingLandscaper extends MobileUnit {
 
         } else {
             return;
+        }
+
+        for(MapLocation loc : hqTiles){
+            if(loc.isAdjacentTo(rc.getLocation())){
+                if(rc.senseElevation(loc) < hqElevation){
+                    if(rc.getDirtCarrying() > 0){
+                        tryDeposit(rc.getLocation().directionTo(loc));
+                    } else {
+                        tryDig(path.get(0).rotateLeft());
+                    }
+                }
+            }
         }
 
         if(moving && totalMoves < maxMoves){
@@ -120,6 +136,12 @@ public class WallSittingLandscaper extends MobileUnit {
             return true;
         }
         return false;
+    }
+
+    public void generateHQTiles(){
+        for(Direction dir : Constants.DIRECTIONS){
+            hqTiles.add(hqLocation.add(dir));
+        }
     }
 }
 

@@ -13,6 +13,8 @@ public abstract class Unit {
     public int birthday;
     public MapLocation hqLocation;
     public Random rand;
+    public int hqElevation;
+    public RobotInfo hqInfo;
 
     public Unit(RobotController rc){
         this.rc = rc;
@@ -20,9 +22,18 @@ public abstract class Unit {
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
         rand = new Random();
+        hqElevation = 5;
 
         if(rc.getType() != RobotType.HQ) {
-            hqLocation = ActionHelper.findHQ(rc).getLocation();
+            hqInfo = ActionHelper.findHQ(rc);
+            hqLocation = hqInfo.getLocation();
+            try {
+                if(rc.canSenseLocation(hqLocation)){
+                    hqElevation = rc.senseElevation(hqLocation);
+                }
+            } catch (Exception e){
+                hqElevation = 5;
+            }
         }
 
         age = 0;

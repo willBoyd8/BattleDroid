@@ -17,7 +17,8 @@ public class MiningMiner extends MobileUnit {
         super(rc);
         state = MiningState.LOOK;
         soupLocation = null;
-        depositLocations.add(hq.location);
+        depositLocations = new ArrayList<MapLocation>();
+        depositLocations.add(hqLocation);
     }
 
     enum MiningState {
@@ -127,7 +128,7 @@ public class MiningMiner extends MobileUnit {
 
     private void protocal13() throws GameActionException {
         // TODO: Implement Suicide
-        ActionHelper.tryMove(rc.getLocation().directionTo(hq.location).opposite(), rc);
+        ActionHelper.tryMove(rc.getLocation().directionTo(hqLocation).opposite(), rc);
     }
 
     private void search() throws GameActionException {

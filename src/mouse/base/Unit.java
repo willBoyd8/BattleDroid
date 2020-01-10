@@ -9,7 +9,7 @@ public abstract class Unit {
     public Team myTeam;
     public int age; // The number of rounds this unit has been alive
     public int birthday;
-    public RobotInfo hq;
+    public MapLocation hqLocation;
 
     public Unit(RobotController rc){
         this.rc = rc;
@@ -17,7 +17,9 @@ public abstract class Unit {
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
 
-        hq = ActionHelper.findHQ(rc);
+        if(rc.getType() != RobotType.HQ) {
+            hqLocation = ActionHelper.findHQ(rc).getLocation();
+        }
 
         age = 0;
     }

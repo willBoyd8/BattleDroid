@@ -111,16 +111,13 @@ public class ActionHelper {
     public static RobotInfo findHQ(RobotController rc){
         RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam());
 
-        RobotInfo hq = null;
-
         for(RobotInfo robot : robots){
-            if(robot.getType().equals(RobotType.HQ)){
-                hq = robot;
-                break;
+            if(robot.getType() == RobotType.HQ){
+                return robot;
             }
         }
 
-        return hq;
+        return null;
     }
 
     public static boolean tryDeposit(Direction dir, RobotController rc) throws GameActionException {

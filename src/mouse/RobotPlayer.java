@@ -2,6 +2,7 @@ package mouse;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import mouse.base.KillMeNowException;
 import mouse.units.WallSittingLandscaper;
 import mouse.units.genericdeliverydrone.GenericDeliveryDrone;
 import mouse.units.genericdesignschool.GenericDesignSchool;
@@ -26,7 +27,7 @@ public strictfp class RobotPlayer {
      * If this method returns, the robot dies!
      **/
     @SuppressWarnings("unused")
-    public static void run(RobotController rc) throws GameActionException {
+    public static void run(RobotController rc) throws GameActionException, KillMeNowException {
 
         switch (rc.getType()) {
             case HQ:                 new MouseHeadquarters(rc).run();           break;

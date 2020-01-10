@@ -18,7 +18,7 @@ public abstract class Unit {
         age = 0;
     }
 
-    public final void run(){
+    public final void run() throws KillMeNowException {
         System.out.println("I'm a " + rc.getType().toString());
 
         //noinspection InfiniteLoopStatement
@@ -29,6 +29,8 @@ public abstract class Unit {
                 turn();
                 preEnd();
                 roundEnd();
+            } catch(KillMeNowException e) {
+                throw new KillMeNowException();
             } catch (Exception e){
                 System.out.println(rc.getType().toString() + " Exception");
                 e.printStackTrace();
@@ -43,7 +45,7 @@ public abstract class Unit {
      * This is effectively where the individual unique unit types "strategy" should go.
      * @throws GameActionException
      */
-    public abstract void turn() throws GameActionException;
+    public abstract void turn() throws GameActionException, KillMeNowException;
 
     /**
      * This method is run at the start of every round for every unit we own

@@ -1,9 +1,8 @@
 package mouse.utility;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+
+import java.util.ArrayList;
 
 public class ActionHelper {
 
@@ -81,4 +80,54 @@ public class ActionHelper {
         } else return false;
     }
 
+    public static ArrayList<MapLocation> getSoupLocations(RobotController rc) throws GameActionException {
+        MapLocation currentLoc = rc.getLocation();
+
+        int i_sensorActual = (int)Math.sqrt(RobotType.MINER.sensorRadiusSquared);
+
+        // TODO: Fix this because we check a lot of unneed tiles (or not visible ones)
+        int lowXLimit = currentLoc.x - i_sensorActual;
+        int highXLimit = currentLoc.x + i_sensorActual;
+        int lowYLimit = currentLoc.y - i_sensorActual;
+        int highYLimit = currentLoc.y + i_sensorActual;
+
+        ArrayList<MapLocation> soupTiles = new ArrayList<>();
+        for (int i = lowXLimit; i < highXLimit; i++){
+            //System.out.println("getVisibleTiles: x");
+            for (int j = lowYLimit; j < highYLimit; j++){
+                //System.out.println("getVisibleTiles: y");
+                MapLocation temp = new MapLocation(i , j);
+                if (rc.canSenseLocation(temp)){
+                    if(rc.senseSoup(temp) > 0){
+                        soupTiles.add(temp);
+                    }
+                }
+            }
+        }
+
+        return soupTiles;
+    }
+
+    public static RobotInfo findHQ(RobotController rc){
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam());
+
+        RobotInfo hq = null;
+
+        for(RobotInfo robot : robots){
+            if(robot.getType().equals(RobotType.HQ)){
+                hq = robot;
+                break;
+            }
+        }
+
+        return hq;
+    }
+
+    public static boolean tryDeposit(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDepositSoup(dir)){
+            rc.depositSoup(dir, rc.getSoupCarrying());
+            return true;
+        }
+        return false;
+    }
 }

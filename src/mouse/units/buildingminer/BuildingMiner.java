@@ -1,4 +1,4 @@
-package mouse.units.mouseminer;
+package mouse.units.buildingminer;
 
 import battlecode.common.*;
 import mouse.base.MobileUnit;
@@ -6,12 +6,12 @@ import mouse.base.MobileUnit;
 import static mouse.utility.ActionHelper.tryBuild;
 import static mouse.utility.ActionHelper.tryMove;
 
-public class MouseMiner extends MobileUnit {
+public class BuildingMiner extends MobileUnit {
     boolean designSchool;
     boolean hasMoved;
     boolean fulfillment;
 
-    public MouseMiner(RobotController rc){
+    public BuildingMiner(RobotController rc){
         super(rc);
         designSchool = false;
         hasMoved = false;

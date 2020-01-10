@@ -1,5 +1,6 @@
 package mouse.base;
 import battlecode.common.*;
+import mouse.utility.ActionHelper;
 
 public abstract class Unit {
     public RobotController rc;
@@ -8,12 +9,15 @@ public abstract class Unit {
     public Team myTeam;
     public int age; // The number of rounds this unit has been alive
     public int birthday;
+    public RobotInfo hq;
 
     public Unit(RobotController rc){
         this.rc = rc;
         spawn = rc.getLocation();
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
+
+        hq = ActionHelper.findHQ(rc);
 
         age = 0;
     }

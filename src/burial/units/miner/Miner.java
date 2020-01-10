@@ -23,17 +23,19 @@ public class Miner extends MobileUnit {
     MapLocation destination = rc.getLocation();
     public Miner(RobotController rc){
         super(rc);
-        if (rc.getRoundNum() <= 0){ //Builder Mode but only for the first unit spawned
-            //System.out.println("Entering Builder Mode");
-            //state = 1;
-        }
+        /*if (rc.getRoundNum() <= 0){ //Builder Mode but only for the first unit spawned
+            System.out.println("Entering Builder Mode");
+            state = 1;
+        }*/
     }
 
     public void turn() throws GameActionException {
+        //System.out.println("Taking a turn");
        if (rc.isReady()){
            if (this.age < 2){
                RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
                for (int i = 0; i < nearbyRobots.length; i++){
+                   System.out.print("First Loop");
                    if ((nearbyRobots[i].type == RobotType.HQ)&&(nearbyRobots[i].team == this.myTeam)){
                        friendlyHQ = nearbyRobots[i].location;
                    }
@@ -44,15 +46,13 @@ public class Miner extends MobileUnit {
            {
                case 0: //Mine Mode
                    if (rc.getSoupCarrying() < 98) { //If not full then go mine
+                       System.out.println("This Unit has this much soup");
+                       System.out.println(rc.getSoupCarrying());
                        MapLocation[] visibleTiles = ActionHelper.getVisibleTiles(RobotType.MINER, rc);
                        MapLocation[] soupTiles = ActionHelper.getSoupTiles(visibleTiles, rc);
 
                        if (soupTiles[0] == null){
-                           for (int i = 0; i < 10; i++){
-                               ActionHelper.tryMove(rc);
-                           }
-
-                           /*
+                           System.out.println("SoupTiles[0] = null");
                            Direction toHQ = rc.getLocation().directionTo(friendlyHQ);
                            Direction awayFromHQ = toHQ.opposite();
                            Random r = new Random();
@@ -85,18 +85,21 @@ public class Miner extends MobileUnit {
                            }
 
                            break;
-                       }*/
                        }
 
                        MapLocation closestPoint = ActionHelper.getClosestTile(soupTiles, rc.getLocation(), rc);
                        destination = closestPoint;
+
                        if (destination.isAdjacentTo(rc.getLocation())){
+                           System.out.println("Soup is Adjacent to me");
                            if (tryMine(rc.getLocation().directionTo(destination), rc)){
                                System.out.println("Soup Mined");
                            }
                        }
                        else{
                            Direction travel = rc.getLocation().directionTo(destination);
+                           System.out.println("Trying to Move");
+                           tryMove(travel, rc);
                        }
                    }
                    else{ //If full go deposit soup
@@ -138,9 +141,9 @@ public class Miner extends MobileUnit {
 
                    break;
 
-               /*case 1: //Builder Mode
+               case 1: //Builder Mode
                    if (REFINERY == false){ //Using boolean variable as a flag for whether or not Design school has already been built
-                       tryMove(randomDirection(), rc);
+                       tryMove(randomDirection()/*MapLocation.directionTo()*/, rc);
                        for (Direction dir : Constants.DIRECTIONS){
                            if (ActionHelper.tryBuild(RobotType.REFINERY, randomDirection(), rc)){
                                System.out.println("Refinery Built");
@@ -150,7 +153,7 @@ public class Miner extends MobileUnit {
 
                    }
                    else if (FC == false){ //Using boolean variable as a flag for whether or not Design school has already been built
-                       tryMove(randomDirection(), rc);
+                       tryMove(randomDirection()/*MapLocation.directionTo()*/, rc);
                        for (Direction dir : Constants.DIRECTIONS){
                            if (ActionHelper.tryBuild(RobotType.FULFILLMENT_CENTER, randomDirection(), rc)){
                                System.out.println("Fulfillment Center Built");
@@ -160,7 +163,7 @@ public class Miner extends MobileUnit {
 
                    }
                    else if (DS == false){ //Using boolean variable as a flag for whether or not Design school has already been built
-                       tryMove(randomDirection(), rc);
+                       tryMove(randomDirection()/*MapLocation.directionTo()*/, rc);
                        for (Direction dir : Constants.DIRECTIONS){
                            if (ActionHelper.tryBuild(RobotType.DESIGN_SCHOOL, randomDirection(), rc)){
                                System.out.println("Design School Built");
@@ -178,7 +181,7 @@ public class Miner extends MobileUnit {
 
                case 2:
 
-                   break;*/
+                   break;
            }
 
            //tryMove(randomDirection(), rc);

@@ -100,7 +100,9 @@ public class ActionHelper {
 
             ArrayList<MapLocation> sensedTiles = new ArrayList<>();
             for (int i = lowXLimit; i < highXLimit; i++){
-                for (int j = lowYLimit; i < highYLimit; j++){
+                //System.out.println("getVisibleTiles: x");
+                for (int j = lowYLimit; j < highYLimit; j++){
+                    //System.out.println("getVisibleTiles: y");
                     MapLocation temp = new MapLocation(i , j);
                     if (rc.canSenseLocation(temp)){
                         sensedTiles.add(temp);
@@ -108,10 +110,14 @@ public class ActionHelper {
                 }
             }
             int numTiles = sensedTiles.size();
+            System.out.println("SensedTiles Size");
+            System.out.println(sensedTiles.size());
             MapLocation visibleTiles[] = new MapLocation[numTiles];
             for (int i = 0; i < numTiles; i++){
+                //System.out.println("getVisibleTiles: arraylist to array");
                 visibleTiles[i] = sensedTiles.get(i);
             }
+            System.out.println("Returning Visible Tiles");
             return visibleTiles;
         }
         else{
@@ -123,14 +129,17 @@ public class ActionHelper {
     public static MapLocation[] getSoupTiles(MapLocation[] visibleTiles, RobotController rc) throws GameActionException {
         ArrayList<MapLocation> soups = new ArrayList<>();
         for (int i = 0; i < visibleTiles.length; i++) {
+            //System.out.println("getSoupTiles: first loop");
             if (rc.senseSoup(visibleTiles[i]) > 0) {
                 soups.add(visibleTiles[i]);
             }
         }
         MapLocation soupTiles[] = new MapLocation[soups.size()];
         for (int i = 0; i < soups.size(); i++){
+            //System.out.println("getSoupTiles: Arraylist to Array");
             soupTiles[i] = soups.get(i);
         }
+        System.out.println("Returning Soup Tiles");
         return soupTiles;
     }
 

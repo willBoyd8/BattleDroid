@@ -21,22 +21,29 @@ public abstract class Unit {
     public final void run(){
         System.out.println("I'm a " + rc.getType().toString());
 
-        //noinspection InfiniteLoopStatement
-        while(true){
-            try{
+        try {
+            onInitialization();
+
+            //noinspection InfiniteLoopStatement
+            while(true) {
                 preStart();
                 roundStart();
                 turn();
                 preEnd();
                 roundEnd();
-            } catch (Exception e){
-                System.out.println(rc.getType().toString() + " Exception");
-                e.printStackTrace();
-                Clock.yield(); // if we fail, yield the clock
             }
+        } catch (Exception e){
+            System.out.println(rc.getType().toString() + " Exception");
+            e.printStackTrace();
+            Clock.yield(); // if we fail, yield the clock
         }
-
     }
+
+    /**
+     * Run once on startup, immediately before the main loop begins
+     * @throws GameActionException
+     */
+    public abstract void onInitialization() throws GameActionException;
 
     /**
      * This method should be implemented for every bot. This is the code that the bot will run every round

@@ -1,4 +1,4 @@
-package mouse.units;
+package mouse.units.wallsittinglandscaper;
 
 import battlecode.common.*;
 import mouse.base.MobileUnit;

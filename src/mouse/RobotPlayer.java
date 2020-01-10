@@ -3,7 +3,7 @@ package mouse;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import mouse.base.KillMeNowException;
-import mouse.units.WallSittingLandscaper;
+import mouse.units.wallsittinglandscaper.WallSittingLandscaper;
 import mouse.units.genericnetgun.GenericNetGun;
 import mouse.units.genericrefinery.GenericRefinery;
 import mouse.units.genericvaporator.GenericVaporator;

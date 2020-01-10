@@ -137,7 +137,6 @@ public class SpeederBike extends MobileUnit {
                 else {
                     // We found no one
                     System.out.println("SPEEDER: FOUND NO ONE. ENDING TURN");
-                    this.rc.setIndicatorDot(this.spawn.add(this.exit_direction.rotateLeft().rotateLeft()), 1, 0, 0);
                     break;
                 }
                 // If we didn't break, let's move out of the wall
@@ -179,22 +178,19 @@ public class SpeederBike extends MobileUnit {
                     break;
                 }
             case CHECK_TO_CONTINUE:
-//                // Set our state
-//                this.current_state = states.CHECK_TO_CONTINUE;
-//
-//                if (enoughWorkersOnWall()) {
-//                    // there are enough workers on the wall. we should transition to RAIDING
-//                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS REACHED (" + LANDSCAPERS_ON_WALL + "). MOVING TO \"RAIDING\"");
-//                }
-//                else {
-//                    // Moar!
-//                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS NOT REACHED. RETURNING TO \"WAITING_FOR_PASSENGER\"");
-//                    this.current_state = states.WAITING_FOR_PASSENGER;
-//
-//                    // Unfortunately, because we only running a single turn and not a loop, we
-//                    // cannot go back to WAITING_FOR_PASSENGER until next turn...
-//                    break;
-//                }
+                if (enoughWorkersOnWall()) {
+                    // there are enough workers on the wall. we should transition to RAIDING
+                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS REACHED (" + LANDSCAPERS_ON_WALL + "). MOVING TO \"RAIDING\"");
+                }
+                else {
+                    // Moar!
+                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS NOT REACHED. RETURNING TO \"WAITING_FOR_PASSENGER\"");
+                    this.current_state = states.WAITING_FOR_PASSENGER;
+
+                    // Unfortunately, because we only running a single turn and not a loop, we
+                    // cannot go back to WAITING_FOR_PASSENGER until next turn...
+                    break;
+                }
             case RAIDING:
 //                this.current_state = states.RAIDING;
 //                System.out.println("SPEEDER: ⚠️ RAIDING HAS NOT BEEN IMPLEMENTED YET ⚠️");
@@ -233,6 +229,7 @@ public class SpeederBike extends MobileUnit {
      * @throws GameActionException if something auto-toasters
      */
     private boolean exitCompoundWall() throws GameActionException {
+        System.out.println("SPEEDER: EXITING COMPOUND...");
         // Try to move two units along the this.exit_direction
         Direction direction = this.exit_direction;
 
@@ -240,7 +237,7 @@ public class SpeederBike extends MobileUnit {
         states next_state = states.PLACE_PASSENGER;
 
         MapLocation current_location = this.rc.getLocation();
-        if (current_location == this.spawn) {
+        if ((current_location.x == this.spawn.x) && (current_location.y == this.spawn.y)) {
             // We have yet to move
             // Try to move one unit
             if (ActionHelper.tryMove(direction, rc)) {
@@ -261,8 +258,7 @@ public class SpeederBike extends MobileUnit {
                 return false;
             }
         }
-        else if (current_location.equals(this.spawn.add(direction))) {
-
+        else if ((current_location.x == this.spawn.add(direction).x) && (current_location.y == this.spawn.add(direction).y)) {
             if (ActionHelper.tryMove(direction, rc)) {
                 // Move and go to the PLACE_PASSENGER state
                 System.out.println("SPEEDER: SUCCESSFULLY " + direction_string + "ED THE COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
@@ -287,6 +283,7 @@ public class SpeederBike extends MobileUnit {
      * @throws GameActionException if something auto-toasters
      */
     private boolean enterCompoundWall() throws GameActionException {
+        System.out.println("SPEEDER: ENTERING COMPOUND...");
         // Try to move two units along the this.exit_direction
         Direction direction = this.exit_direction.opposite();
 
@@ -294,7 +291,7 @@ public class SpeederBike extends MobileUnit {
         states next_state = states.CHECK_TO_CONTINUE;
 
         MapLocation current_location = this.rc.getLocation();
-        if (current_location.equals(this.spawn.add(direction.opposite()).add(direction.opposite()))) {
+        if ((current_location.x == this.spawn.add(direction.opposite()).add(direction.opposite()).x) && ((current_location.y == this.spawn.add(direction.opposite()).add(direction.opposite()).y))) {
             // We have yet to move
             // Try to move one unit
             if (ActionHelper.tryMove(direction, rc)) {
@@ -315,7 +312,7 @@ public class SpeederBike extends MobileUnit {
                 return false;
             }
         }
-        else if (current_location.equals(this.spawn.add(direction.opposite()))) {
+        else if ((current_location.x == this.spawn.add(direction.opposite()).x) && (current_location.y == this.spawn.add(direction.opposite()).y)) {
 
             if (ActionHelper.tryMove(direction, rc)) {
                 // Move and go to the PLACE_PASSENGER state

@@ -76,11 +76,15 @@ public class MiningMiner extends MobileUnit {
             if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation), rc)){
                 if(rand.nextBoolean()){
                     if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc)){
-                        ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc);
+                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc)){
+                            ActionHelper.tryMove(rc);
+                        }
                     }
                 } else {
                     if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc)){
-                        ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc);
+                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc)){
+                            ActionHelper.tryMove(rc);
+                        }
                     }
                 }
             }
@@ -128,11 +132,15 @@ public class MiningMiner extends MobileUnit {
             if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)), rc)){
                 if(rand.nextBoolean()){
                     if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
-                        ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc);
+                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
+                            ActionHelper.tryMove(rc);
+                        }
                     }
                 } else {
                     if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
-                        ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc);
+                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
+                            ActionHelper.tryMove(rc);
+                        }
                     }
                 }
             }

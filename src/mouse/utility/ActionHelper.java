@@ -3,23 +3,14 @@ package mouse.utility;
 import battlecode.common.*;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class ActionHelper {
 
     public static boolean tryMove(RobotController rc) throws GameActionException {
-        for (Direction dir : Constants.DIRECTIONS)
-            if (tryMove(dir, rc))
-                return true;
-        return false;
-        // MapLocation loc = rc.getLocation();
-        // if (loc.x < 10 && loc.x < loc.y)
-        //     return tryMove(Direction.EAST);
-        // else if (loc.x < 10)
-        //     return tryMove(Direction.SOUTH);
-        // else if (loc.x > loc.y)
-        //     return tryMove(Direction.WEST);
-        // else
-        //     return tryMove(Direction.NORTH);
+        Random rand = new Random();
+        int dir = rand.nextInt(Constants.DIRECTIONS.length);
+        return tryMove(Constants.DIRECTIONS[dir], rc);
     }
 
     /**

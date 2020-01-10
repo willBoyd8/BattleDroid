@@ -45,9 +45,11 @@ public class Message {
         command = 0;
         bot_id = 0;
         data = 0;
+
         if(!checkParity(blk)) {
             throw new Exception("parity bit is not correct, not loading block");
         }
+
         block = blk;
         msg_type = getMessageType();
         bot_type = getBotType();
@@ -120,7 +122,9 @@ public class Message {
             System.err.println("command_type is not 0 or 1, failing");
             return -1;
         }
+
         block = block | (command_type << 25);
+
         if(this.bot_id >= 128) {
             System.err.println("bot_id too long, failing");
             return -1;

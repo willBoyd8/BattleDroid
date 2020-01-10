@@ -2,10 +2,11 @@ package mouse;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import mouse.units.WallSittingLandscaper;
 import mouse.units.genericnetgun.GenericNetGun;
 import mouse.units.genericrefinery.GenericRefinery;
 import mouse.units.genericvaporator.GenericVaporator;
-import mouse.units.se2.SE2;
+//import mouse.units.se2.SE2;
 import mouse.units.speederbike.SpeederBike;
 import mouse.units.mousedesignschool.MouseDesignSchool;
 import mouse.units.mousefulfillmentcenter.MouseFulfillmentCenter;
@@ -28,7 +29,7 @@ public strictfp class RobotPlayer {
             case VAPORATOR:          new GenericVaporator(rc).run();            break;
             case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;
             case FULFILLMENT_CENTER: new MouseFulfillmentCenter(rc).run();    break;
-            case LANDSCAPER:         new SE2(rc).run();             break;
+            case LANDSCAPER:         new WallSittingLandscaper(rc).run();             break;
             case DELIVERY_DRONE:     new SpeederBike(rc).run();        break;
             case NET_GUN:            new GenericNetGun(rc).run();               break;
         }

@@ -2,6 +2,7 @@ package mouse.units;
 
 import battlecode.common.*;
 import mouse.base.MobileUnit;
+import mouse.utility.Constants;
 
 import java.util.ArrayList;
 
@@ -13,6 +14,7 @@ public class WallSittingLandscaper extends MobileUnit {
     boolean hasResetPath;
     int totalMoves;
     public static int maxMoves = Integer.MAX_VALUE;
+    ArrayList<MapLocation> hqTiles;
 
 
     public WallSittingLandscaper(RobotController rc){
@@ -37,7 +39,9 @@ public class WallSittingLandscaper extends MobileUnit {
         moving = false;
         hasResetPath = false;
         totalMoves = 0;
+        hqTiles = new ArrayList<MapLocation>();
 
+        generateHQTiles();
 
     }
 
@@ -72,6 +76,20 @@ public class WallSittingLandscaper extends MobileUnit {
             return;
         }
 
+        for(MapLocation loc : hqTiles){
+            if(loc.isAdjacentTo(rc.getLocation())){
+                if(rc.senseElevation(loc) < hqElevation && rc.senseFlooding(loc)){
+                    if(rc.getDirtCarrying() > 0){
+                        tryDeposit(rc.getLocation().directionTo(loc));
+                        return;
+                    } else {
+                        tryDig(path.get(0).rotateLeft());
+                        return;
+                    }
+                }
+            }
+        }
+
         if(moving && totalMoves < maxMoves){
             if(tryMove(path.get(0), rc)){
                 moving = false;
@@ -81,7 +99,7 @@ public class WallSittingLandscaper extends MobileUnit {
                 totalMoves++;
 
             } else{
-                if(rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())){
+                if((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))) == null){
                     if(rc.getDirtCarrying() > 0) {
                         tryDeposit(path.get(0));
                     } else {
@@ -120,6 +138,12 @@ public class WallSittingLandscaper extends MobileUnit {
             return true;
         }
         return false;
+    }
+
+    public void generateHQTiles(){
+        for(Direction dir : Constants.DIRECTIONS){
+            hqTiles.add(hqLocation.add(dir));
+        }
     }
 }
 

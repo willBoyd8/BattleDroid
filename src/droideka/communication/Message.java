@@ -1,4 +1,4 @@
-package c3po.communication;
+package droideka.communication;
 
 /*
                                                     BATTLECODE COMMUNICATION

@@ -14,14 +14,13 @@ public class MiningMiner extends MobileUnit {
     public int totalDist;
     public int distTraveled;
     public Direction travelDir;
-    public MapLocation soupLocation;
     public ArrayList<MapLocation> depositLocations;
     // TODO: Implement looking for refineries occasionally
 
     public MiningMiner(RobotController rc){
         super(rc);
         state = MiningState.LOOK;
-        soupLocation = null;
+        targetLocation = null;
         depositLocations = new ArrayList<MapLocation>();
         depositLocations.add(hqLocation);
         totalDist = 0;
@@ -61,7 +60,7 @@ public class MiningMiner extends MobileUnit {
         ArrayList<MapLocation> soups = ActionHelper.getSoupLocations(rc);
 
         if(soups.size() > 0){
-            soupLocation = soups.get(0);
+            targetLocation = soups.get(0);
             state = MiningState.MOVE_TO_SOUP;
             moveToSoup();
             return;
@@ -73,22 +72,22 @@ public class MiningMiner extends MobileUnit {
     }
 
     private void moveToSoup() throws GameActionException {
-        if(rc.getLocation().isAdjacentTo(soupLocation) || rc.getLocation().equals(soupLocation)){
+        if(rc.getLocation().isAdjacentTo(targetLocation) || rc.getLocation().equals(targetLocation)){
             state = MiningState.ARRIVED;
             arrived();
             return;
         } else {
             // Tries to move straight towards destination, but jiggle paths if it needs to.
-            if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation), rc)){
+            if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation), rc)){
                 if(rand.nextBoolean()){
-                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc)){
-                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc)){
+                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
+                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
                             ActionHelper.tryMove(rc);
                         }
                     }
                 } else {
-                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateRight(), rc)){
-                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(soupLocation).rotateLeft(), rc)){
+                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
+                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
                             ActionHelper.tryMove(rc);
                         }
                     }
@@ -98,10 +97,10 @@ public class MiningMiner extends MobileUnit {
     }
 
     private void arrived() throws GameActionException {
-        if(rc.canSenseLocation(soupLocation)){
-            if(rc.senseSoup(soupLocation) <= 0){
+        if(rc.canSenseLocation(targetLocation)){
+            if(rc.senseSoup(targetLocation) <= 0){
                 state = MiningState.LOOK;
-                soupLocation = null;
+                targetLocation = null;
                 look();
                 return;
             } else {
@@ -118,8 +117,8 @@ public class MiningMiner extends MobileUnit {
             moveToDeposit();
             return;
         } else {
-            if(rc.senseSoup(soupLocation) > 0){
-                ActionHelper.tryMine(rc.getLocation().directionTo(soupLocation), rc);
+            if(rc.senseSoup(targetLocation) > 0){
+                ActionHelper.tryMine(rc.getLocation().directionTo(targetLocation), rc);
                 return;
             } else {
                 state = MiningState.LOOK;

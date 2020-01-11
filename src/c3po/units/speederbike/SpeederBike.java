@@ -197,7 +197,7 @@ public class SpeederBike extends MobileUnit {
                 }
             case RAIDING:
 //                this.current_state = states.RAIDING;
-//                System.out.println("SPEEDER: ⚠️ RAIDING HAS NOT BEEN IMPLEMENTED YET ⚠️");
+//                System.out.println("SPEEDER: ️ RAIDING HAS NOT BEEN IMPLEMENTED YET ️");
                 break;
         }
 //        if(!hasHelped){

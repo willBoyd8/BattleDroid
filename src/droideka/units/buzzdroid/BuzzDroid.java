@@ -4,6 +4,7 @@ import battlecode.common.*;
 import droideka.base.MobileUnit;
 import droideka.base.Unit;
 import droideka.utility.ActionHelper;
+import droideka.utility.DebugHelper;
 
 import java.util.ArrayList;
 
@@ -58,6 +59,12 @@ public class BuzzDroid extends MobileUnit {
 
         }
 
+    }
+
+    public  void preEnd(){
+        for(MapLocation loc : enemyHQLocations){
+            DebugHelper.setIndicatorDot(loc, 255, 0, 0, rc);
+        }
     }
 
     private void generate() throws GameActionException {

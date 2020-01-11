@@ -50,6 +50,8 @@ public abstract class Unit {
         rand = unit.rand;
         hqElevation = unit.hqElevation;
         targetLocation = unit.targetLocation;
+        hqLocation = unit.hqLocation;
+        hqInfo = unit.hqInfo;
 
 
 
@@ -106,7 +108,7 @@ public abstract class Unit {
      * This method is run at the end of every round for every unit
      */
     public final void roundEnd(){
-        DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 255,0,0, rc);
+        DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 0,0,255, rc);
         Clock.yield();
     }
 

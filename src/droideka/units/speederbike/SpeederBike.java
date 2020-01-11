@@ -1,6 +1,7 @@
 package droideka.units.speederbike;
 
 import battlecode.common.*;
+import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
 import droideka.units.buzzdroid.BuzzDroid;
 import droideka.utility.ActionHelper;
@@ -112,7 +113,7 @@ public class SpeederBike extends MobileUnit {
         return count;
     }
 
-    public void turn() throws GameActionException {
+    public void turn() throws GameActionException, KillMeNowException {
         switch (this.current_state) {
             case WAITING_FOR_PASSENGER:
                 // Get the location to check and see if someone is there

@@ -42,7 +42,7 @@ public abstract class Unit {
         age = 0;
     }
 
-    public Unit(Unit<? extends Unit> unit){
+    public Unit(Unit unit){
         this.rc = unit.rc;
         spawn = unit.spawn;
         myTeam = unit.myTeam;

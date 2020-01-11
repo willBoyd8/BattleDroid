@@ -20,9 +20,13 @@ public class BuzzDroid extends MobileUnit {
         homeQuad = 0;
     }
 
-    public <T extends Unit> BuzzDroid(T unit){
+    // TODO: This isn't 100% safe because it can take any mobile unit
+    public BuzzDroid(MobileUnit unit){
         super(unit);
-        state =
+        state = DroneState.GENERATE;
+        targetLocation = null;
+        enemyHQLocations = new ArrayList<MapLocation>();
+        homeQuad = 0;
     }
 
     enum DroneState {

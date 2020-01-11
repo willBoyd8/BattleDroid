@@ -21,7 +21,9 @@ public class AssassinDroid extends Building {
                     nearestDrone = targets[i];
                 }
             }
-            rc.shootUnit(nearestDrone.ID);
+            if(rc.canShootUnit(nearestDrone.ID)) {
+                rc.shootUnit(nearestDrone.ID);
+            }
         }
     }
 }

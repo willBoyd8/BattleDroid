@@ -1,8 +1,5 @@
 package mouse.base;
 import battlecode.common.*;
-import mouse.utility.ActionHelper;
-
-import java.util.Random;
 
 public abstract class Unit {
     public RobotController rc;
@@ -11,62 +8,32 @@ public abstract class Unit {
     public Team myTeam;
     public int age; // The number of rounds this unit has been alive
     public int birthday;
-    public MapLocation hqLocation;
-    public Random rand;
-    public int hqElevation;
-    public RobotInfo hqInfo;
 
     public Unit(RobotController rc){
         this.rc = rc;
         spawn = rc.getLocation();
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
-        rand = new Random();
-        hqElevation = 5;
-
-        if(rc.getType() != RobotType.HQ) {
-            hqInfo = ActionHelper.findHQ(rc);
-            hqLocation = hqInfo.getLocation();
-            try {
-                if(rc.canSenseLocation(hqLocation)){
-                    hqElevation = rc.senseElevation(hqLocation);
-                }
-            } catch (Exception e){
-                hqElevation = 5;
-            }
-        }
 
         age = 0;
     }
 
-    public final void run() throws KillMeNowException {
+    public final void run(){
         System.out.println("I'm a " + rc.getType().toString());
 
-        try {
-            onInitialization();
-
-            //noinspection InfiniteLoopStatement
-            while (true) {
-
-                try {
-                    preStart();
-                    roundStart();
-                    turn();
-                    preEnd();
-                    roundEnd();
-                } catch (KillMeNowException e) {
-                    return;
-                    //throw new KillMeNowException();
-                } catch (Exception e) {
-                    System.out.println(rc.getType().toString() + " Exception");
-                    e.printStackTrace();
-                    Clock.yield(); // if we fail, yield the clock
-                }
+        //noinspection InfiniteLoopStatement
+        while(true){
+            try{
+                preStart();
+                roundStart();
+                turn();
+                preEnd();
+                roundEnd();
+            } catch (Exception e){
+                System.out.println(rc.getType().toString() + " Exception");
+                e.printStackTrace();
+                Clock.yield(); // if we fail, yield the clock
             }
-        } catch (Exception e) {
-            System.out.println(rc.getType().toString() + " Exception");
-            e.printStackTrace();
-            Clock.yield();
         }
 
     }
@@ -76,7 +43,7 @@ public abstract class Unit {
      * This is effectively where the individual unique unit types "strategy" should go.
      * @throws GameActionException
      */
-    public abstract void turn() throws GameActionException, KillMeNowException;
+    public abstract void turn() throws GameActionException;
 
     /**
      * This method is run at the start of every round for every unit we own
@@ -105,10 +72,4 @@ public abstract class Unit {
     public void preEnd(){
 
     }
-
-    /**
-     * Run once on startup, immediately before the main loop begins
-     * @throws GameActionException
-     */
-    public void onInitialization() throws GameActionException {}
 }

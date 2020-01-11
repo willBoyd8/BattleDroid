@@ -3,9 +3,9 @@ package c3po;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import c3po.base.KillMeNowException;
+import c3po.units.assassindroid.AssassinDroid;
 import c3po.units.speederbike.SpeederBike;
 import c3po.units.wallsittinglandscaper.WallSittingLandscaper;
-import c3po.units.genericnetgun.GenericNetGun;
 import c3po.units.genericrefinery.GenericRefinery;
 import c3po.units.genericvaporator.GenericVaporator;
 import c3po.units.miningminer.MiningMiner;
@@ -39,7 +39,7 @@ public strictfp class RobotPlayer {
             case FULFILLMENT_CENTER: new MouseFulfillmentCenter(rc).run();    break;
             case LANDSCAPER:         new WallSittingLandscaper(rc).run();             break;
             case DELIVERY_DRONE:     new SpeederBike(rc).run();        break;
-            case NET_GUN:            new GenericNetGun(rc).run();               break;
+            case NET_GUN:            new AssassinDroid(rc).run();               break;
         }
 
     }

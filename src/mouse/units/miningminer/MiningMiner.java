@@ -4,13 +4,16 @@ import battlecode.common.*;
 import mouse.base.KillMeNowException;
 import mouse.base.MobileUnit;
 import mouse.utility.ActionHelper;
+import mouse.utility.Constants;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public class MiningMiner extends MobileUnit {
     public MiningState state;
-
+    public int totalDist;
+    public int distTraveled;
+    public Direction travelDir;
     public MapLocation soupLocation;
     public ArrayList<MapLocation> depositLocations;
     // TODO: Implement looking for refineries occasionally
@@ -21,6 +24,8 @@ public class MiningMiner extends MobileUnit {
         soupLocation = null;
         depositLocations = new ArrayList<MapLocation>();
         depositLocations.add(hqLocation);
+        totalDist = 0;
+        distTraveled = 0;
     }
 
     enum MiningState {
@@ -164,7 +169,42 @@ public class MiningMiner extends MobileUnit {
 
     private void search() throws GameActionException {
         // TODO: implement intelligent searching
-        ActionHelper.tryMove(rc);
+        //ActionHelper.tryMove(rc);
+        if (totalDist == 0) {
+            Random r = new Random();
+            int dist = r.nextInt(9);
+            totalDist = dist;
+            Random rand = new Random();
+            int dir = 0;
+            for (int i = 0; i < Constants.DIRECTIONS.length; i++) {
+                dir = rand.nextInt(Constants.DIRECTIONS.length);
+                travelDir = Constants.DIRECTIONS[dir];
+                if (ActionHelper.tryMove(travelDir, rc)){
+                    totalDist--;
+                    state = MiningState.LOOK;
+                    look();
+                    return;
+                }
+            }
+
+
+        } else {
+            if (ActionHelper.tryMove(travelDir, rc)){
+                totalDist--;
+                state = MiningState.LOOK;
+                look();
+                return;
+            } else {
+                totalDist = 0;
+                state = MiningState.LOOK;
+                look();
+                return;
+            }
+        }
+
+
+
+
     }
 
 }

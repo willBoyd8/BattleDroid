@@ -62,6 +62,19 @@ public class BuzzDroid extends MobileUnit {
     }
 
     public void turn() throws GameActionException{
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, myTeam);
+        if(rc.isReady() && rc.isCurrentlyHoldingUnit() && (rc.getRoundNum()> 700) && (robots.length < 5)) {
+            for (int i = 0; i < Constants.DIRECTIONS.length; i++) {
+                if (ActionHelper.tryDrop(Constants.DIRECTIONS[i], rc)) {
+                    holding = null;
+                    //raidState = RaidState.KIDNAP;
+                    //System.out.println("DROPPING: Switching to KIDNAP state");
+                    //kidnap();
+                    //return;
+                }
+            }
+        }
+
 
         // TODO: When we actually fix rotation, this will need to be removed
         if(rc.isReady() && !rc.isCurrentlyHoldingUnit()){
@@ -190,10 +203,17 @@ public class BuzzDroid extends MobileUnit {
             return;
         }
         else{
-            if (Simple.tryMove(Direction.SOUTH, rc) && rc.getLocation().distanceSquaredTo(hqLocation) < 5){
+            if (rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.SOUTH, rc)){
                 state = DroneState.LOOK;
                 return;
             }
+            else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.EAST, rc)) {
+
+            }
+            else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.WEST, rc)){
+
+            }
+
 
         }
     }
@@ -241,7 +261,7 @@ public class BuzzDroid extends MobileUnit {
                 }
             }
             System.out.println("THERE ARE " + friendlyDroneCount + "FRIENDLY DRONES");
-            if (friendlyDroneCount >= 5){
+            if (friendlyDroneCount >= 3){
                 System.out.println("AIGHT BOIS, THERE'S ENOUGH OF US.  ITS GAMER TIME!!!");
                 state = DroneState.RAID;
                 raid();
@@ -265,10 +285,10 @@ public class BuzzDroid extends MobileUnit {
             /*if(holding.getTeam() == myTeam){
                 raidState = RaidState.BUZZ;
                 System.out.println("RAID: Switching to BUZZ state");
-            } else  {
+            } else  {*/
                 raidState = RaidState.DROPPING;
                 System.out.println("RAID: Switching to DROPPING state");
-            }*/
+            //}
 
         } else {
             raidState = RaidState.KIDNAP;
@@ -335,6 +355,7 @@ public class BuzzDroid extends MobileUnit {
                     || robot.getType() == RobotType.COW){
 
                     if(robot.getLocation().distanceSquaredTo(rc.getLocation()) < closest){
+                        closest = robot.getLocation().distanceSquaredTo(rc.getLocation());
                         victim = robot;
                     }
                 }
@@ -363,6 +384,17 @@ public class BuzzDroid extends MobileUnit {
     // TODO: maybe if enough bytecode check for near water
 
     private void dropping() throws GameActionException {
+        for (int i = 0; i < Constants.DIRECTIONS.length; i++){
+            if(ActionHelper.tryDrop(Constants.DIRECTIONS[i], rc)){
+                holding = null;
+                raidState = RaidState.KIDNAP;
+                System.out.println("DROPPING: Switching to KIDNAP state");
+                kidnap();
+                return;
+            }
+        }
+
+
         if(rc.getLocation().isAdjacentTo(nearestWater)){
             if(ActionHelper.tryDrop(rc.getLocation().directionTo(nearestWater), rc)){
                 holding = null;

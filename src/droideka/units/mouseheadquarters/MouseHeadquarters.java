@@ -33,11 +33,15 @@ public class MouseHeadquarters extends Building {
             }
         } else if (rc.getRoundNum() < Constants.WALL_START_ROUND - 50) {
             if(minerCounter < maxMiners) {
-                if(tryBuild(RobotType.MINER, Direction.NORTH, rc)){
-                    minerCounter++;
+                for (int i = 0; i < Constants.DIRECTIONS.length; i++){
+                    if(tryBuild(RobotType.MINER, Constants.DIRECTIONS[i], rc)){
+                        minerCounter++;
+                        break;
+                    }
+                }
                 }
             }
         }
-
     }
-}
+
+

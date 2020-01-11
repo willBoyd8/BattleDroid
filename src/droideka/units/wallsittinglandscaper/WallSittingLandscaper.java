@@ -1,11 +1,10 @@
 package droideka.units.wallsittinglandscaper;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
+import droideka.utility.Unsorted;
 
 import java.util.ArrayList;
 
@@ -50,6 +49,11 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public void turn() throws GameActionException {
 
+        if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL){
+            averageDig();
+            return;
+        }
+
         if(!hasResetPath && !(spawn.directionTo(hqLocation) == Direction.WEST)) {
         //if(rc.getLocation().add(Direction.NORTHWEST).equals(hqLocation) || rc.getLocation().add(Direction.NORTH).equals(hqLocation)){
             path.clear();
@@ -93,28 +97,17 @@ public class WallSittingLandscaper extends MobileUnit {
             }
         }
 
+
+
+
+
         if(moving && totalMoves < maxMoves){
-            if(tryMove(path.get(0), rc)){
-                moving = false;
+            if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) < Constants.LANDSCAPERS_ON_WALL - 4) {
+                handleRotate();
+            } else if(rc.getLocation().add(Direction.NORTH).add(Direction.NORTHWEST) != hqLocation){
+                handleRotate();
+            } else {
 
-                path.add(path.get(0));
-                path.remove(0);
-                totalMoves++;
-
-            } else{
-                if((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))) == null){
-                    if(rc.getDirtCarrying() > 0) {
-                        tryDeposit(path.get(0));
-                    } else {
-                        tryDig(path.get(0).rotateLeft());
-                    }
-                } else {
-                    if(rc.getDirtCarrying() > 0) {
-                        tryDeposit(Direction.CENTER);
-                    } else {
-                        tryDig(path.get(0).rotateLeft());
-                    }
-                }
             }
         }
 
@@ -147,6 +140,60 @@ public class WallSittingLandscaper extends MobileUnit {
         for(Direction dir : Constants.DIRECTIONS){
             hqTiles.add(hqLocation.add(dir));
         }
+    }
+
+    public void handleRotate() throws GameActionException{
+        if (tryMove(path.get(0), rc)) {
+            moving = false;
+            path.add(path.get(0));
+            path.remove(0);
+            totalMoves++;
+
+        } else {
+            if ((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))) == null) {
+                if (rc.getDirtCarrying() > 0) {
+                    tryDeposit(path.get(0));
+                } else {
+                    tryDig(path.get(0).rotateLeft());
+                }
+            } else {
+                if (rc.getDirtCarrying() > 0) {
+                    tryDeposit(Direction.CENTER);
+                } else {
+                    tryDig(path.get(0).rotateLeft());
+                }
+            }
+        }
+    }
+
+    public void averageDig() throws GameActionException {
+
+        if(rc.getDirtCarrying() > 0) {
+
+            int lowest = Integer.MAX_VALUE;
+            MapLocation place = null;
+
+            for (Direction dir : Direction.allDirections()) {
+                MapLocation tile = rc.getLocation().add(dir);
+                // TODO: remove this when we handle squaremore programatically or make it larger
+                if (tile.distanceSquaredTo(hqLocation) <= 8 && tile.distanceSquaredTo(hqLocation) >= 4) {
+                    if (rc.senseElevation(tile) < lowest) {
+                        lowest = rc.senseElevation(tile);
+                        place = tile;
+                    }
+                }
+            }
+
+            if(tryDeposit(rc.getLocation().directionTo(place))) {
+                return;
+            }
+
+
+        }
+
+        tryDig(path.get(0).rotateLeft());
+
+
     }
 }
 

@@ -42,6 +42,16 @@ public class BuzzDroid extends MobileUnit {
 
     public void turn() throws GameActionException{
 
+        // TODO: When we actually fix rotation, this will need to be removed
+        if(rc.isReady() && !rc.isCurrentlyHoldingUnit()){
+            if(rc.getLocation().isAdjacentTo(hqLocation)){
+                RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.EAST));
+                if(robot != null && robot.getType() == RobotType.LANDSCAPER){
+                    rc.pickUpUnit(robot.ID);
+                }
+            }
+        }
+
         switch(state){
             case GENERATE: generate(); break;
 

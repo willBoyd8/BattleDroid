@@ -10,4 +10,5 @@ public class Constants {
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
     public static int WALL_START_ROUND = 400;
     public static boolean DEBUGGER_ENABLE = true;
+    public static int RAID_START_ROUND = 1700;
 }

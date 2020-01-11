@@ -4,6 +4,7 @@ import battlecode.common.*;
 import droideka.base.MobileUnit;
 import droideka.base.Unit;
 import droideka.utility.ActionHelper;
+import droideka.utility.Constants;
 import droideka.utility.DebugHelper;
 
 import java.util.ArrayList;
@@ -12,6 +13,9 @@ public class BuzzDroid extends MobileUnit {
     public DroneState state;
     public ArrayList<MapLocation> enemyHQLocations;
     public int homeQuad;
+    public RaidState raidState;
+    public RobotInfo holding;
+    public MapLocation nearestWater;
 
     public BuzzDroid (RobotController rc) {
         super(rc);
@@ -19,6 +23,9 @@ public class BuzzDroid extends MobileUnit {
         targetLocation = null;
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
+        raidState = null;
+        holding = null;
+        nearestWater = null;
     }
 
     // TODO: This isn't 100% safe because it can take any mobile unit
@@ -28,6 +35,9 @@ public class BuzzDroid extends MobileUnit {
         targetLocation = null;
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
+        raidState = null;
+        holding = null;
+        nearestWater = null;
     }
 
     enum DroneState {
@@ -37,7 +47,15 @@ public class BuzzDroid extends MobileUnit {
         CAN_SENSE,
         FOUND,
         REMOVE,
-        RAID,
+        WAIT_TO_RAID,
+        RAID
+    }
+
+    enum RaidState {
+        BUZZ,
+        KIDNAP,
+        DROPPING,
+        MOVING,
     }
 
     public void turn() throws GameActionException{
@@ -47,7 +65,9 @@ public class BuzzDroid extends MobileUnit {
             if(rc.getLocation().isAdjacentTo(hqLocation)){
                 RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.EAST));
                 if(robot != null && robot.getType() == RobotType.LANDSCAPER){
-                    rc.pickUpUnit(robot.ID);
+                    if(ActionHelper.tryPickup(robot.ID, rc)){
+                        holding = robot;
+                    }
                 }
             }
         }
@@ -63,6 +83,8 @@ public class BuzzDroid extends MobileUnit {
 
             case FOUND: found(); break;
 
+            case WAIT_TO_RAID: waitToRaid(); break;
+
             case REMOVE: removePoint(); break;
 
             case RAID:  break;
@@ -71,7 +93,11 @@ public class BuzzDroid extends MobileUnit {
 
     }
 
-    public  void preEnd(){
+    public  void preEnd() throws GameActionException {
+        if(rc.senseFlooding(rc.getLocation())){
+            nearestWater = rc.getLocation();
+        }
+
         for(MapLocation loc : enemyHQLocations){
             DebugHelper.setIndicatorDot(loc, 255, 0, 0, rc);
         }
@@ -173,13 +199,17 @@ public class BuzzDroid extends MobileUnit {
 
     private void canSense() throws GameActionException {
         RobotInfo potHQ = null;
-        potHQ = rc.senseRobotAtLocation(enemyHQLocations.get(0));
+        if(rc.canSenseLocation(enemyHQLocations.get(0))) {
+            potHQ = rc.senseRobotAtLocation(enemyHQLocations.get(0));
+        }
         if (potHQ == null) {
             state = DroneState.REMOVE;
             removePoint();
             return;
         } else {
             state = DroneState.FOUND;
+            enemyHQLocations.clear();
+            enemyHQLocations.add(potHQ.getLocation());
             found();
             return;
         }
@@ -187,9 +217,21 @@ public class BuzzDroid extends MobileUnit {
 
     private void found() throws GameActionException {
         //TODO: Implement the broadcasting of enemy HQ location
-        state = DroneState.RAID;
-        raid();
+        state = DroneState.WAIT_TO_RAID;
+        waitToRaid();
         return;
+    }
+
+    private void waitToRaid() throws GameActionException {
+        if(rc.getRoundNum() > Constants.RAID_START_ROUND){
+            state  = DroneState.RAID;
+            targetLocation = null;
+            raid();
+            return;
+        } else {
+            // TODO: Wasting time here?
+            return;
+        }
     }
 
     private void removePoint() throws  GameActionException {
@@ -200,6 +242,73 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void raid() throws GameActionException {
-        //TODO: Add Will's raid method
+        if(rc.isCurrentlyHoldingUnit()){
+            if(holding.getTeam() == myTeam){
+                raidState = RaidState.BUZZ;
+            } else  {
+                raidState = RaidState.DROPPING;
+            }
+        } else {
+            raidState = RaidState.KIDNAP;
+        }
+
+        switch(raidState){
+            case BUZZ: buzz(); return;
+            case KIDNAP: kidnap(); return;
+            case DROPPING: dropping(); return;
+            case MOVING: moving(); return;
+        }
+
+
+    }
+
+    private void buzz() throws GameActionException {
+
+    }
+
+    private void kidnap() throws GameActionException {
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, enemy);
+
+        int closest = Integer.MAX_VALUE;
+        RobotInfo victim = null;
+
+        if(robots.length <= 0){
+            // TODO: This shouldn't happen, but what if it does? Maybe move towards any production buildings
+
+        } else {
+            for(RobotInfo robot : robots){
+                if(robot.getType() == RobotType.MINER
+                    || robot.getType() == RobotType.LANDSCAPER
+                    || robot.getType() == RobotType.COW){
+
+                    if(robot.getLocation().distanceSquaredTo(rc.getLocation()) < closest){
+                        victim = robot;
+                    }
+                }
+            }
+
+            if(victim != null){
+                if(victim.getLocation().isAdjacentTo(rc.getLocation())){
+                    if(ActionHelper.tryPickup(victim.ID, rc)){
+                        holding = victim;
+                        targetLocation = nearestWater;
+                        raidState = RaidState.DROPPING;
+                        return;
+                    }
+                }
+            }
+        }
+
+        ActionHelper.tryMove(rc);
+
+
+    }
+
+    private void dropping() throws GameActionException {
+
+    }
+
+    private void moving() throws GameActionException {
+
     }
 }

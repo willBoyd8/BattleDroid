@@ -9,15 +9,56 @@ import java.util.Random;
 
 public class Simple {
 
-    private static Direction decideDirectionFuzzy(MapLocation loc, RobotController rc) throws GameActionException{
+    public static boolean moveToLocationFuzzy(MapLocation loc, RobotController rc) throws GameActionException{
+        ArrayList<Direction> possibleDirections = new ArrayList<Direction>();
+
+        // Find all directions that are favorable
+        int currentDistance = rc.getLocation().distanceSquaredTo(loc);
+        int minDist = currentDistance;
+        for(Direction dir : Direction.allDirections()){
+            MapLocation tile = rc.getLocation().add(dir);
+
+            if(tile.distanceSquaredTo(loc) <= currentDistance){
+                possibleDirections.add(dir);
+                if(tile.distanceSquaredTo(loc) < minDist){
+                    minDist = tile.distanceSquaredTo(loc);
+                }
+            }
+        }
+
+        // Attempt to move
+        while(possibleDirections.size() > 0){
+            ArrayList<Direction> toRemove = new ArrayList<>();
+
+            for(Direction dir : possibleDirections){
+                MapLocation tile = rc.getLocation().add(dir);
+
+                if(tile.distanceSquaredTo(loc) == minDist) {
+                    if(tryMove(dir, rc)){
+                        return true;
+                    } else {
+                        toRemove.add(dir);
+                    }
+                }
+            }
+
+            minDist++;
+            possibleDirections.removeAll(toRemove);
+            toRemove.clear();
+        }
+
+        return false;
+
+        /*
         ArrayList<Direction> validDirections = new ArrayList<>();
         ArrayList<Direction> eqiDist = new ArrayList<>();
-        Direction bestDirection = null;
+        Direction bestDirection = Direction.CENTER;
         Random r = new Random();
         int currentDistSquaredTo = loc.distanceSquaredTo(rc.getLocation());
         for (int i = 0; i < Constants.DIRECTIONS.length; i++){
             if (loc.distanceSquaredTo(rc.getLocation().add(Constants.DIRECTIONS[i])) < currentDistSquaredTo){
                 bestDirection = Constants.DIRECTIONS[i];
+                currentDistSquaredTo
             }
             else if (loc.distanceSquaredTo(rc.getLocation().add(Constants.DIRECTIONS[i])) == currentDistSquaredTo){
                 eqiDist.add(Constants.DIRECTIONS[i]);
@@ -38,12 +79,7 @@ public class Simple {
             }
         }
         return validDirections.get(r.nextInt(validDirections.size()));
-    }
-
-
-    public static boolean moveToLocationFuzzy(MapLocation loc, RobotController rc) throws GameActionException{
-        return tryMove(decideDirectionFuzzy(loc, rc), rc);
-
+        */
     }
 
     public static boolean tryMove(RobotController rc) throws GameActionException {

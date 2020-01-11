@@ -49,10 +49,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public void turn() throws GameActionException {
 
-        if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL){
-            averageDig();
-            return;
-        }
+
 
         if(!hasResetPath && !(spawn.directionTo(hqLocation) == Direction.WEST)) {
         //if(rc.getLocation().add(Direction.NORTHWEST).equals(hqLocation) || rc.getLocation().add(Direction.NORTH).equals(hqLocation)){
@@ -80,6 +77,11 @@ public class WallSittingLandscaper extends MobileUnit {
         if (Math.abs((rc.getLocation().x)-hqLocation.x) == 2 || Math.abs((rc.getLocation().y)-hqLocation.y) == 2){
 
         } else {
+            return;
+        }
+
+        if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL - 5){
+            averageDig();
             return;
         }
 
@@ -168,6 +170,15 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public void averageDig() throws GameActionException {
 
+        if (!rc.getLocation().add(Direction.NORTH).add(Direction.NORTHWEST).equals(hqLocation) && tryMove(path.get(0), rc)) {
+            moving = false;
+            path.add(path.get(0));
+            path.remove(0);
+            totalMoves++;
+
+        }
+
+
         if(rc.getDirtCarrying() > 0) {
 
             int lowest = Integer.MAX_VALUE;
@@ -175,7 +186,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
             for (Direction dir : Direction.allDirections()) {
                 MapLocation tile = rc.getLocation().add(dir);
-                // TODO: remove this when we handle squaremore programatically or make it larger
+                // TODO: remove this when we handle square more programatically or make it larger
                 if (tile.distanceSquaredTo(hqLocation) <= 8 && tile.distanceSquaredTo(hqLocation) >= 4) {
                     if (rc.senseElevation(tile) < lowest) {
                         lowest = rc.senseElevation(tile);

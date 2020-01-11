@@ -18,7 +18,6 @@ package c3po.communication;
 // basic structure
 //    location
 
-enum CommandType { REQUEST, COMMAND };
 
 public class Message {
 
@@ -39,23 +38,22 @@ public class Message {
         data = 0;
     }
 
-    public void loadBlock(int blk) throws Exception{
+    public int loadBlock(int blk) {
         msg_type = 0;
         bot_type = 0;
         command = 0;
         bot_id = 0;
         data = 0;
-
         if(!checkParity(blk)) {
-            throw new Exception("parity bit is not correct, not loading block");
+            return -1;
         }
-
         block = blk;
         msg_type = getMessageType();
         bot_type = getBotType();
         command = getCommandType();
         bot_id = getBotID();
         data = getData();
+        return 0;
     }
 
     public int getMessage() {
@@ -122,9 +120,7 @@ public class Message {
             System.err.println("command_type is not 0 or 1, failing");
             return -1;
         }
-
         block = block | (command_type << 25);
-
         if(this.bot_id >= 128) {
             System.err.println("bot_id too long, failing");
             return -1;

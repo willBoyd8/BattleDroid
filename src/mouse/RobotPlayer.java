@@ -13,6 +13,7 @@ import mouse.units.mousedesignschool.MouseDesignSchool;
 import mouse.units.mousefulfillmentcenter.MouseFulfillmentCenter;
 import mouse.units.mouseheadquarters.MouseHeadquarters;
 import mouse.units.buildingminer.BuildingMiner;
+import mouse.utility.Constants;
 
 public strictfp class RobotPlayer {
 
@@ -26,7 +27,7 @@ public strictfp class RobotPlayer {
         switch (rc.getType()) {
             case HQ:                 new MouseHeadquarters(rc).run();           break;
             case MINER:
-                if(rc.getRoundNum() < 495) {
+                if(rc.getRoundNum() < Constants.WALL_START_ROUND) {
                     new MiningMiner(rc).run();
                 } else {
                     new BuildingMiner(rc).run();

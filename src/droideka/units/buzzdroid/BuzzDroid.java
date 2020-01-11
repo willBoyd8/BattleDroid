@@ -199,10 +199,8 @@ public class BuzzDroid extends MobileUnit {
 
     private void canSense() throws GameActionException {
         RobotInfo potHQ = null;
-        if(rc.canSenseLocation(enemyHQLocations.get(0))) {
-            potHQ = rc.senseRobotAtLocation(enemyHQLocations.get(0));
-        }
-        if (potHQ == null) {
+        potHQ = rc.senseRobotAtLocation(enemyHQLocations.get(0));
+        if (potHQ == null || potHQ.getType() != RobotType.HQ) {
             state = DroneState.REMOVE;
             removePoint();
             return;

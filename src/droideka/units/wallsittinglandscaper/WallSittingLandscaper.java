@@ -80,7 +80,7 @@ public class WallSittingLandscaper extends MobileUnit {
             return;
         }
 
-        if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL - 5){
+        if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL - 3){
             averageDig();
             return;
         }

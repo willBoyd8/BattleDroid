@@ -22,6 +22,12 @@ public class ActionHelper {
      */
     public static boolean tryMove(Direction dir, RobotController rc) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+        if(rc.getType() != RobotType.DELIVERY_DRONE && rc.canSenseLocation(rc.getLocation().add(dir))){
+            if(rc.senseFlooding(rc.getLocation().add(dir))){
+                return false;
+            }
+        }
+
         if (rc.isReady() && rc.canMove(dir)) {
             rc.move(dir);
             return true;

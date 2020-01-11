@@ -42,6 +42,20 @@ public abstract class Unit {
         age = 0;
     }
 
+    public Unit(Unit<? extends Unit> unit){
+        this.rc = unit.rc;
+        spawn = unit.spawn;
+        myTeam = unit.myTeam;
+        enemy = unit.enemy;
+        rand = unit.rand;
+        hqElevation = unit.hqElevation;
+        targetLocation = unit.targetLocation;
+
+
+
+        age = unit.age;
+    }
+
     public final void run() throws KillMeNowException {
         System.out.println("I'm a " + rc.getType().toString());
 

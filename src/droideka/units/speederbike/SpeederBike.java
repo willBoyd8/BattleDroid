@@ -2,8 +2,10 @@ package droideka.units.speederbike;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.units.buzzdroid.BuzzDroid;
 import droideka.utility.ActionHelper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -92,18 +94,22 @@ public class SpeederBike extends MobileUnit {
     }
 
     private boolean enoughWorkersOnWall() {
-        return getNumberOfNearbyUnitType(RobotType.LANDSCAPER) >= LANDSCAPERS_ON_WALL;
+        return getNumberOfNearbyUnitType(RobotType.LANDSCAPER) > LANDSCAPERS_ON_WALL;
     }
 
     private int getNumberOfNearbyUnitType(RobotType type) {
         // Check to see if we want to begin ferrying or raiding
-        List<RobotInfo> nearby = Arrays.asList(rc.senseNearbyRobots());
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
 
-//        return (int) nearby
-//                .stream()
-//                .filter(r -> r.getType() == type)
-//                .count();
-        return 1;
+        int count = 0;
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.LANDSCAPER){
+                count++;
+            }
+        }
+
+        return count;
     }
 
     public void turn() throws GameActionException {
@@ -194,8 +200,7 @@ public class SpeederBike extends MobileUnit {
                     break;
                 }
             case RAIDING:
-//                this.current_state = states.RAIDING;
-//                System.out.println("SPEEDER: ⚠ RAIDING HAS NOT BEEN IMPLEMENTED YET ⚠");
+                new BuzzDroid(this).run();
                 break;
         }
 //        if(!hasHelped){

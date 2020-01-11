@@ -2,6 +2,7 @@ package droideka.units.buzzdroid;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.base.Unit;
 import droideka.utility.ActionHelper;
 
 import java.util.ArrayList;
@@ -18,6 +19,12 @@ public class BuzzDroid extends MobileUnit {
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
     }
+
+    public <T extends Unit> BuzzDroid(T unit){
+        super(unit);
+        state =
+    }
+
     enum DroneState {
         GENERATE,
         LOOK,

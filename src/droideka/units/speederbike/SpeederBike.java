@@ -5,6 +5,7 @@ import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
 import droideka.pathing.Simple;
 import droideka.units.buzzdroid.BuzzDroid;
+import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 import droideka.utility.Unsorted;
 
@@ -96,6 +97,11 @@ public class SpeederBike extends MobileUnit {
     }
 
     public void turn() throws GameActionException, KillMeNowException {
+
+
+
+
+
         switch (this.current_state) {
             case WAITING_FOR_PASSENGER:
                 // Get the location to check and see if someone is there

@@ -16,6 +16,7 @@ public class BuzzDroid extends MobileUnit {
     public RaidState raidState;
     public RobotInfo holding;
     public MapLocation nearestWater;
+    public MapLocation enemyHQ;
 
     public BuzzDroid (RobotController rc) {
         super(rc);
@@ -26,6 +27,7 @@ public class BuzzDroid extends MobileUnit {
         raidState = null;
         holding = null;
         nearestWater = null;
+        enemyHQ = null;
     }
 
     // TODO: This isn't 100% safe because it can take any mobile unit
@@ -38,6 +40,7 @@ public class BuzzDroid extends MobileUnit {
         raidState = null;
         holding = null;
         nearestWater = null;
+        enemyHQ = null;
     }
 
     enum DroneState {
@@ -184,13 +187,11 @@ public class BuzzDroid extends MobileUnit {
     private void moveToPoint() throws GameActionException {
         if (Simple.moveToLocationFuzzy(enemyHQLocations.get(0), rc)){
             state = DroneState.LOOK;
-            look();
             return;
         }
         else{
             if (Simple.tryMove(Direction.SOUTH, rc) && rc.getLocation().distanceSquaredTo(hqLocation) < 5){
                 state = DroneState.LOOK;
-                look();
                 return;
             }
 
@@ -208,6 +209,7 @@ public class BuzzDroid extends MobileUnit {
             state = DroneState.FOUND;
             enemyHQLocations.clear();
             enemyHQLocations.add(potHQ.getLocation());
+            enemyHQ = potHQ.getLocation();
             found();
             return;
         }
@@ -222,7 +224,7 @@ public class BuzzDroid extends MobileUnit {
 
     private void waitToRaid() throws GameActionException {
         if(rc.getRoundNum() > Constants.RAID_START_ROUND){
-            state  = DroneState.RAID;
+            state = DroneState.RAID;
             targetLocation = null;
             raid();
             return;
@@ -264,28 +266,29 @@ public class BuzzDroid extends MobileUnit {
         ArrayList<Direction> notFlooded = new ArrayList<>();
 
         for(Direction dir : Direction.allDirections()){
-            if(rc.senseFlooding(rc.getLocation().add(dir))){
+            if(!rc.senseFlooding(rc.getLocation().add(dir))){
                 notFlooded.add(dir);
             }
         }
 
         if(notFlooded.size() <= 0){
-            targetLocation = enemyHQLocations.get(0);
+            targetLocation = enemyHQ;
             moving();
             return;
         } else {
             for(Direction dir : notFlooded){
                 if(ActionHelper.tryDrop(dir, rc)){
                     raidState = RaidState.KIDNAP;
-                    kidnap();
                     return;
-                } else {
-                    if(rc.isReady()){
-                        ActionHelper.tryDrop(Direction.CENTER, rc);
-                        kidnap();
-                        return;
-                    }
                 }
+            }
+
+            if(rc.isReady()){
+                if(ActionHelper.tryDrop(Direction.CENTER, rc)){
+                    raidState = RaidState.KIDNAP;
+                    return;
+                }
+
             }
         }
 
@@ -320,6 +323,8 @@ public class BuzzDroid extends MobileUnit {
                         raidState = RaidState.DROPPING;
                         return;
                     }
+                } else {
+                    targetLocation = victim.getLocation();
                 }
             }
         }

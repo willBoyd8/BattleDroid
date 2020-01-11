@@ -124,4 +124,29 @@ public class ActionHelper {
         }
         return false;
     }
+
+    public static boolean tryShoot(RobotController rc) throws GameActionException {
+        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+
+        if(targets.length <= 0){
+            return false;
+        }
+
+        int nearestDist = Integer.MAX_VALUE;
+        RobotInfo nearestDrone = null;
+        if (!(targets[0] == null)){
+            for (int i = 0; i < targets.length; i++){
+                if (targets[i].location.distanceSquaredTo(rc.getLocation()) < nearestDist){
+                    nearestDist = targets[i].location.distanceSquaredTo(rc.getLocation());
+                    nearestDrone = targets[i];
+                }
+            }
+            if(rc.isReady() && rc.canShootUnit(nearestDrone.ID)) {
+                rc.shootUnit(nearestDrone.ID);
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

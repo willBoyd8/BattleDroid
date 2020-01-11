@@ -2,6 +2,7 @@ package c3po.units.mouseheadquarters;
 
 import battlecode.common.*;
 import c3po.base.Building;
+import c3po.utility.ActionHelper;
 import c3po.utility.Constants;
 
 import static c3po.utility.ActionHelper.*;
@@ -21,21 +22,7 @@ public class MouseHeadquarters extends Building {
     }
 
     public void turn() throws GameActionException{
-
-        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-        int nearestDist = Integer.MAX_VALUE;
-        RobotInfo nearestDrone = null;
-        if (!(targets[0] == null)){
-            for (int i = 0; i < targets.length; i++){
-                if (targets[i].location.distanceSquaredTo(rc.getLocation()) < nearestDist){
-                    nearestDist = targets[i].location.distanceSquaredTo(rc.getLocation());
-                    nearestDrone = targets[i];
-                }
-            }
-            if(rc.canShootUnit(nearestDrone.ID)) {
-                rc.shootUnit(nearestDrone.ID);
-            }
-        }
+        ActionHelper.tryShoot(rc);
 
         if(rc.getRoundNum() >= Constants.WALL_START_ROUND + 2){
             if(!hasBuilt) {

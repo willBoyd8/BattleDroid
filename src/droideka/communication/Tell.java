@@ -2,7 +2,6 @@ package droideka.communication;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import bb8.communication.Message;
 
 enum BotTypes { DRONE, DESIGN_SCHOOL, FULFILLMENT_CENTER, HQ, LANDSCAPER, MINER, NET_GUN, REFINERY, VAPORATOR }
 
@@ -11,6 +10,7 @@ enum CommandType { REQUEST, COMMAND }
 public class Tell {
     private int[] blocks = new int[7];
     private int count = 0;
+    private int defaultSoupPrice = 50;
 
     private int genericMove(RobotController senderRC,int x, int y,int bot_type, int bot_id) throws GameActionException {
         // first byte of data is x, second byte is y. we can use all the room we want
@@ -23,7 +23,7 @@ public class Tell {
         blocks[count++] = block;
         // do sending of block on blockchain
         if(count >= 7) {
-            senderRC.submitTransaction(blocks, count);
+            senderRC.submitTransaction(blocks, defaultSoupPrice);
             for(int i = 0; i < 7; i++)
                 blocks[i] = 0;
             count = 0;
@@ -51,7 +51,7 @@ public class Tell {
             int block = msg.getMessage();
             blocks[count++] = block;
             if(count >= 7) {
-                senderRC.submitTransaction(blocks, count);
+                senderRC.submitTransaction(blocks, defaultSoupPrice);
                 for(int i = 0; i < 7; i++)
                     blocks[i] = 0;
                 count = 0;
@@ -67,7 +67,7 @@ public class Tell {
             int block = msg.getMessage();
             blocks[count++] = block;
             if(count >= 7) {
-                senderRC.submitTransaction(blocks, count);
+                senderRC.submitTransaction(blocks, defaultSoupPrice);
                 for(int i = 0; i < 7; i++)
                     blocks[i] = 0;
                 count = 0;
@@ -83,7 +83,7 @@ public class Tell {
             int block = msg.getMessage();
             blocks[count++] = block;
             if(count >= 7) {
-                senderRC.submitTransaction(blocks, count);
+                senderRC.submitTransaction(blocks, defaultSoupPrice);
                 for(int i = 0; i < 7; i++)
                     blocks[i] = 0;
                 count = 0;
@@ -99,7 +99,7 @@ public class Tell {
             int block = msg.getMessage();
             blocks[count++] = block;
             if(count >= 7) {
-                senderRC.submitTransaction(blocks, count);
+                senderRC.submitTransaction(blocks, defaultSoupPrice);
                 for(int i = 0; i < 7; i++)
                     blocks[i] = 0;
                 count = 0;
@@ -114,8 +114,15 @@ public class Tell {
         }
     }
 
-    public int forceSend(RobotController senderRC) throws GameActionException { // force send whatever is in our blocks array
-        senderRC.submitTransaction(blocks,count);
+    public int forceSend(RobotController senderRC,int... soupPrice) throws GameActionException { // force send whatever is in our blocks array
+        switch(soupPrice[0]) {
+            case 0:
+                senderRC.submitTransaction(blocks,defaultSoupPrice);
+                break;
+            default:
+                senderRC.submitTransaction(blocks,soupPrice[0]);
+                break;
+        }
         for(int i = 0; i < 7; i++)
             blocks[i] = 0;
         count = 0;

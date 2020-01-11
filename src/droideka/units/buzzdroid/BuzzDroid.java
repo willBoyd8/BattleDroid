@@ -188,7 +188,7 @@ public class BuzzDroid extends MobileUnit {
             return;
         }
         else{
-            if (Simple.tryMove(Direction.SOUTH, rc)){
+            if (Simple.tryMove(Direction.SOUTH, rc) && rc.getLocation().distanceSquaredTo(hqLocation) < 5){
                 state = DroneState.LOOK;
                 look();
                 return;
@@ -261,6 +261,33 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void buzz() throws GameActionException {
+        ArrayList<Direction> notFlooded = new ArrayList<>();
+
+        for(Direction dir : Direction.allDirections()){
+            if(rc.senseFlooding(rc.getLocation().add(dir))){
+                notFlooded.add(dir);
+            }
+        }
+
+        if(notFlooded.size() <= 0){
+            targetLocation = enemyHQLocations.get(0);
+            moving();
+            return;
+        } else {
+            for(Direction dir : notFlooded){
+                if(ActionHelper.tryDrop(dir, rc)){
+                    raidState = RaidState.KIDNAP;
+                    kidnap();
+                    return;
+                } else {
+                    if(rc.isReady()){
+                        ActionHelper.tryDrop(Direction.CENTER, rc);
+                        kidnap();
+                        return;
+                    }
+                }
+            }
+        }
 
     }
 
@@ -302,11 +329,29 @@ public class BuzzDroid extends MobileUnit {
 
     }
 
-    private void dropping() throws GameActionException {
+    // TODO: maybe if enough bytecode check for near water
 
+    private void dropping() throws GameActionException {
+        if(rc.getLocation().isAdjacentTo(nearestWater)){
+            if(ActionHelper.tryDrop(rc.getLocation().directionTo(nearestWater), rc)){
+                holding = null;
+                raidState = RaidState.KIDNAP;
+                kidnap();
+                return;
+            }
+        }
+
+        moving();
+        return;
     }
 
     private void moving() throws GameActionException {
-
+        if(rc.getLocation().isAdjacentTo(targetLocation)){
+            raid();
+            return;
+        } else {
+            Simple.moveToLocationFuzzy(targetLocation, rc);
+            return;
+        }
     }
 }

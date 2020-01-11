@@ -86,8 +86,8 @@ public class BuzzDroid extends MobileUnit {
         }
 
         //Calculate Offsets and instantiate MapLocationObjects
-        int xOffset = mapWidth-hqLocation.x;
-        int yOffset = mapHeight-hqLocation.y;
+        int xOffset = mapWidth-hqLocation.x-1;
+        int yOffset = mapHeight-hqLocation.y-1;
         MapLocation loc1;
         MapLocation loc2;
         MapLocation loc3;

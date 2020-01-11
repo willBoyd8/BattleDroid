@@ -42,22 +42,31 @@ public abstract class Unit {
     public final void run() throws KillMeNowException {
         System.out.println("I'm a " + rc.getType().toString());
 
-        //noinspection InfiniteLoopStatement
-        while(true){
-            try{
-                preStart();
-                roundStart();
-                turn();
-                preEnd();
-                roundEnd();
-            } catch(KillMeNowException e) {
-                return;
-                //throw new KillMeNowException();
-            } catch (Exception e){
-                System.out.println(rc.getType().toString() + " Exception");
-                e.printStackTrace();
-                Clock.yield(); // if we fail, yield the clock
+        try {
+            onInitialization();
+
+            //noinspection InfiniteLoopStatement
+            while (true) {
+
+                try {
+                    preStart();
+                    roundStart();
+                    turn();
+                    preEnd();
+                    roundEnd();
+                } catch (KillMeNowException e) {
+                    return;
+                    //throw new KillMeNowException();
+                } catch (Exception e) {
+                    System.out.println(rc.getType().toString() + " Exception");
+                    e.printStackTrace();
+                    Clock.yield(); // if we fail, yield the clock
+                }
             }
+        } catch (Exception e) {
+            System.out.println(rc.getType().toString() + " Exception");
+            e.printStackTrace();
+            Clock.yield();
         }
 
     }
@@ -96,4 +105,10 @@ public abstract class Unit {
     public void preEnd(){
 
     }
+
+    /**
+     * Run once on startup, immediately before the main loop begins
+     * @throws GameActionException
+     */
+    public void onInitialization() throws GameActionException {}
 }

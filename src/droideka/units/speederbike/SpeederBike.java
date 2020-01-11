@@ -3,12 +3,8 @@ package droideka.units.speederbike;
 import battlecode.common.*;
 import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 import droideka.units.buzzdroid.BuzzDroid;
-import droideka.utility.ActionHelper;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class SpeederBike extends MobileUnit {
 
@@ -248,9 +244,9 @@ public class SpeederBike extends MobileUnit {
         if ((current_location.x == this.spawn.x) && (current_location.y == this.spawn.y)) {
             // We have yet to move
             // Try to move one unit
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // try to move another
-                if (ActionHelper.tryMove(direction, rc)) {
+                if (Simple.tryMove(direction, rc)) {
                     // Move to the next state
                     System.out.println("SPEEDER: " + direction_string + "ED COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
                 }
@@ -267,7 +263,7 @@ public class SpeederBike extends MobileUnit {
             }
         }
         else if ((current_location.x == this.spawn.add(direction).x) && (current_location.y == this.spawn.add(direction).y)) {
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // Move and go to the PLACE_PASSENGER state
                 System.out.println("SPEEDER: SUCCESSFULLY " + direction_string + "ED THE COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
             }
@@ -302,9 +298,9 @@ public class SpeederBike extends MobileUnit {
         if ((current_location.x == this.spawn.add(direction.opposite()).add(direction.opposite()).x) && ((current_location.y == this.spawn.add(direction.opposite()).add(direction.opposite()).y))) {
             // We have yet to move
             // Try to move one unit
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // try to move another
-                if (ActionHelper.tryMove(direction, rc)) {
+                if (Simple.tryMove(direction, rc)) {
                     // Move to the next state
                     System.out.println("SPEEDER: " + direction_string + "ED COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
                 }
@@ -322,7 +318,7 @@ public class SpeederBike extends MobileUnit {
         }
         else if ((current_location.x == this.spawn.add(direction.opposite()).x) && (current_location.y == this.spawn.add(direction.opposite()).y)) {
 
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // Move and go to the PLACE_PASSENGER state
                 System.out.println("SPEEDER: SUCCESSFULLY " + direction_string + "ED THE COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
             }

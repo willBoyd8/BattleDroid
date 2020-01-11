@@ -2,7 +2,7 @@ package droideka.units.buzzdroid;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
-import droideka.base.Unit;
+import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 import droideka.utility.DebugHelper;
@@ -182,13 +182,13 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void moveToPoint() throws GameActionException {
-        if (ActionHelper.tryMove(rc.getLocation().directionTo(enemyHQLocations.get(0)), rc)){
+        if (Simple.moveToLocationFuzzy(enemyHQLocations.get(0), rc)){
             state = DroneState.LOOK;
             look();
             return;
         }
         else{
-            if (ActionHelper.tryMove(Direction.SOUTH, rc)){
+            if (Simple.tryMove(Direction.SOUTH, rc)){
                 state = DroneState.LOOK;
                 look();
                 return;
@@ -299,7 +299,7 @@ public class BuzzDroid extends MobileUnit {
             }
         }
 
-        ActionHelper.tryMove(rc);
+        Simple.tryMove(rc);
 
 
     }

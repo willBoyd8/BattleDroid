@@ -108,7 +108,9 @@ public abstract class Unit {
      * This method is run at the end of every round for every unit
      */
     public final void roundEnd() throws GameActionException{
-        DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 0,0,255, rc);
+        if(targetLocation != null) {
+            DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 0, 0, 255, rc);
+        }
         Clock.yield();
     }
 

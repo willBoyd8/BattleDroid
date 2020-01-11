@@ -5,13 +5,14 @@ import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
 import droideka.pathing.Simple;
 import droideka.units.buzzdroid.BuzzDroid;
+import droideka.utility.Constants;
+import droideka.utility.Unsorted;
 
 public class SpeederBike extends MobileUnit {
 
     /**
      * The number of landscapers to deploy to the wall before we start raiding
      */
-    public static final int LANDSCAPERS_ON_WALL = 15;
     private static final boolean DEBUG = true;
 
     private enum states {
@@ -91,22 +92,7 @@ public class SpeederBike extends MobileUnit {
     }
 
     private boolean enoughWorkersOnWall() {
-        return getNumberOfNearbyUnitType(RobotType.LANDSCAPER) > LANDSCAPERS_ON_WALL;
-    }
-
-    private int getNumberOfNearbyUnitType(RobotType type) {
-        // Check to see if we want to begin ferrying or raiding
-        RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
-
-        int count = 0;
-
-        for(RobotInfo robot : robots){
-            if(robot.getType() == RobotType.LANDSCAPER){
-                count++;
-            }
-        }
-
-        return count;
+        return Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL;
     }
 
     public void turn() throws GameActionException, KillMeNowException {
@@ -185,7 +171,7 @@ public class SpeederBike extends MobileUnit {
             case CHECK_TO_CONTINUE:
                 if (enoughWorkersOnWall()) {
                     // there are enough workers on the wall. we should transition to RAIDING
-                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS REACHED (" + LANDSCAPERS_ON_WALL + "). MOVING TO \"RAIDING\"");
+                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS REACHED (" + Constants.LANDSCAPERS_ON_WALL + "). MOVING TO \"RAIDING\"");
                 }
                 else {
                     // Moar!

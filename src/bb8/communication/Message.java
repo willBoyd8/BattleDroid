@@ -18,7 +18,6 @@ package bb8.communication;
 // basic structure
 //    location
 
-enum CommandType { REQUEST, COMMAND };
 
 public class Message {
 
@@ -39,14 +38,14 @@ public class Message {
         data = 0;
     }
 
-    public void loadBlock(int blk) throws Exception{
+    public int loadBlock(int blk) {
         msg_type = 0;
         bot_type = 0;
         command = 0;
         bot_id = 0;
         data = 0;
         if(!checkParity(blk)) {
-            throw new Exception("parity bit is not correct, not loading block");
+            return -1;
         }
         block = blk;
         msg_type = getMessageType();
@@ -54,6 +53,7 @@ public class Message {
         command = getCommandType();
         bot_id = getBotID();
         data = getData();
+        return 0;
     }
 
     public int getMessage() {

@@ -30,6 +30,8 @@ public class BuildingMiner extends MobileUnit {
             return;
         } else{
             tryBuild(RobotType.NET_GUN, Direction.NORTHEAST, rc);
+            tryBuild(RobotType.FULFILLMENT_CENTER, Direction.SOUTH, rc);
+            tryBuild(RobotType.VAPORATOR, Direction.NORTH, rc);
         }
 
 

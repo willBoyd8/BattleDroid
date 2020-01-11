@@ -12,7 +12,7 @@ public class AssassinDroid extends Building {
 
     public void turn() throws GameActionException {
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-        int nearestDist = 9999;
+        int nearestDist = Integer.MAX_VALUE;
         RobotInfo nearestDrone = null;
         if (!(targets[0] == null)){
             for (int i = 0; i < targets.length; i++){
@@ -21,7 +21,9 @@ public class AssassinDroid extends Building {
                     nearestDrone = targets[i];
                 }
             }
-            rc.shootUnit(nearestDrone.ID);
+            if(rc.canShootUnit(nearestDrone.ID)) {
+                rc.shootUnit(nearestDrone.ID);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-package mouse.communication;
+package c3po.communication;
 
 /*
                                                     BATTLECODE COMMUNICATION

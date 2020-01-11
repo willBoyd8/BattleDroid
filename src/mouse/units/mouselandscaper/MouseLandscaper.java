@@ -161,7 +161,7 @@ public class MouseLandscaper extends MobileUnit {
             }
         } else {
             for(MapLocation loc : digLocations){
-                if(rc.isReady() && rc.canDigDirt(rc.getLocation().directionTo(loc)) && rc.getLocation().directionTo(loc) != Direction.NORTH && rc.getLocation().directionTo(loc) != Direction.SOUTH){
+                if(rc.isReady() && rc.canDigDirt(rc.getLocation().directionTo(loc))){
                     rc.digDirt(rc.getLocation().directionTo(loc));
                 }
             }

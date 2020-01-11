@@ -40,7 +40,7 @@ public class MiningMiner extends MobileUnit {
     }
 
     public void turn() throws GameActionException, KillMeNowException {
-        if(rc.getRoundNum() > 500){
+        if(rc.getRoundNum() > Constants.WALL_START_ROUND){
             state = MiningState.FLOODING;
         }
 

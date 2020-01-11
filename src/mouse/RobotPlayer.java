@@ -26,7 +26,7 @@ public strictfp class RobotPlayer {
         switch (rc.getType()) {
             case HQ:                 new MouseHeadquarters(rc).run();           break;
             case MINER:
-                if(rc.getRoundNum() < 500) {
+                if(rc.getRoundNum() < 495) {
                     new MiningMiner(rc).run();
                 } else {
                     new BuildingMiner(rc).run();

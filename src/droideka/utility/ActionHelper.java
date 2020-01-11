@@ -149,4 +149,20 @@ public class ActionHelper {
 
         return false;
     }
+
+    public static boolean tryPickup(int robotID, RobotController rc) throws GameActionException{
+        if(rc.isReady() && rc.canPickUpUnit(robotID)){
+            rc.pickUpUnit(robotID);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean tryDrop(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDropUnit(dir)){
+            rc.dropUnit(dir);
+            return true;
+        }
+        return false;
+    }
 }

@@ -1,6 +1,7 @@
 package c3po.base;
 import battlecode.common.*;
 import c3po.utility.ActionHelper;
+import c3po.utility.DebugHelper;
 
 import java.util.Random;
 
@@ -15,6 +16,7 @@ public abstract class Unit {
     public Random rand;
     public int hqElevation;
     public RobotInfo hqInfo;
+    public MapLocation targetLocation;
 
     public Unit(RobotController rc){
         this.rc = rc;
@@ -23,6 +25,7 @@ public abstract class Unit {
         enemy = myTeam.opponent();
         rand = new Random();
         hqElevation = 5;
+        targetLocation = null;
 
         if(rc.getType() != RobotType.HQ) {
             hqInfo = ActionHelper.findHQ(rc);
@@ -89,6 +92,7 @@ public abstract class Unit {
      * This method is run at the end of every round for every unit
      */
     public final void roundEnd(){
+        DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 255,0,0, rc);
         Clock.yield();
     }
 

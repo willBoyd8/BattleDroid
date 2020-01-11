@@ -9,13 +9,12 @@ import java.util.ArrayList;
 public class BuzzDroid extends MobileUnit {
     public DroneState state;
     public ArrayList<MapLocation> enemyHQLocations;
-    public MapLocation destination;
     public int homeQuad;
 
     public BuzzDroid (RobotController rc) {
         super(rc);
         state = DroneState.GENERATE;
-        destination = null;
+        targetLocation = null;
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
     }

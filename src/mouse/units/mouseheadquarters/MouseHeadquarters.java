@@ -24,7 +24,7 @@ public class MouseHeadquarters extends Building {
             if(!hasBuilt) {
                 hasBuilt = tryBuild(RobotType.MINER, Direction.SOUTH, rc);
             }
-        } else {
+        } else if (rc.getRoundNum() < 490) {
             if(minerCounter < maxMiners) {
                 if(tryBuild(RobotType.MINER, Direction.NORTH, rc)){
                     minerCounter++;

@@ -154,6 +154,8 @@ public class SpeederBike extends MobileUnit {
                     this.rc.dropUnit(this.exit_direction.opposite());
                     System.out.println("SPEEDER: SUCCESSFULLY DEPLOYED UNIT. MOVING TO \"ENTERING_WALL\"");
                 }
+                // TODO: Account for this implementation in the landscaper code
+                /*
                 else if (this.rc.canDropUnit(this.exit_direction.opposite().rotateLeft())) {
                     this.rc.dropUnit(this.exit_direction.opposite().rotateLeft());
                     System.out.println("SPEEDER: SUCCESSFULLY DEPLOYED UNIT. MOVING TO \"ENTERING_WALL\"");
@@ -162,6 +164,8 @@ public class SpeederBike extends MobileUnit {
                     this.rc.dropUnit(this.exit_direction.opposite().rotateRight());
                     System.out.println("SPEEDER: SUCCESSFULLY DEPLOYED UNIT. MOVING TO \"ENTERING_WALL\"");
                 }
+
+                 */
                 else {
                     // We cannot drop. try next time
                     System.out.println("SPEEDER: COULD NOT DEPLOY UNIT. WILL TRY NEXT TURN");

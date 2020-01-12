@@ -413,7 +413,7 @@ public class BuzzDroid extends MobileUnit {
 
     private void dropping() throws GameActionException {
         for (int i = 0; i < Constants.DIRECTIONS.length; i++){
-            if(ActionHelper.tryDrop(Constants.DIRECTIONS[i], rc)){
+            if(rc.senseFlooding(rc.getLocation().add(Constants.DIRECTIONS[i])) && ActionHelper.tryDrop(Constants.DIRECTIONS[i], rc)){
                 holding = null;
                 raidState = RaidState.KIDNAP;
                 System.out.println("DROPPING: Switching to KIDNAP state");

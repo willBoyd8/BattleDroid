@@ -9,6 +9,47 @@ import java.util.Random;
 
 public class Simple {
 
+    public static boolean moveToLocationFuzzyNoFlyZone(MapLocation loc, int noFlyZoneRadius, RobotController rc) throws GameActionException{
+            ArrayList<Direction> possibleDirections = new ArrayList<Direction>();
+
+            // Find all directions that are favorable
+            int currentDistance = rc.getLocation().distanceSquaredTo(loc);
+            int minDist = currentDistance;
+            for(Direction dir : Direction.allDirections()){
+                MapLocation tile = rc.getLocation().add(dir);
+
+                if(tile.distanceSquaredTo(loc) <= currentDistance && tile.distanceSquaredTo(loc) > noFlyZoneRadius){
+                    possibleDirections.add(dir);
+                    if(tile.distanceSquaredTo(loc) < minDist){
+                        minDist = tile.distanceSquaredTo(loc);
+                    }
+                }
+            }
+
+            // Attempt to move
+            while(possibleDirections.size() > 0){
+                ArrayList<Direction> toRemove = new ArrayList<>();
+
+                for(Direction dir : possibleDirections){
+                    MapLocation tile = rc.getLocation().add(dir);
+
+                    if(tile.distanceSquaredTo(loc) == minDist) {
+                        if(tryMove(dir, rc)){
+                            return true;
+                        } else {
+                            toRemove.add(dir);
+                        }
+                    }
+                }
+
+                minDist++;
+                possibleDirections.removeAll(toRemove);
+                toRemove.clear();
+            }
+
+            return false;
+    }
+
     public static boolean moveToLocationFuzzy(MapLocation loc, RobotController rc) throws GameActionException{
         ArrayList<Direction> possibleDirections = new ArrayList<Direction>();
 

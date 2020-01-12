@@ -19,6 +19,8 @@ package droideka.communication;
 //    location
 
 
+import battlecode.common.MapLocation;
+
 public class Message {
 
     private int block;
@@ -48,35 +50,31 @@ public class Message {
             return -1;
         }
         block = blk;
-        msg_type = getMessageType();
-        bot_type = getBotType();
-        command = getCommandType();
-        bot_id = getBotID();
-        data = getData();
+        msg_type = extractMessageType();
+        bot_type = extractBotType();
+        command = extractCommandType();
+        bot_id = extractBotID();
+        data = extractData();
         return 0;
     }
 
-    public int getMessage() {
-        return block;
-    }
-
-    public int getMessageType() {
+    private int extractMessageType() {
         return extractBits(block,32,29);
     }
 
-    public int getBotType() {
+    private int extractBotType() {
         return extractBits(block,28,26);
     }
 
-    public int getCommandType() {
+    private int extractCommandType() {
         return extractBitAt(block,25);
     }
 
-    public int getBotID() {
+    private int extractBotID() {
         return extractBits(block,24,18);
     }
 
-    public int getData() {
+    private int extractData() {
         return extractBits(block,17,2);
     }
 
@@ -143,12 +141,28 @@ public class Message {
         return 0;
     }
 
+    public int getMessage() {
+        return block;
+    }
+    public int getBotType() { return bot_type;}
+    public int getMessageType() { return msg_type;}
+    public int getCommandType() { return command;}
+    public int getBotID() { return bot_id;}
+    public int getData() { return data;}
+
+    public MapLocation getMinerLocation() {
+        int x = extractBits(data,16,8);
+        int y = extractBits(data,7,0);
+        MapLocation loc = new MapLocation(x,y);
+        return loc;
+    }
+
     public void printMessage() {
-        System.out.println("msg_type: " + getMessageType());
-        System.out.println("bot_type: " + getBotType());
-        System.out.println("cmd_type: " + getCommandType());
-        System.out.println("bot_id:   " + getBotID());
-        System.out.println("data:     " + getData());
+        System.out.println("msg_type: " + msg_type);
+        System.out.println("bot_type: " + bot_type);
+        System.out.println("cmd_type: " + command);
+        System.out.println("bot_id:   " + bot_id);
+        System.out.println("data:     " + data);
     }
 
 }

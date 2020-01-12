@@ -1,9 +1,8 @@
 package droideka.utility;
 
-import battlecode.common.Direction;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+
+import java.util.ArrayList;
 
 public class Unsorted {
     /**
@@ -37,6 +36,36 @@ public class Unsorted {
         }
 
         return count;
+    }
+
+    public static MapLocation getClosestMapLocation(MapLocation[] locs, RobotController rc){
+        MapLocation best = null;
+        int closest = Integer.MAX_VALUE;
+
+        for(MapLocation loc : locs){
+            if(rc.getLocation().distanceSquaredTo(loc) < closest){
+                closest = rc.getLocation().distanceSquaredTo(loc);
+                best = loc;
+            }
+        }
+
+        return best;
+
+    }
+
+    public static MapLocation getClosestMapLocation(ArrayList<MapLocation> locs, RobotController rc){
+        MapLocation best = null;
+        int closest = Integer.MAX_VALUE;
+
+        for(MapLocation loc : locs){
+            if(rc.getLocation().distanceSquaredTo(loc) < closest){
+                closest = rc.getLocation().distanceSquaredTo(loc);
+                best = loc;
+            }
+        }
+
+        return best;
+
     }
 
 }

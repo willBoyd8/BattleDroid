@@ -6,6 +6,9 @@ import droideka.base.MobileUnit;
 import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
+import droideka.communication.Bucket;
+import droideka.communication.Tell;
+import droideka.utility.Unsorted;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -14,8 +17,14 @@ public class MiningMiner extends MobileUnit {
     public MiningState state;
     public int totalDist;
     public int distTraveled;
+    private boolean announced;
     public Direction travelDir;
     public ArrayList<MapLocation> depositLocations;
+    public ArrayList<MapLocation> knownSoup;
+    public ArrayList<MapLocation> locationsToSend;
+    private Bucket buck;
+    private Tell tell;
+    MapLocation[] broadcasted;
     // TODO: Implement looking for refineries occasionally
 
     public MiningMiner(RobotController rc){
@@ -23,9 +32,19 @@ public class MiningMiner extends MobileUnit {
         state = MiningState.LOOK;
         targetLocation = null;
         depositLocations = new ArrayList<MapLocation>();
+        knownSoup = new ArrayList<MapLocation>();
+        locationsToSend = new ArrayList<MapLocation>();
         depositLocations.add(hqLocation);
         totalDist = 0;
         distTraveled = 0;
+        buck = new Bucket(rc);
+        tell = new Tell(rc);
+        broadcasted = null;
+        try {
+            catchup();
+        } catch (Exception e){
+            System.out.println("Couldn't catch up on messages");
+        }
     }
 
     enum MiningState {
@@ -44,7 +63,13 @@ public class MiningMiner extends MobileUnit {
             state = MiningState.FLOODING;
         }
 
+        if(rc.getRoundNum() > Constants.WALL_START_ROUND && hqLocation != null){
+            depositLocations.remove(hqLocation);
+        }
+
         scanDepositLocations();
+        lookForSoup();
+        send();
 
         switch(state){
             case LOOK: look(); break;
@@ -60,15 +85,23 @@ public class MiningMiner extends MobileUnit {
     }
 
     private void look() throws GameActionException {
-        ArrayList<MapLocation> soups = ActionHelper.getSoupLocations(rc);
 
-        if(soups.size() > 0){
-            targetLocation = soups.get(0);
+        if(knownSoup.size() > 0){
+            targetLocation = Unsorted.getClosestMapLocation(knownSoup, rc);
             state = MiningState.MOVE_TO_SOUP;
             moveToSoup();
             return;
         } else {
             state = MiningState.SEARCH;
+//            buck.Listen();
+//            broadcasted = buck.getAnnouncedLocation();
+//            if(broadcasted.length > 0) { // a mining location has been announced, free miners listen up
+//                targetLocation = Unsorted.getClosestMapLocation(broadcasted, rc); // just focus on the first item for now
+//                announced = false;
+//                state = MiningState.MOVE_TO_SOUP;
+//                moveToSoup();
+//                return;
+//            }
             search();
             return;
         }
@@ -103,10 +136,16 @@ public class MiningMiner extends MobileUnit {
         if(rc.canSenseLocation(targetLocation)){
             if(rc.senseSoup(targetLocation) <= 0){
                 state = MiningState.LOOK;
+                knownSoup.remove(targetLocation);
                 targetLocation = null;
                 look();
                 return;
             } else {
+//                if(!announced) {
+                    tell.announceSoupLocation(rc.getLocation().x,rc.getLocation().y); // announce location of soup
+                    tell.forceSend(0);
+                    announced = true;
+//                }
                 state = MiningState.MINING;
                 mining();
                 return;
@@ -125,28 +164,38 @@ public class MiningMiner extends MobileUnit {
                 return;
             } else {
                 state = MiningState.LOOK;
+                targetLocation = null;
                 look();
             }
         }
     }
 
     private void moveToDeposit() throws GameActionException {
-        if(rc.getLocation().isAdjacentTo(depositLocations.get(0)) || rc.getLocation().equals(depositLocations.get(0))){
+        MapLocation closestDepositLocation = getClosestDepositLocation();
+        if(closestDepositLocation.distanceSquaredTo(rc.getLocation()) > Constants.MIN_REFINERY_SPREAD_DISTANCE && hqLocation != null && rc.getLocation().distanceSquaredTo(hqLocation) > Constants.MIN_REFINERY_SPREAD_DISTANCE){
+            for(Direction dir : Constants.DIRECTIONS){
+                if(ActionHelper.tryBuild(RobotType.REFINERY, dir, rc)){
+                    return;
+                }
+            }
+        }
+
+        if(rc.getLocation().isAdjacentTo(closestDepositLocation) || rc.getLocation().equals(closestDepositLocation)){
             state = MiningState.DEPOSIT;
             deposit();
             return;
         } else {
             // Tries to move straight towards destination, but jiggle paths if it needs to.
-            if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)), rc)){
+            if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation), rc)){
                 if(rand.nextBoolean()){
-                    if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
-                        if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
+                    if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)){
+                        if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)){
                             Simple.tryMove(rc);
                         }
                     }
                 } else {
-                    if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
-                        if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
+                    if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)){
+                        if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)){
                             Simple.tryMove(rc);
                         }
                     }
@@ -172,9 +221,14 @@ public class MiningMiner extends MobileUnit {
     private void search() throws GameActionException {
         // TODO: implement intelligent searching
         //ActionHelper.tryMove(rc);
+        if(broadcasted != null) {
+            // DO PATHFINDING to location variable 'broadcasted'
+            // or moveToDeposit at 'broadcasted' map location
+            broadcasted = null; // reset to null
+        }
         if (totalDist == 0) {
             Random r = new Random();
-            int dist = r.nextInt(9);
+            int dist = r.nextInt((rc.getMapHeight() + rc.getMapWidth()) / 2);
             totalDist = dist;
             Random rand = new Random();
             int dir = 0;
@@ -184,6 +238,7 @@ public class MiningMiner extends MobileUnit {
                 if (Simple.tryMove(travelDir, rc)){
                     totalDist--;
                     state = MiningState.LOOK;
+                    targetLocation = null;
                     look();
                     return;
                 }
@@ -194,11 +249,13 @@ public class MiningMiner extends MobileUnit {
             if (Simple.tryMove(travelDir, rc)){
                 totalDist--;
                 state = MiningState.LOOK;
+                targetLocation = null;
                 look();
                 return;
             } else {
                 totalDist = 0;
                 state = MiningState.LOOK;
+                targetLocation = null;
                 look();
                 return;
             }
@@ -231,6 +288,51 @@ public class MiningMiner extends MobileUnit {
             }
         }
 
+    }
+
+    public void catchup() throws GameActionException{
+        int counter = 1;
+        while(counter < rc.getRoundNum()){
+            checkMessages(counter);
+            counter++;
+        }
+    }
+
+    public void checkMessages(int roundNum) throws GameActionException{
+        Transaction[] transactions = rc.getBlock(roundNum);
+
+        for(Transaction trans : transactions){
+            int[] message = trans.getMessage();
+            if(message[0] == 31415926){
+                MapLocation loc = new MapLocation(message[1], message[2]);
+                if(!knownSoup.contains(loc)){
+                    knownSoup.add(loc);
+                }
+            }
+        }
+    }
+
+    public void lookForSoup() throws GameActionException {
+        for(MapLocation loc : ActionHelper.getSoupLocations(rc)){
+            if(!knownSoup.contains(loc)){
+                knownSoup.add(loc);
+                locationsToSend.add(loc);
+
+            }
+        }
+
+        checkMessages(rc.getRoundNum() - 1);
+    }
+
+    public void send() throws GameActionException {
+        if(locationsToSend.size() > 0) {
+
+            int[] message = {31415926, locationsToSend.get(0).x, locationsToSend.get(0).y, 0, 0, 0, 0};
+            if (rc.canSubmitTransaction(message, 1)) {
+                rc.submitTransaction(message, 1);
+                locationsToSend.remove(0);
+            }
+        }
     }
 
 }

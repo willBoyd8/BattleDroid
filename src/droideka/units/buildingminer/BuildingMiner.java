@@ -12,13 +12,11 @@ import static c3po.utility.ActionHelper.tryMove;
 public class BuildingMiner extends MobileUnit {
     boolean designSchool;
     boolean hasMoved;
-    boolean fulfillment;
 
     public BuildingMiner(RobotController rc){
         super(rc);
         designSchool = false;
         hasMoved = false;
-        fulfillment = false;
     }
 
     public void turn() throws GameActionException{
@@ -28,13 +26,10 @@ public class BuildingMiner extends MobileUnit {
         } else if (!hasMoved){
             hasMoved = tryMove(Direction.NORTHWEST, rc);
             return;
-        } else if (!fulfillment){
-            fulfillment = tryBuild(RobotType.FULFILLMENT_CENTER, Direction.SOUTH, rc);
-            return;
         } else{
-            tryBuild(RobotType.NET_GUN, Direction.NORTHEAST, rc);
-            tryBuild(RobotType.FULFILLMENT_CENTER, Direction.SOUTH, rc);
             tryBuild(RobotType.VAPORATOR, Direction.NORTH, rc);
+            tryBuild(RobotType.FULFILLMENT_CENTER, Direction.SOUTH, rc);
+            tryBuild(RobotType.NET_GUN, Direction.NORTHEAST, rc);
         }
 
 

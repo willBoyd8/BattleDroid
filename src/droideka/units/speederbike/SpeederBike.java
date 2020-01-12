@@ -101,9 +101,15 @@ public class SpeederBike extends MobileUnit {
 
 
 
-
         switch (this.current_state) {
             case WAITING_FOR_PASSENGER:
+
+                if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER,rc) > Constants.LANDSCAPERS_ON_WALL){
+                    this.current_state = states.RAIDING;
+                    turn();
+                    return;
+                }
+
                 // Get the location to check and see if someone is there
                 if (rc.isLocationOccupied(this.spawn.add(this.exit_direction.rotateLeft().rotateLeft()))) {
                     RobotInfo bot = rc.senseRobotAtLocation(this.spawn.add(this.exit_direction.rotateLeft().rotateLeft()));

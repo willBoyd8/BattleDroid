@@ -76,17 +76,7 @@ public class BuzzDroid extends MobileUnit {
         }
 
 
-        // TODO: When we actually fix rotation, this will need to be removed
-        if(rc.isReady() && !rc.isCurrentlyHoldingUnit()){
-            if(rc.getLocation().isAdjacentTo(hqLocation)){
-                RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.EAST));
-                if(robot != null && robot.getType() == RobotType.LANDSCAPER){
-                    if(ActionHelper.tryPickup(robot.ID, rc)){
-                        holding = robot;
-                    }
-                }
-            }
-        }
+
 
         switch(state){
             case GENERATE: generate(); break;
@@ -180,6 +170,19 @@ public class BuzzDroid extends MobileUnit {
                 enemyHQLocations.add(loc1);
                 break;
         }
+
+        // TODO: When we actually fix rotation, this will need to be removed
+        if(rc.isReady() && !rc.isCurrentlyHoldingUnit()){
+            if(rc.getLocation().isAdjacentTo(hqLocation)){
+                RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.EAST));
+                if(robot != null && robot.getType() == RobotType.LANDSCAPER){
+                    if(ActionHelper.tryPickup(robot.ID, rc)){
+                        holding = robot;
+                    }
+                }
+            }
+        }
+
         state = DroneState.LOOK;
         look();
         return;
@@ -354,6 +357,13 @@ public class BuzzDroid extends MobileUnit {
                         || robot.getType() == RobotType.LANDSCAPER
                         || robot.getType() == RobotType.COW){
 
+//                    if(ActionHelper.tryPickup(victim.ID, rc)){
+//                        holding = victim;
+//                        targetLocation = nearestWater;
+//                        raidState = RaidState.DROPPING;
+//                        return;
+//                    }
+
                     if(robot.getLocation().distanceSquaredTo(rc.getLocation()) < closest){
                         closest = robot.getLocation().distanceSquaredTo(rc.getLocation());
                         victim = robot;
@@ -362,6 +372,7 @@ public class BuzzDroid extends MobileUnit {
             }
 
             if(victim != null){
+
                 if(victim.getLocation().isAdjacentTo(rc.getLocation())){
                     if(ActionHelper.tryPickup(victim.ID, rc)){
                         holding = victim;
@@ -370,8 +381,12 @@ public class BuzzDroid extends MobileUnit {
                         System.out.println("KIDNAP: Switching to DROPPING state");
                         return;
                     }
+
                 } else {
                     targetLocation = victim.getLocation();
+                    raidState = RaidState.MOVING;
+                    moving();
+                    return;
                 }
             }
         }
@@ -404,17 +419,19 @@ public class BuzzDroid extends MobileUnit {
                 return;
             }
         }
-
+        targetLocation = nearestWater;
         moving();
         return;
     }
 
     private void moving() throws GameActionException {
         if(rc.getLocation().isAdjacentTo(targetLocation)){
+            targetLocation = null;
             raid();
             return;
         } else {
-            Simple.moveToLocationFuzzy(targetLocation, rc);
+            Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc);
+            //Simple.moveToLocationFuzzy(targetLocation, rc);
             return;
         }
     }

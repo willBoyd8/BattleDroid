@@ -11,7 +11,7 @@ enum CommandType { REQUEST, COMMAND }
 public class Tell {
     private int[] blocks = new int[7];
     private int count = 0;
-    private int defaultSoupPrice = 10;
+    private int defaultSoupPrice = 4;
     RobotController rc;
 
     public Tell(RobotController loadRC) {
@@ -25,7 +25,8 @@ public class Tell {
         Message msg = new Message();
         msg.createMessage(0x33, 5,1,0,data);
         int block = msg.getMessage();
-        blocks[count++] = block;
+        blocks[count] = block;
+        count++;
         if(count >= 7) {
             rc.submitTransaction(blocks, defaultSoupPrice);
             for(int i = 0; i < 7; i++)

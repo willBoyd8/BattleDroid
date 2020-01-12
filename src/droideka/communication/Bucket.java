@@ -31,7 +31,8 @@ public class Bucket {
             for(int j = 0; j < messy.length; j++) {
                 msg.loadBlock(messy[j]);
                 if(msg.getMessageType() == 0x33) // it is our message. this should be how messages work...
-                    blocks[count++] = msg.getMessage();
+                    blocks[count] = msg.getMessage();
+                    count++;
             }
         }
         // we should now have all messages intended for our bots in blocks[]
@@ -70,7 +71,8 @@ public class Bucket {
                     break;
                 default:
                     // this is probably a location, parse it
-                    loc[count++] = msg.getMinerLocation();
+                    loc[count] = msg.getMinerLocation();
+                    count++;
                     break;
             }
         }

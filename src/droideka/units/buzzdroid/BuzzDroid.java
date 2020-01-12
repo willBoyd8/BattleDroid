@@ -2,7 +2,10 @@ package droideka.units.buzzdroid;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
+import droideka.utility.Constants;
+import droideka.utility.DebugHelper;
 
 import java.util.ArrayList;
 
@@ -10,6 +13,10 @@ public class BuzzDroid extends MobileUnit {
     public DroneState state;
     public ArrayList<MapLocation> enemyHQLocations;
     public int homeQuad;
+    public RaidState raidState;
+    public RobotInfo holding;
+    public MapLocation nearestWater;
+    public MapLocation enemyHQ;
 
     public BuzzDroid (RobotController rc) {
         super(rc);
@@ -17,7 +24,25 @@ public class BuzzDroid extends MobileUnit {
         targetLocation = null;
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
+        raidState = null;
+        holding = null;
+        nearestWater = null;
+        enemyHQ = null;
     }
+
+    // TODO: This isn't 100% safe because it can take any mobile unit
+    public BuzzDroid(MobileUnit unit){
+        super(unit);
+        state = DroneState.GENERATE;
+        targetLocation = null;
+        enemyHQLocations = new ArrayList<MapLocation>();
+        homeQuad = 0;
+        raidState = null;
+        holding = null;
+        nearestWater = null;
+        enemyHQ = null;
+    }
+
     enum DroneState {
         GENERATE,
         LOOK,
@@ -25,10 +50,53 @@ public class BuzzDroid extends MobileUnit {
         CAN_SENSE,
         FOUND,
         REMOVE,
-        RAID,
+        WAIT_TO_RAID,
+        RAID
+    }
+
+    enum RaidState {
+        BUZZ,
+        KIDNAP,
+        DROPPING,
+        MOVING,
     }
 
     public void turn() throws GameActionException{
+//        RobotInfo robots[] = rc.senseNearbyRobots(-1, myTeam);
+//        if(rc.isReady() && rc.isCurrentlyHoldingUnit() && (rc.getRoundNum()> 700) && (robots.length < 5)) {
+//            for (int i = 0; i < Constants.DIRECTIONS.length; i++) {
+//                if (ActionHelper.tryDrop(Constants.DIRECTIONS[i], rc)) {
+//                    holding = null;
+//                    //raidState = RaidState.KIDNAP;
+//                    //System.out.println("DROPPING: Switching to KIDNAP state");
+//                    //kidnap();
+//                    //return;
+//                }
+//            }
+//        }
+
+
+        // TODO: When we actually fix rotation, this will need to be removed
+        if(rc.isReady() && !rc.isCurrentlyHoldingUnit()){
+            if(rc.getLocation().isAdjacentTo(hqLocation)){
+                RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.EAST));
+                if(robot != null && robot.getType() == RobotType.LANDSCAPER){
+                    if(ActionHelper.tryPickup(robot.ID, rc)){
+                        holding = robot;
+                    }
+                }
+            } else if (rc.getLocation().add(Direction.NORTH).isAdjacentTo(hqLocation)) {
+                RobotInfo robot = rc.senseRobotAtLocation(rc.getLocation().add(Direction.NORTHEAST));
+                if(robot != null && robot.getType() == RobotType.LANDSCAPER){
+                    if(ActionHelper.tryPickup(robot.ID, rc)){
+                        holding = robot;
+                    }
+                }
+            }
+        }
+
+
+
 
         switch(state){
             case GENERATE: generate(); break;
@@ -41,12 +109,24 @@ public class BuzzDroid extends MobileUnit {
 
             case FOUND: found(); break;
 
+            case WAIT_TO_RAID: waitToRaid(); break;
+
             case REMOVE: removePoint(); break;
 
-            case RAID:  break;
+            case RAID: raid(); break;
 
         }
 
+    }
+
+    public  void preEnd() throws GameActionException {
+        if(rc.senseFlooding(rc.getLocation())){
+            nearestWater = rc.getLocation();
+        }
+
+        for(MapLocation loc : enemyHQLocations){
+            DebugHelper.setIndicatorDot(loc, 255, 0, 0, rc);
+        }
     }
 
     private void generate() throws GameActionException {
@@ -68,8 +148,8 @@ public class BuzzDroid extends MobileUnit {
         }
 
         //Calculate Offsets and instantiate MapLocationObjects
-        int xOffset = mapWidth-hqLocation.x;
-        int yOffset = mapHeight-hqLocation.y;
+        int xOffset = mapWidth-hqLocation.x-1;
+        int yOffset = mapHeight-hqLocation.y-1;
         MapLocation loc1;
         MapLocation loc2;
         MapLocation loc3;
@@ -110,6 +190,8 @@ public class BuzzDroid extends MobileUnit {
                 enemyHQLocations.add(loc1);
                 break;
         }
+
+
         state = DroneState.LOOK;
         look();
         return;
@@ -128,17 +210,24 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void moveToPoint() throws GameActionException {
-        if (ActionHelper.tryMove(rc.getLocation().directionTo(enemyHQLocations.get(0)), rc)){
+        if (Simple.moveToLocationFuzzyNoFlyZone(enemyHQLocations.get(0), GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, rc)){
             state = DroneState.LOOK;
-            look();
             return;
         }
         else{
-            if (ActionHelper.tryMove(Direction.SOUTH, rc)){
+            if (rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.SOUTH, rc)){
                 state = DroneState.LOOK;
-                look();
                 return;
             }
+            else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.EAST, rc)) {
+
+            }
+            else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.WEST, rc)){
+
+            } else {
+                Simple.tryMove(rc);
+            }
+
 
         }
     }
@@ -146,12 +235,15 @@ public class BuzzDroid extends MobileUnit {
     private void canSense() throws GameActionException {
         RobotInfo potHQ = null;
         potHQ = rc.senseRobotAtLocation(enemyHQLocations.get(0));
-        if (potHQ == null) {
+        if (potHQ == null || potHQ.getType() != RobotType.HQ) {
             state = DroneState.REMOVE;
             removePoint();
             return;
         } else {
             state = DroneState.FOUND;
+            enemyHQLocations.clear();
+            enemyHQLocations.add(potHQ.getLocation());
+            enemyHQ = potHQ.getLocation();
             found();
             return;
         }
@@ -159,9 +251,40 @@ public class BuzzDroid extends MobileUnit {
 
     private void found() throws GameActionException {
         //TODO: Implement the broadcasting of enemy HQ location
-        state = DroneState.RAID;
-        raid();
+        state = DroneState.WAIT_TO_RAID;
+        waitToRaid();
         return;
+    }
+
+    private void waitToRaid() throws GameActionException {
+        //System.out.println("I AM WAITING TO RAID!!!");
+        if(rc.getRoundNum() > Constants.RAID_START_ROUND){
+            System.out.println("ITS RAID TIME, SO I SHOULD BE RAIDING!!!");
+            state = DroneState.RAID;
+            targetLocation = null;
+            raid();
+            return;
+        } else {
+            System.out.println("ITS NOT RAID TIME YET, SO I AM WAITING TO RAID!!!");
+            // TODO: Wasting time here?
+            int friendlyDroneCount = 0;
+            RobotInfo robots[] = rc.senseNearbyRobots(-1, myTeam);
+            for(RobotInfo robot : robots){
+                if(robot.getType() == RobotType.DELIVERY_DRONE){
+                    friendlyDroneCount++;
+                }
+            }
+            System.out.println("THERE ARE " + friendlyDroneCount + "FRIENDLY DRONES");
+            if (friendlyDroneCount >= Integer.MAX_VALUE){
+                System.out.println("AIGHT BOIS, THERE'S ENOUGH OF US.  ITS GAMER TIME!!!");
+                state = DroneState.RAID;
+                raid();
+
+            }
+
+
+            return;
+        }
     }
 
     private void removePoint() throws  GameActionException {
@@ -172,6 +295,157 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void raid() throws GameActionException {
-        //TODO: Add Will's raid method
+        if(rc.isCurrentlyHoldingUnit()){
+            if(holding.getTeam() == myTeam){
+                raidState = RaidState.BUZZ;
+                System.out.println("RAID: Switching to BUZZ state");
+            } else  {
+            raidState = RaidState.DROPPING;
+            System.out.println("RAID: Switching to DROPPING state");
+            }
+
+        } else {
+            raidState = RaidState.KIDNAP;
+            System.out.println("RAID Switching to KIDNAP state");
+        }
+
+        switch(raidState){
+            case BUZZ: buzz(); return;
+            case KIDNAP: kidnap(); return;
+            case DROPPING: dropping(); return;
+            case MOVING: moving(); return;
+        }
+
+
+    }
+
+    private void buzz() throws GameActionException {
+        ArrayList<Direction> notFlooded = new ArrayList<>();
+
+        for(Direction dir : Direction.allDirections()){
+            if(!rc.senseFlooding(rc.getLocation().add(dir))){
+                notFlooded.add(dir);
+            }
+        }
+
+        if(notFlooded.size() <= 0){
+            targetLocation = enemyHQ;
+            moving();
+            return;
+        } else {
+            for(Direction dir : notFlooded){
+                if(ActionHelper.tryDrop(dir, rc)){
+                    raidState = RaidState.KIDNAP;
+                    System.out.println("BUZZ: Switching to KIDNAP state");
+                    return;
+                }
+            }
+
+            if(rc.isReady()){
+                for(Direction dir : Constants.DIRECTIONS) {
+                    if (ActionHelper.tryDrop(dir, rc)) {
+                        raidState = RaidState.KIDNAP;
+                        System.out.println("BUZZ: switching to KIDNAP state");
+                        return;
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    private void kidnap() throws GameActionException {
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, enemy);
+
+        int closest = Integer.MAX_VALUE;
+        RobotInfo victim = null;
+
+        if(robots.length <= 0){
+            // TODO: This shouldn't happen, but what if it does? Maybe move towards any production buildings
+
+        } else {
+            for(RobotInfo robot : robots){
+                if(robot.getType() == RobotType.MINER
+                        || robot.getType() == RobotType.LANDSCAPER
+                        || robot.getType() == RobotType.COW){
+
+//                    if(ActionHelper.tryPickup(victim.ID, rc)){
+//                        holding = victim;
+//                        targetLocation = nearestWater;
+//                        raidState = RaidState.DROPPING;
+//                        return;
+//                    }
+
+                    if(robot.getLocation().distanceSquaredTo(rc.getLocation()) < closest){
+                        closest = robot.getLocation().distanceSquaredTo(rc.getLocation());
+                        victim = robot;
+                    }
+                }
+            }
+
+            if(victim != null){
+
+                if(victim.getLocation().isAdjacentTo(rc.getLocation())){
+                    if(ActionHelper.tryPickup(victim.ID, rc)){
+                        holding = victim;
+                        targetLocation = nearestWater;
+                        raidState = RaidState.DROPPING;
+                        System.out.println("KIDNAP: Switching to DROPPING state");
+                        return;
+                    }
+
+                } else {
+                    targetLocation = victim.getLocation();
+                    raidState = RaidState.MOVING;
+                    moving();
+                    return;
+                }
+            }
+        }
+        Simple.moveToLocationFuzzy(targetLocation, rc);
+        //Simple.tryMove(rc);
+
+
+    }
+
+    // TODO: maybe if enough bytecode check for near water
+
+    private void dropping() throws GameActionException {
+        for (int i = 0; i < Constants.DIRECTIONS.length; i++){
+            if(ActionHelper.tryDrop(Constants.DIRECTIONS[i], rc)){
+                holding = null;
+                raidState = RaidState.KIDNAP;
+                System.out.println("DROPPING: Switching to KIDNAP state");
+                kidnap();
+                return;
+            }
+        }
+
+
+        if(rc.getLocation().isAdjacentTo(nearestWater)){
+            if(ActionHelper.tryDrop(rc.getLocation().directionTo(nearestWater), rc)){
+                holding = null;
+                raidState = RaidState.KIDNAP;
+                System.out.println("DROPPING: Switching to KIDNAP state");
+                kidnap();
+                return;
+            }
+        }
+        targetLocation = nearestWater;
+        moving();
+        return;
+    }
+
+    private void moving() throws GameActionException {
+        if(rc.getLocation().isAdjacentTo(targetLocation)){
+            targetLocation = null;
+            raid();
+            return;
+        } else {
+            Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc);
+            //Simple.moveToLocationFuzzy(targetLocation, rc);
+            return;
+        }
     }
 }

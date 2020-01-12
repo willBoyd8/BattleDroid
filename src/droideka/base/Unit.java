@@ -29,17 +29,35 @@ public abstract class Unit {
 
         if(rc.getType() != RobotType.HQ) {
             hqInfo = ActionHelper.findHQ(rc);
-            hqLocation = hqInfo.getLocation();
-            try {
-                if(rc.canSenseLocation(hqLocation)){
-                    hqElevation = rc.senseElevation(hqLocation);
+            if(hqInfo != null) {
+                hqLocation = hqInfo.getLocation();
+                try {
+                    if (rc.canSenseLocation(hqLocation)) {
+                        hqElevation = rc.senseElevation(hqLocation);
+                    }
+                } catch (Exception e) {
+                    hqElevation = 5;
                 }
-            } catch (Exception e){
-                hqElevation = 5;
             }
         }
 
         age = 0;
+    }
+
+    public Unit(Unit unit){
+        this.rc = unit.rc;
+        spawn = unit.spawn;
+        myTeam = unit.myTeam;
+        enemy = unit.enemy;
+        rand = unit.rand;
+        hqElevation = unit.hqElevation;
+        targetLocation = unit.targetLocation;
+        hqLocation = unit.hqLocation;
+        hqInfo = unit.hqInfo;
+
+
+
+        age = unit.age;
     }
 
     public final void run() throws KillMeNowException {
@@ -91,8 +109,10 @@ public abstract class Unit {
     /**
      * This method is run at the end of every round for every unit
      */
-    public final void roundEnd(){
-        DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 255,0,0, rc);
+    public final void roundEnd() throws GameActionException{
+        if(targetLocation != null) {
+            DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 0, 0, 255, rc);
+        }
         Clock.yield();
     }
 
@@ -106,7 +126,7 @@ public abstract class Unit {
     /**
      * Overload this method to run stuff before the normal round ending
      */
-    public void preEnd(){
+    public void preEnd() throws GameActionException {
 
     }
 

@@ -6,8 +6,8 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 
-import static c3po.utility.ActionHelper.tryMove;
 
 public class MouseDeliveryDrone extends MobileUnit {
     boolean hasHelped;
@@ -36,9 +36,9 @@ public class MouseDeliveryDrone extends MobileUnit {
                 }
             }
         } else if(!hasMoved1){
-            hasMoved1 = tryMove(Direction.SOUTH, rc);
+            hasMoved1 = Simple.tryMove(Direction.SOUTH, rc);
         } else if(!hasMoved2){
-            hasMoved2 = tryMove(Direction.SOUTH, rc);
+            hasMoved2 = Simple.tryMove(Direction.SOUTH, rc);
         } else if(!hasDropped){
             if(rc.isReady() && rc.canDropUnit(Direction.NORTH)){
                 rc.dropUnit(Direction.NORTH);

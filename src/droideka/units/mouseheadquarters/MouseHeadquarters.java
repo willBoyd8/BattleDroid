@@ -8,7 +8,7 @@ import droideka.base.Building;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 
-import static c3po.utility.ActionHelper.tryBuild;
+import static droideka.utility.ActionHelper.tryBuild;
 
 public class MouseHeadquarters extends Building {
     boolean horizontal;
@@ -33,11 +33,15 @@ public class MouseHeadquarters extends Building {
             }
         } else if (rc.getRoundNum() < Constants.WALL_START_ROUND - 50) {
             if(minerCounter < maxMiners) {
-                if(tryBuild(RobotType.MINER, Direction.NORTH, rc)){
-                    minerCounter++;
+                for (int i = 0; i < Constants.DIRECTIONS.length; i++){
+                    if(tryBuild(RobotType.MINER, Constants.DIRECTIONS[i], rc)){
+                        minerCounter++;
+                        break;
+                    }
                 }
             }
         }
-
     }
 }
+
+

@@ -7,4 +7,8 @@ public abstract class MobileUnit extends Unit {
         super(rc);
     }
 
+    public MobileUnit(MobileUnit unit){
+        super(unit);
+    }
+
 }

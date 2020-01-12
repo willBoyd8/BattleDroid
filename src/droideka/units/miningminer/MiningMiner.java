@@ -3,6 +3,7 @@ package droideka.units.miningminer;
 import battlecode.common.*;
 import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 
@@ -78,17 +79,17 @@ public class MiningMiner extends MobileUnit {
             return;
         } else {
             // Tries to move straight towards destination, but jiggle paths if it needs to.
-            if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation), rc)){
+            if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc)){
                 if(rand.nextBoolean()){
-                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
-                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
-                            ActionHelper.tryMove(rc);
+                    if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
+                        if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
+                            Simple.tryMove(rc);
                         }
                     }
                 } else {
-                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
-                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
-                            ActionHelper.tryMove(rc);
+                    if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
+                        if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
+                            Simple.tryMove(rc);
                         }
                     }
                 }
@@ -134,17 +135,17 @@ public class MiningMiner extends MobileUnit {
             return;
         } else {
             // Tries to move straight towards destination, but jiggle paths if it needs to.
-            if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)), rc)){
+            if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)), rc)){
                 if(rand.nextBoolean()){
-                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
-                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
-                            ActionHelper.tryMove(rc);
+                    if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
+                        if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
+                            Simple.tryMove(rc);
                         }
                     }
                 } else {
-                    if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
-                        if(!ActionHelper.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
-                            ActionHelper.tryMove(rc);
+                    if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateRight(), rc)){
+                        if(!Simple.tryMove(rc.getLocation().directionTo(depositLocations.get(0)).rotateLeft(), rc)){
+                            Simple.tryMove(rc);
                         }
                     }
                 }
@@ -178,7 +179,7 @@ public class MiningMiner extends MobileUnit {
             for (int i = 0; i < Constants.DIRECTIONS.length; i++) {
                 dir = rand.nextInt(Constants.DIRECTIONS.length);
                 travelDir = Constants.DIRECTIONS[dir];
-                if (ActionHelper.tryMove(travelDir, rc)){
+                if (Simple.tryMove(travelDir, rc)){
                     totalDist--;
                     state = MiningState.LOOK;
                     look();
@@ -188,7 +189,7 @@ public class MiningMiner extends MobileUnit {
 
 
         } else {
-            if (ActionHelper.tryMove(travelDir, rc)){
+            if (Simple.tryMove(travelDir, rc)){
                 totalDist--;
                 state = MiningState.LOOK;
                 look();

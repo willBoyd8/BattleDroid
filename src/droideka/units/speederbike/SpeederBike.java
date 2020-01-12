@@ -1,18 +1,19 @@
 package droideka.units.speederbike;
 
 import battlecode.common.*;
+import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
+import droideka.units.buzzdroid.BuzzDroid;
 import droideka.utility.ActionHelper;
-
-import java.util.Arrays;
-import java.util.List;
+import droideka.utility.Constants;
+import droideka.utility.Unsorted;
 
 public class SpeederBike extends MobileUnit {
 
     /**
      * The number of landscapers to deploy to the wall before we start raiding
      */
-    public static final int LANDSCAPERS_ON_WALL = 15;
     private static final boolean DEBUG = true;
 
     private enum states {
@@ -51,6 +52,7 @@ public class SpeederBike extends MobileUnit {
     boolean hasMoved1;
     boolean hasMoved2;
     boolean hasDropped;
+    RobotInfo holding;
 
     /**
      * The direction to exit the wall. Use this - 180 to re-enter
@@ -68,6 +70,7 @@ public class SpeederBike extends MobileUnit {
         hasMoved1 = false;
         hasMoved2 = false;
         hasDropped = false;
+        holding = null;
 
         this.exit_direction = Direction.SOUTH;
         this.current_state = states.WAITING_FOR_PASSENGER;
@@ -83,32 +86,32 @@ public class SpeederBike extends MobileUnit {
             // we want to go raiding
             System.out.println(
                     rc.getType().toString() +
-                    ": STATE CHANGE FROM \"" +
-                    this.current_state.toString() +
-                    "\" TO \"" + states.RAIDING.toString() +
-                    "\"...");
+                            ": STATE CHANGE FROM \"" +
+                            this.current_state.toString() +
+                            "\" TO \"" + states.RAIDING.toString() +
+                            "\"...");
             this.current_state = states.RAIDING;
         }
     }
 
     private boolean enoughWorkersOnWall() {
-        return getNumberOfNearbyUnitType(RobotType.LANDSCAPER) >= LANDSCAPERS_ON_WALL;
+        return Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER, rc) > Constants.LANDSCAPERS_ON_WALL;
     }
 
-    private int getNumberOfNearbyUnitType(RobotType type) {
-        // Check to see if we want to begin ferrying or raiding
-        List<RobotInfo> nearby = Arrays.asList(rc.senseNearbyRobots());
+    public void turn() throws GameActionException, KillMeNowException {
 
-//        return (int) nearby
-//                .stream()
-//                .filter(r -> r.getType() == type)
-//                .count();
-        return 1;
-    }
 
-    public void turn() throws GameActionException {
+
+
         switch (this.current_state) {
             case WAITING_FOR_PASSENGER:
+
+                if(Unsorted.getNumberOfNearbyFriendlyUnitType(RobotType.LANDSCAPER,rc) > Constants.LANDSCAPERS_ON_WALL){
+                    this.current_state = states.RAIDING;
+                    turn();
+                    return;
+                }
+
                 // Get the location to check and see if someone is there
                 if (rc.isLocationOccupied(this.spawn.add(this.exit_direction.rotateLeft().rotateLeft()))) {
                     RobotInfo bot = rc.senseRobotAtLocation(this.spawn.add(this.exit_direction.rotateLeft().rotateLeft()));
@@ -116,6 +119,7 @@ public class SpeederBike extends MobileUnit {
                         if (this.rc.canPickUpUnit(bot.ID)) {
                             // We found the unit. We want to pick him up and transition to the LEAVING_WALL state
                             this.rc.pickUpUnit(bot.ID);
+                            holding = bot;
                             this.current_state = states.LEAVING_WALL;
                             System.out.println("SPEEDER: FOUND A LANDSCAPER. BEGINNING AIRLIFT, AND MOVING STATE TO \"LEAVING_WALL\"");
                         }
@@ -150,6 +154,7 @@ public class SpeederBike extends MobileUnit {
                 if (this.rc.canDropUnit(this.exit_direction.opposite())) {
                     // Drop the unit and move to ENTERING_WALL
                     this.rc.dropUnit(this.exit_direction.opposite());
+                    holding = null;
                     System.out.println("SPEEDER: SUCCESSFULLY DEPLOYED UNIT. MOVING TO \"ENTERING_WALL\"");
                 }
                 // TODO: Account for this implementation in the landscaper code
@@ -182,7 +187,7 @@ public class SpeederBike extends MobileUnit {
             case CHECK_TO_CONTINUE:
                 if (enoughWorkersOnWall()) {
                     // there are enough workers on the wall. we should transition to RAIDING
-                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS REACHED (" + LANDSCAPERS_ON_WALL + "). MOVING TO \"RAIDING\"");
+                    System.out.println("SPEEDER: CRITICAL MASS OF LANDSCAPERS REACHED (" + Constants.LANDSCAPERS_ON_WALL + "). MOVING TO \"RAIDING\"");
                 }
                 else {
                     // Moar!
@@ -194,8 +199,9 @@ public class SpeederBike extends MobileUnit {
                     break;
                 }
             case RAIDING:
-//                this.current_state = states.RAIDING;
-//                System.out.println("SPEEDER: ⚠ RAIDING HAS NOT BEEN IMPLEMENTED YET ⚠");
+                BuzzDroid buzz = new BuzzDroid(this);
+                buzz.holding = holding;
+                buzz.run();
                 break;
         }
 //        if(!hasHelped){
@@ -242,9 +248,9 @@ public class SpeederBike extends MobileUnit {
         if ((current_location.x == this.spawn.x) && (current_location.y == this.spawn.y)) {
             // We have yet to move
             // Try to move one unit
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // try to move another
-                if (ActionHelper.tryMove(direction, rc)) {
+                if (Simple.tryMove(direction, rc)) {
                     // Move to the next state
                     System.out.println("SPEEDER: " + direction_string + "ED COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
                 }
@@ -261,7 +267,7 @@ public class SpeederBike extends MobileUnit {
             }
         }
         else if ((current_location.x == this.spawn.add(direction).x) && (current_location.y == this.spawn.add(direction).y)) {
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // Move and go to the PLACE_PASSENGER state
                 System.out.println("SPEEDER: SUCCESSFULLY " + direction_string + "ED THE COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
             }
@@ -296,9 +302,9 @@ public class SpeederBike extends MobileUnit {
         if ((current_location.x == this.spawn.add(direction.opposite()).add(direction.opposite()).x) && ((current_location.y == this.spawn.add(direction.opposite()).add(direction.opposite()).y))) {
             // We have yet to move
             // Try to move one unit
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // try to move another
-                if (ActionHelper.tryMove(direction, rc)) {
+                if (Simple.tryMove(direction, rc)) {
                     // Move to the next state
                     System.out.println("SPEEDER: " + direction_string + "ED COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
                 }
@@ -316,7 +322,7 @@ public class SpeederBike extends MobileUnit {
         }
         else if ((current_location.x == this.spawn.add(direction.opposite()).x) && (current_location.y == this.spawn.add(direction.opposite()).y)) {
 
-            if (ActionHelper.tryMove(direction, rc)) {
+            if (Simple.tryMove(direction, rc)) {
                 // Move and go to the PLACE_PASSENGER state
                 System.out.println("SPEEDER: SUCCESSFULLY " + direction_string + "ED THE COMPOUND. MOVING TO \"" + next_state.toString() + "\"");
             }

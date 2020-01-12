@@ -8,6 +8,7 @@ import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 import droideka.communication.Bucket;
 import droideka.communication.Tell;
+import droideka.utility.Unsorted;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -19,9 +20,11 @@ public class MiningMiner extends MobileUnit {
     private boolean announced;
     public Direction travelDir;
     public ArrayList<MapLocation> depositLocations;
+    public ArrayList<MapLocation> knownSoup;
+    public ArrayList<MapLocation> locationsToSend;
     private Bucket buck;
     private Tell tell;
-    MapLocation broadcasted;
+    MapLocation[] broadcasted;
     // TODO: Implement looking for refineries occasionally
 
     public MiningMiner(RobotController rc){
@@ -29,12 +32,19 @@ public class MiningMiner extends MobileUnit {
         state = MiningState.LOOK;
         targetLocation = null;
         depositLocations = new ArrayList<MapLocation>();
+        knownSoup = new ArrayList<MapLocation>();
+        locationsToSend = new ArrayList<MapLocation>();
         depositLocations.add(hqLocation);
         totalDist = 0;
         distTraveled = 0;
         buck = new Bucket(rc);
         tell = new Tell(rc);
         broadcasted = null;
+        try {
+            catchup();
+        } catch (Exception e){
+            System.out.println("Couldn't catch up on messages");
+        }
     }
 
     enum MiningState {
@@ -58,6 +68,8 @@ public class MiningMiner extends MobileUnit {
         }
 
         scanDepositLocations();
+        lookForSoup();
+        send();
 
         switch(state){
             case LOOK: look(); break;
@@ -73,20 +85,23 @@ public class MiningMiner extends MobileUnit {
     }
 
     private void look() throws GameActionException {
-        ArrayList<MapLocation> soups = ActionHelper.getSoupLocations(rc);
 
-        if(soups.size() > 0){
-            targetLocation = soups.get(0);
+        if(knownSoup.size() > 0){
+            targetLocation = Unsorted.getClosestMapLocation(knownSoup, rc);
             state = MiningState.MOVE_TO_SOUP;
             moveToSoup();
             return;
         } else {
             state = MiningState.SEARCH;
-            if(announced) { // a mining location has been announced, free miners listen up
-                buck.Listen();
-                broadcasted = buck.getAnnouncedLocation()[0]; // just focus on the first item for now
-                announced = false;
-            }
+//            buck.Listen();
+//            broadcasted = buck.getAnnouncedLocation();
+//            if(broadcasted.length > 0) { // a mining location has been announced, free miners listen up
+//                targetLocation = Unsorted.getClosestMapLocation(broadcasted, rc); // just focus on the first item for now
+//                announced = false;
+//                state = MiningState.MOVE_TO_SOUP;
+//                moveToSoup();
+//                return;
+//            }
             search();
             return;
         }
@@ -121,15 +136,16 @@ public class MiningMiner extends MobileUnit {
         if(rc.canSenseLocation(targetLocation)){
             if(rc.senseSoup(targetLocation) <= 0){
                 state = MiningState.LOOK;
+                knownSoup.remove(targetLocation);
                 targetLocation = null;
                 look();
                 return;
             } else {
-                if(!announced) {
+//                if(!announced) {
                     tell.announceSoupLocation(rc.getLocation().x,rc.getLocation().y); // announce location of soup
-                    tell.forceSend();
+                    tell.forceSend(0);
                     announced = true;
-                }
+//                }
                 state = MiningState.MINING;
                 mining();
                 return;
@@ -148,6 +164,7 @@ public class MiningMiner extends MobileUnit {
                 return;
             } else {
                 state = MiningState.LOOK;
+                targetLocation = null;
                 look();
             }
         }
@@ -221,6 +238,7 @@ public class MiningMiner extends MobileUnit {
                 if (Simple.tryMove(travelDir, rc)){
                     totalDist--;
                     state = MiningState.LOOK;
+                    targetLocation = null;
                     look();
                     return;
                 }
@@ -231,11 +249,13 @@ public class MiningMiner extends MobileUnit {
             if (Simple.tryMove(travelDir, rc)){
                 totalDist--;
                 state = MiningState.LOOK;
+                targetLocation = null;
                 look();
                 return;
             } else {
                 totalDist = 0;
                 state = MiningState.LOOK;
+                targetLocation = null;
                 look();
                 return;
             }
@@ -268,6 +288,51 @@ public class MiningMiner extends MobileUnit {
             }
         }
 
+    }
+
+    public void catchup() throws GameActionException{
+        int counter = 1;
+        while(counter < rc.getRoundNum()){
+            checkMessages(counter);
+            counter++;
+        }
+    }
+
+    public void checkMessages(int roundNum) throws GameActionException{
+        Transaction[] transactions = rc.getBlock(roundNum);
+
+        for(Transaction trans : transactions){
+            int[] message = trans.getMessage();
+            if(message[0] == 31415926){
+                MapLocation loc = new MapLocation(message[1], message[2]);
+                if(!knownSoup.contains(loc)){
+                    knownSoup.add(loc);
+                }
+            }
+        }
+    }
+
+    public void lookForSoup() throws GameActionException {
+        for(MapLocation loc : ActionHelper.getSoupLocations(rc)){
+            if(!knownSoup.contains(loc)){
+                knownSoup.add(loc);
+                locationsToSend.add(loc);
+
+            }
+        }
+
+        checkMessages(rc.getRoundNum() - 1);
+    }
+
+    public void send() throws GameActionException {
+        if(locationsToSend.size() > 0) {
+
+            int[] message = {31415926, locationsToSend.get(0).x, locationsToSend.get(0).y, 0, 0, 0, 0};
+            if (rc.canSubmitTransaction(message, 1)) {
+                rc.submitTransaction(message, 1);
+                locationsToSend.remove(0);
+            }
+        }
     }
 
 }

@@ -3,7 +3,7 @@ package droideka.units.mousedesignschool;
 import battlecode.common.*;
 import droideka.base.Building;
 
-import static c3po.utility.ActionHelper.tryBuild;
+import static droideka.utility.ActionHelper.tryBuild;
 
 public class MouseDesignSchool extends Building {
     boolean hasBuilt;

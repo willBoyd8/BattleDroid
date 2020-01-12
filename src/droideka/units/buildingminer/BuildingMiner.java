@@ -5,9 +5,9 @@ import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 
-import static c3po.utility.ActionHelper.tryBuild;
-import static c3po.utility.ActionHelper.tryMove;
+import static droideka.utility.ActionHelper.tryBuild;
 
 public class BuildingMiner extends MobileUnit {
     boolean designSchool;
@@ -24,7 +24,7 @@ public class BuildingMiner extends MobileUnit {
             designSchool = tryBuild(RobotType.DESIGN_SCHOOL, Direction.NORTHEAST, rc);
             return;
         } else if (!hasMoved){
-            hasMoved = tryMove(Direction.NORTHWEST, rc);
+            hasMoved = Simple.tryMove(Direction.NORTHWEST, rc);
             return;
         } else{
             tryBuild(RobotType.VAPORATOR, Direction.NORTH, rc);

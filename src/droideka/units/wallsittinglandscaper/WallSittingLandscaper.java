@@ -2,13 +2,12 @@ package droideka.units.wallsittinglandscaper;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 import droideka.utility.Unsorted;
 
 import java.util.ArrayList;
-
-import static c3po.utility.ActionHelper.tryMove;
 
 public class WallSittingLandscaper extends MobileUnit {
     ArrayList<Direction> path;
@@ -158,7 +157,7 @@ public class WallSittingLandscaper extends MobileUnit {
     }
 
     public void handleRotate() throws GameActionException{
-        if (tryMove(path.get(0), rc)) {
+        if (Simple.tryMove(path.get(0), rc)) {
             moving = false;
             path.add(path.get(0));
             path.remove(0);
@@ -183,7 +182,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public void averageDig() throws GameActionException {
 
-        if (!rc.getLocation().add(Direction.NORTH).add(Direction.NORTHWEST).equals(hqLocation) && tryMove(path.get(0), rc)) {
+        if (!rc.getLocation().add(Direction.NORTH).add(Direction.NORTHWEST).equals(hqLocation) && Simple.tryMove(path.get(0), rc)) {
             moving = false;
             path.add(path.get(0));
             path.remove(0);

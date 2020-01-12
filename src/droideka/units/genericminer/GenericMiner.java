@@ -5,10 +5,11 @@ import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 import droideka.utility.Constants;
 
-import static c3po.utility.ActionHelper.*;
-import static c3po.utility.Unsorted.randomDirection;
+import static droideka.utility.ActionHelper.*;
+import static droideka.utility.Unsorted.randomDirection;
 
 public class GenericMiner extends MobileUnit {
     public GenericMiner(RobotController rc){
@@ -16,8 +17,8 @@ public class GenericMiner extends MobileUnit {
     }
 
     public void turn() throws GameActionException {
-        tryMove(randomDirection(), rc);
-        if (tryMove(randomDirection(), rc))
+        Simple.tryMove(randomDirection(), rc);
+        if (Simple.tryMove(randomDirection(), rc))
             System.out.println("I moved!");
         // tryBuild(randomSpawnedByMiner(), randomDirection());
         for (Direction dir : Constants.DIRECTIONS)

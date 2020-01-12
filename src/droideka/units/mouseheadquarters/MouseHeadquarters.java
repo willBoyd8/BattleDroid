@@ -8,7 +8,7 @@ import droideka.base.Building;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 
-import static c3po.utility.ActionHelper.tryBuild;
+import static droideka.utility.ActionHelper.tryBuild;
 
 public class MouseHeadquarters extends Building {
     boolean horizontal;

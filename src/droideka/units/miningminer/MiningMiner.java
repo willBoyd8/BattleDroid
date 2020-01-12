@@ -119,7 +119,7 @@ public class MiningMiner extends MobileUnit {
                 return;
             } else {
                 if(!announced) {
-                    tell.announceSoupLocation(targetLocation.x,targetLocation.y); // announce location of soup
+                    tell.announceSoupLocation(rc.getLocation().x,rc.getLocation().y); // announce location of soup
                     tell.forceSend();
                     announced = true;
                 }

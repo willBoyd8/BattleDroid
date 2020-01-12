@@ -134,7 +134,7 @@ public class BuzzDroid extends MobileUnit {
         int mapHeight = rc.getMapHeight();
 
         //Figure out Home Quadrant
-        if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
+        if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y < (mapHeight/2))){
             homeQuad = 1;
         }
         else if ((hqLocation.x < (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){

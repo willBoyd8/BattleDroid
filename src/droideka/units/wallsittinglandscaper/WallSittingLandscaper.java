@@ -229,7 +229,42 @@ public class WallSittingLandscaper extends MobileUnit {
     }
 
     public void handleDirtDigAttack() throws GameActionException {
-        tryDig(Direction.CENTER);
+        Direction best = Direction.CENTER;
+        int lowest = Integer.MAX_VALUE;
+
+        for(Direction dir : Direction.allDirections()){
+            int elev = rc.senseElevation(rc.getLocation().add(dir));
+            RobotInfo possibleBot = rc.senseRobotAtLocation(rc.getLocation().add(dir));
+            if(elev < lowest && digUnderEnemy(possibleBot) && !rc.senseFlooding(rc.getLocation().add(dir)) && isAdjacentToWater(rc.getLocation().add(dir))){
+                best = dir;
+                lowest = elev;
+            }
+        }
+
+        tryDig(best);
+    }
+
+    public boolean digUnderEnemy(RobotInfo robot){
+        if(robot == null){
+            return true;
+        }
+
+        RobotType type = robot.getType();
+
+        if(type == RobotType.MINER || type == RobotType.LANDSCAPER || type == RobotType.COW || type == RobotType.DELIVERY_DRONE){
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isAdjacentToWater(MapLocation loc) throws GameActionException{
+        for(Direction dir : Direction.allDirections()){
+            if(rc.senseFlooding(loc.add(dir))){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void handleDirtDepositAttack() throws GameActionException {
@@ -289,7 +324,18 @@ public class WallSittingLandscaper extends MobileUnit {
             return;
         }
 
-        handleDirtDigAttack();
+        Direction best = Direction.CENTER;
+        int highest = Integer.MIN_VALUE;
+
+        for(Direction dir : Direction.allDirections()){
+            int elev = rc.senseElevation(rc.getLocation().add(dir));
+            if(elev < highest){
+                best = dir;
+                highest = elev;
+            }
+        }
+
+        tryDeposit(best);
 
     }
 }

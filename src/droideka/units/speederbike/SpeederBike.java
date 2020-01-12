@@ -52,6 +52,7 @@ public class SpeederBike extends MobileUnit {
     boolean hasMoved1;
     boolean hasMoved2;
     boolean hasDropped;
+    RobotInfo holding;
 
     /**
      * The direction to exit the wall. Use this - 180 to re-enter
@@ -69,6 +70,7 @@ public class SpeederBike extends MobileUnit {
         hasMoved1 = false;
         hasMoved2 = false;
         hasDropped = false;
+        holding = null;
 
         this.exit_direction = Direction.SOUTH;
         this.current_state = states.WAITING_FOR_PASSENGER;
@@ -117,6 +119,7 @@ public class SpeederBike extends MobileUnit {
                         if (this.rc.canPickUpUnit(bot.ID)) {
                             // We found the unit. We want to pick him up and transition to the LEAVING_WALL state
                             this.rc.pickUpUnit(bot.ID);
+                            holding = bot;
                             this.current_state = states.LEAVING_WALL;
                             System.out.println("SPEEDER: FOUND A LANDSCAPER. BEGINNING AIRLIFT, AND MOVING STATE TO \"LEAVING_WALL\"");
                         }
@@ -151,6 +154,7 @@ public class SpeederBike extends MobileUnit {
                 if (this.rc.canDropUnit(this.exit_direction.opposite())) {
                     // Drop the unit and move to ENTERING_WALL
                     this.rc.dropUnit(this.exit_direction.opposite());
+                    holding = null;
                     System.out.println("SPEEDER: SUCCESSFULLY DEPLOYED UNIT. MOVING TO \"ENTERING_WALL\"");
                 }
                 // TODO: Account for this implementation in the landscaper code
@@ -195,7 +199,9 @@ public class SpeederBike extends MobileUnit {
                     break;
                 }
             case RAIDING:
-                new BuzzDroid(this).run();
+                BuzzDroid buzz = new BuzzDroid(this);
+                buzz.holding = holding;
+                buzz.run();
                 break;
         }
 //        if(!hasHelped){

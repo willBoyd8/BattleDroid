@@ -29,13 +29,15 @@ public abstract class Unit {
 
         if(rc.getType() != RobotType.HQ) {
             hqInfo = ActionHelper.findHQ(rc);
-            hqLocation = hqInfo.getLocation();
-            try {
-                if(rc.canSenseLocation(hqLocation)){
-                    hqElevation = rc.senseElevation(hqLocation);
+            if(hqInfo != null) {
+                hqLocation = hqInfo.getLocation();
+                try {
+                    if (rc.canSenseLocation(hqLocation)) {
+                        hqElevation = rc.senseElevation(hqLocation);
+                    }
+                } catch (Exception e) {
+                    hqElevation = 5;
                 }
-            } catch (Exception e){
-                hqElevation = 5;
             }
         }
 

@@ -15,7 +15,7 @@ public class Simple {
             // Find all directions that are favorable
             int currentDistance = rc.getLocation().distanceSquaredTo(loc);
             int minDist = currentDistance;
-            for(Direction dir : Direction.allDirections()){
+            for(Direction dir : Constants.DIRECTIONS){
                 MapLocation tile = rc.getLocation().add(dir);
 
                 if(tile.distanceSquaredTo(loc) <= currentDistance && tile.distanceSquaredTo(loc) > noFlyZoneRadius){

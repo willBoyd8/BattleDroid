@@ -224,6 +224,8 @@ public class BuzzDroid extends MobileUnit {
             }
             else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.WEST, rc)){
 
+            } else {
+                Simple.tryMove(rc);
             }
 
 

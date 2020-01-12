@@ -286,8 +286,8 @@ public class BuzzDroid extends MobileUnit {
                 raidState = RaidState.BUZZ;
                 System.out.println("RAID: Switching to BUZZ state");
             } else  {*/
-                raidState = RaidState.DROPPING;
-                System.out.println("RAID: Switching to DROPPING state");
+            raidState = RaidState.DROPPING;
+            System.out.println("RAID: Switching to DROPPING state");
             //}
 
         } else {
@@ -351,8 +351,8 @@ public class BuzzDroid extends MobileUnit {
         } else {
             for(RobotInfo robot : robots){
                 if(robot.getType() == RobotType.MINER
-                    || robot.getType() == RobotType.LANDSCAPER
-                    || robot.getType() == RobotType.COW){
+                        || robot.getType() == RobotType.LANDSCAPER
+                        || robot.getType() == RobotType.COW){
 
                     if(robot.getLocation().distanceSquaredTo(rc.getLocation()) < closest){
                         closest = robot.getLocation().distanceSquaredTo(rc.getLocation());

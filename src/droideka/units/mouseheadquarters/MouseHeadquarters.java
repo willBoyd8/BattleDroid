@@ -39,9 +39,9 @@ public class MouseHeadquarters extends Building {
                         break;
                     }
                 }
-                }
             }
         }
     }
+}
 
 

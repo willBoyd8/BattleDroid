@@ -84,10 +84,10 @@ public class SpeederBike extends MobileUnit {
             // we want to go raiding
             System.out.println(
                     rc.getType().toString() +
-                    ": STATE CHANGE FROM \"" +
-                    this.current_state.toString() +
-                    "\" TO \"" + states.RAIDING.toString() +
-                    "\"...");
+                            ": STATE CHANGE FROM \"" +
+                            this.current_state.toString() +
+                            "\" TO \"" + states.RAIDING.toString() +
+                            "\"...");
             this.current_state = states.RAIDING;
         }
     }

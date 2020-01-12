@@ -6,6 +6,8 @@ import droideka.base.MobileUnit;
 import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
+import droideka.communication.Bucket;
+import droideka.communication.Tell;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -14,8 +16,12 @@ public class MiningMiner extends MobileUnit {
     public MiningState state;
     public int totalDist;
     public int distTraveled;
+    private boolean announced;
     public Direction travelDir;
     public ArrayList<MapLocation> depositLocations;
+    private Bucket buck;
+    private Tell tell;
+    MapLocation broadcasted;
     // TODO: Implement looking for refineries occasionally
 
     public MiningMiner(RobotController rc){
@@ -26,6 +32,9 @@ public class MiningMiner extends MobileUnit {
         depositLocations.add(hqLocation);
         totalDist = 0;
         distTraveled = 0;
+        buck = new Bucket(rc);
+        tell = new Tell(rc);
+        broadcasted = null;
     }
 
     enum MiningState {
@@ -73,6 +82,11 @@ public class MiningMiner extends MobileUnit {
             return;
         } else {
             state = MiningState.SEARCH;
+            if(announced) { // a mining location has been announced, free miners listen up
+                buck.Listen();
+                broadcasted = buck.getAnnouncedLocation()[0]; // just focus on the first item for now
+                announced = false;
+            }
             search();
             return;
         }
@@ -111,6 +125,11 @@ public class MiningMiner extends MobileUnit {
                 look();
                 return;
             } else {
+                if(!announced) {
+                    tell.announceSoupLocation(rc.getLocation().x,rc.getLocation().y); // announce location of soup
+                    tell.forceSend();
+                    announced = true;
+                }
                 state = MiningState.MINING;
                 mining();
                 return;
@@ -185,6 +204,11 @@ public class MiningMiner extends MobileUnit {
     private void search() throws GameActionException {
         // TODO: implement intelligent searching
         //ActionHelper.tryMove(rc);
+        if(broadcasted != null) {
+            // DO PATHFINDING to location variable 'broadcasted'
+            // or moveToDeposit at 'broadcasted' map location
+            broadcasted = null; // reset to null
+        }
         if (totalDist == 0) {
             Random r = new Random();
             int dist = r.nextInt((rc.getMapHeight() + rc.getMapWidth()) / 2);

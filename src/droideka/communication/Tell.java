@@ -2,6 +2,7 @@ package droideka.communication;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import droideka.communication.Message;
 
 enum BotTypes { DRONE, DESIGN_SCHOOL, FULFILLMENT_CENTER, HQ, LANDSCAPER, MINER, NET_GUN, REFINERY, VAPORATOR }
 

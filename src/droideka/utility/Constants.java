@@ -10,4 +10,7 @@ public class Constants {
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
     public static int WALL_START_ROUND = 400;
     public static boolean DEBUGGER_ENABLE = false;
+    public static int RAID_START_ROUND = 1700;
+    public static int LANDSCAPERS_ON_WALL = 15;
+    public static int MIN_REFINERY_SPREAD_DISTANCE = RobotType.REFINERY.pollutionRadiusSquared;
 }

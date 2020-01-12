@@ -2,9 +2,9 @@ package droideka.units.genericdeliverydrone;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 
-import static c3po.utility.ActionHelper.tryMove;
-import static c3po.utility.Unsorted.randomDirection;
+import static droideka.utility.Unsorted.randomDirection;
 
 public class GenericDeliveryDrone extends MobileUnit {
     public GenericDeliveryDrone(RobotController rc){
@@ -24,7 +24,7 @@ public class GenericDeliveryDrone extends MobileUnit {
             }
         } else {
             // No close robots, so search for robots within sight radius
-            tryMove(randomDirection(), rc);
+            Simple.tryMove(randomDirection(), rc);
         }
     }
 }

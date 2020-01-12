@@ -2,11 +2,10 @@ package droideka.units.mouselandscaper;
 
 import battlecode.common.*;
 import droideka.base.MobileUnit;
+import droideka.pathing.Simple;
 import droideka.utility.Constants;
 
 import java.util.ArrayList;
-
-import static c3po.utility.ActionHelper.tryMove;
 
 public class MouseLandscaper extends MobileUnit {
     ArrayList<MapLocation> dirtLocations;
@@ -97,7 +96,7 @@ public class MouseLandscaper extends MobileUnit {
             }
 
             if (moving) {
-                boolean success = tryMove(path.get(0), rc);
+                boolean success = Simple.tryMove(path.get(0), rc);
                 if (success) {
                     path.remove(0);
                 } else {

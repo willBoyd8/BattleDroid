@@ -40,9 +40,11 @@ public class MiningMiner extends MobileUnit {
     }
 
     public void turn() throws GameActionException, KillMeNowException {
-        if(rc.getRoundNum() > Constants.WALL_START_ROUND){
+        if(rc.getLocation().distanceSquaredTo(hqLocation) <= 8 && rc.getRoundNum() > Constants.WALL_START_ROUND){
             state = MiningState.FLOODING;
         }
+
+        scanDepositLocations();
 
         switch(state){
             case LOOK: look(); break;
@@ -202,8 +204,32 @@ public class MiningMiner extends MobileUnit {
             }
         }
 
+    }
 
+    public MapLocation getClosestDepositLocation() throws GameActionException {
+        MapLocation best = null;
+        int closest = Integer.MAX_VALUE;
 
+        for(MapLocation loc : depositLocations){
+            if(loc.distanceSquaredTo(rc.getLocation()) < closest){
+                best = loc;
+                closest = loc.distanceSquaredTo(rc.getLocation());
+            }
+        }
+
+        return best;
+    }
+
+    private void scanDepositLocations() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.HQ || robot.getType() == RobotType.REFINERY){
+                if(!depositLocations.contains(robot.getLocation())){
+                    depositLocations.add(robot.getLocation());
+                }
+            }
+        }
 
     }
 

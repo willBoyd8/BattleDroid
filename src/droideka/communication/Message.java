@@ -19,6 +19,8 @@ package droideka.communication;
 //    location
 
 
+import battlecode.common.MapLocation;
+
 public class Message {
 
     private int block;
@@ -147,6 +149,13 @@ public class Message {
     public int getCommandType() { return command;}
     public int getBotID() { return bot_id;}
     public int getData() { return data;}
+
+    public MapLocation getMinerLocation() {
+        int x = extractBits(data,16,8);
+        int y = extractBits(data,7,0);
+        MapLocation loc = new MapLocation(x,y);
+        return loc;
+    }
 
     public void printMessage() {
         System.out.println("msg_type: " + msg_type);

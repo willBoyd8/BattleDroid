@@ -80,7 +80,7 @@ public class BuzzDroid extends MobileUnit {
 
             case REMOVE: removePoint(); break;
 
-            case RAID:  break;
+            case RAID: raid(); break;
 
         }
 

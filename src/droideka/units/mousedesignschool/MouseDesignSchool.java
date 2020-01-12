@@ -22,7 +22,7 @@ public class MouseDesignSchool extends Building {
             }
             return;
         } else {
-            if(numberBuilt < 16) {
+            if(numberBuilt < Integer.MAX_VALUE) {
                 if (tryBuild(RobotType.LANDSCAPER, Direction.SOUTH, rc)) {
                     numberBuilt++;
                 }

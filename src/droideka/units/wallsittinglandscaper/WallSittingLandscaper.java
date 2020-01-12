@@ -17,7 +17,12 @@ public class WallSittingLandscaper extends MobileUnit {
     int totalMoves;
     public static int maxMoves = Integer.MAX_VALUE;
     ArrayList<MapLocation> hqTiles;
+    LandscaperState state;
 
+    enum LandscaperState {
+        WALLING,
+        RAIDING
+    }
 
     public WallSittingLandscaper(RobotController rc){
         super(rc);
@@ -42,6 +47,7 @@ public class WallSittingLandscaper extends MobileUnit {
         hasResetPath = false;
         totalMoves = 0;
         hqTiles = new ArrayList<MapLocation>();
+        state = LandscaperState.WALLING;
 
         generateHQTiles();
 
@@ -49,7 +55,14 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public void turn() throws GameActionException {
 
+        if(rc.getLocation().distanceSquaredTo(hqLocation) > 8){
+            state = LandscaperState.RAIDING;
+        }
 
+        if(state == LandscaperState.RAIDING){
+            raid();
+            return;
+        }
 
         if(!hasResetPath && !(spawn.directionTo(hqLocation) == Direction.WEST)) {
         //if(rc.getLocation().add(Direction.NORTHWEST).equals(hqLocation) || rc.getLocation().add(Direction.NORTH).equals(hqLocation)){
@@ -204,6 +217,79 @@ public class WallSittingLandscaper extends MobileUnit {
 
         tryDig(path.get(0).rotateLeft());
 
+
+    }
+
+    public void raid() throws GameActionException {
+        if(rc.getDirtCarrying() > 0){
+            handleDirtDepositAttack();
+        } else {
+            handleDirtDigAttack();
+        }
+    }
+
+    public void handleDirtDigAttack() throws GameActionException {
+        tryDig(Direction.CENTER);
+    }
+
+    public void handleDirtDepositAttack() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(2, enemy);
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.HQ){
+                if(tryDeposit(rc.getLocation().directionTo(robot.getLocation()))){
+                    return;
+                }
+            }
+        }
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.VAPORATOR){
+                if(tryDeposit(rc.getLocation().directionTo(robot.getLocation()))){
+                    return;
+                }
+            }
+        }
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.NET_GUN){
+                if(tryDeposit(rc.getLocation().directionTo(robot.getLocation()))){
+                    return;
+                }
+            }
+        }
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.FULFILLMENT_CENTER){
+                if(tryDeposit(rc.getLocation().directionTo(robot.getLocation()))){
+                    return;
+                }
+            }
+        }
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.DESIGN_SCHOOL){
+                if(tryDeposit(rc.getLocation().directionTo(robot.getLocation()))){
+                    return;
+                }
+            }
+        }
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.REFINERY){
+                if(tryDeposit(rc.getLocation().directionTo(robot.getLocation()))){
+                    return;
+                }
+            }
+        }
+
+        if(rc.getDirtCarrying() >= RobotType.LANDSCAPER.dirtLimit){
+            // TODO: Make this actually smart
+            tryDeposit(Unsorted.randomDirection());
+            return;
+        }
+
+        handleDirtDigAttack();
 
     }
 }

@@ -224,10 +224,12 @@ public class BuzzDroid extends MobileUnit {
                 return;
             }
             else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.EAST, rc)) {
-
+                state = DroneState.LOOK;
+                return;
             }
             else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.WEST, rc)){
-
+                state = DroneState.LOOK;
+                return;
             } else {
                 Simple.tryMove(rc);
             }

@@ -108,27 +108,43 @@ public class MiningMiner extends MobileUnit {
     }
 
     private void moveToSoup() throws GameActionException {
+        if(rc.canSenseLocation(targetLocation)){
+            if(rc.senseSoup(targetLocation) <= 0){
+                knownSoup.remove(targetLocation);
+                if(knownSoup.size() > 0){
+                    targetLocation = knownSoup.get(0);
+                } else {
+                    targetLocation = null;
+                    state = MiningState.SEARCH;
+                    search();
+                    return;
+                }
+            }
+        }
+
         if(rc.getLocation().isAdjacentTo(targetLocation) || rc.getLocation().equals(targetLocation)){
             state = MiningState.ARRIVED;
             arrived();
             return;
         } else {
+            targetLocation = Unsorted.getClosestMapLocation(knownSoup, rc);
+            Simple.moveToLocationFuzzy(targetLocation, rc);
             // Tries to move straight towards destination, but jiggle paths if it needs to.
-            if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc)){
-                if(rand.nextBoolean()){
-                    if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
-                        if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
-                            Simple.tryMove(rc);
-                        }
-                    }
-                } else {
-                    if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
-                        if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
-                            Simple.tryMove(rc);
-                        }
-                    }
-                }
-            }
+//            if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc)){
+//                if(rand.nextBoolean()){
+//                    if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
+//                        if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
+//                            Simple.tryMove(rc);
+//                        }
+//                    }
+//                } else {
+//                    if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateRight(), rc)){
+//                        if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation).rotateLeft(), rc)){
+//                            Simple.tryMove(rc);
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 

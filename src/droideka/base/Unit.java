@@ -2,6 +2,7 @@ package droideka.base;
 import battlecode.common.*;
 import droideka.utility.ActionHelper;
 import droideka.utility.DebugHelper;
+import droideka.utility.ForTheGloryOfTheEmpire;
 
 import java.util.Random;
 
@@ -76,6 +77,7 @@ public abstract class Unit {
                     preEnd();
                     roundEnd();
                 } catch (KillMeNowException e) {
+                    ForTheGloryOfTheEmpire.print(rc);
                     return;
                     //throw new KillMeNowException();
                 } catch (Exception e) {

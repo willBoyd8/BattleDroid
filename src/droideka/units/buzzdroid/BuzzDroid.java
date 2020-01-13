@@ -202,12 +202,12 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void leaveBase() throws GameActionException {
-        if (rc.getLocation().distanceSquaredTo(hqLocation) >= 16){
-            state = DroneState.LOOK;
-            look();
+        if (rc.getLocation().distanceSquaredTo(hqLocation) >= 25){
+            state = DroneState.MOVE_TO_POINT;
+            moveToPoint();
             return;
         }
-        if (Simple.tryMove(Direction.SOUTH, rc)){
+        else if (Simple.tryMove(Direction.SOUTH, rc)){
             return;
         } else if (Simple.tryMove(Direction.SOUTHWEST, rc)){
             return;

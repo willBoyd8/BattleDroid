@@ -28,7 +28,7 @@ public class BuzzDroid extends MobileUnit {
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
         raidState = null;
-        defendState = null;
+        defendState = DefendState.PATROL;
         holding = null;
         nearestWater = null;
         enemyHQ = null;
@@ -50,6 +50,7 @@ public class BuzzDroid extends MobileUnit {
         homeQuad = 0;
         raidState = null;
         holding = null;
+        defendState = DefendState.PATROL;
         nearestWater = null;
         enemyHQ = null;
     }

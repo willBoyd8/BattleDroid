@@ -19,8 +19,11 @@ public class MiningMiner extends MobileUnit {
     public int distTraveled;
     private boolean announced;
     public Direction travelDir;
+    public MapLocation stuckSpot;
+    public int stuckTimer;
     public ArrayList<MapLocation> depositLocations;
     public ArrayList<MapLocation> knownSoup;
+    public ArrayList<MapLocation> unreachableSoup;
     public ArrayList<MapLocation> locationsToSend;
     private Bucket buck;
     private Tell tell;
@@ -35,6 +38,8 @@ public class MiningMiner extends MobileUnit {
         knownSoup = new ArrayList<MapLocation>();
         locationsToSend = new ArrayList<MapLocation>();
         depositLocations.add(hqLocation);
+        MapLocation stuckSpot = null;
+        stuckTimer = 0;
         totalDist = 0;
         distTraveled = 0;
         buck = new Bucket(rc);
@@ -109,7 +114,8 @@ public class MiningMiner extends MobileUnit {
 
     private void moveToSoup() throws GameActionException {
         if(rc.canSenseLocation(targetLocation)){
-            if(rc.senseSoup(targetLocation) <= 0){
+            if((rc.senseSoup(targetLocation) <= 0)||(stuckTimer > 3)){
+                unreachableSoup.add(targetLocation);
                 knownSoup.remove(targetLocation);
                 if(knownSoup.size() > 0){
                     targetLocation = knownSoup.get(0);
@@ -127,8 +133,22 @@ public class MiningMiner extends MobileUnit {
             arrived();
             return;
         } else {
+            for (MapLocation point : knownSoup) {
+                for (MapLocation unreachable : unreachableSoup) {
+                    if (unreachable == point) {
+                        knownSoup.remove(point);
+                    }
+                }
+            }
             targetLocation = Unsorted.getClosestMapLocation(knownSoup, rc);
             Simple.moveToLocationFuzzy(targetLocation, rc);
+            if (stuckSpot == rc.getLocation()){
+                stuckTimer++;
+            } else {
+                stuckTimer = 0;
+            }
+            stuckSpot = rc.getLocation();
+
             // Tries to move straight towards destination, but jiggle paths if it needs to.
 //            if(!Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc)){
 //                if(rand.nextBoolean()){
@@ -190,7 +210,7 @@ public class MiningMiner extends MobileUnit {
         MapLocation closestDepositLocation = getClosestDepositLocation();
         if(rc.getTeamSoup() > RobotType.REFINERY.cost && closestDepositLocation.distanceSquaredTo(rc.getLocation()) > Constants.MIN_REFINERY_SPREAD_DISTANCE && hqLocation != null && rc.getLocation().distanceSquaredTo(hqLocation) > Constants.MIN_REFINERY_SPREAD_DISTANCE){
             for(Direction dir : Constants.DIRECTIONS){
-                if(ActionHelper.tryBuild(RobotType.REFINERY, dir, rc)){
+                if((ActionHelper.tryBuild(RobotType.REFINERY, dir, rc))&&(rc.senseSoup(rc.getLocation().add(dir)) == 0)){
                     return;
                 }
             }
@@ -203,17 +223,36 @@ public class MiningMiner extends MobileUnit {
             return;
         } else {
             // Tries to move straight towards destination, but jiggle paths if it needs to.
-            if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation), rc)){
-                if(rand.nextBoolean()){
-                    if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)){
-                        if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)){
-                            Simple.tryMove(rc);
+            if (rc.getRoundNum() > Constants.WALL_START_ROUND) {
+                if ((rc.getLocation().add(rc.getLocation().directionTo(closestDepositLocation)).distanceSquaredTo(hqLocation) >= 8) && !Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation), rc)) {
+                    if (rand.nextBoolean()) {
+                        if (!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)) {
+                            if (!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)) {
+                                Simple.tryMove(rc);
+                            }
+                        }
+                    } else {
+                        if (!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)) {
+                            if (!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)) {
+                                Simple.tryMove(rc);
+                            }
                         }
                     }
-                } else {
-                    if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)){
+                }
+            }
+            else{
+                if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation), rc)){
+                    if(rand.nextBoolean()){
                         if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)){
-                            Simple.tryMove(rc);
+                            if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)){
+                                Simple.tryMove(rc);
+                            }
+                        }
+                    } else {
+                        if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateRight(), rc)){
+                            if(!Simple.tryMove(rc.getLocation().directionTo(closestDepositLocation).rotateLeft(), rc)){
+                                Simple.tryMove(rc);
+                            }
                         }
                     }
                 }
@@ -252,7 +291,7 @@ public class MiningMiner extends MobileUnit {
             for (int i = 0; i < Constants.DIRECTIONS.length; i++) {
                 dir = rand.nextInt(Constants.DIRECTIONS.length);
                 travelDir = Constants.DIRECTIONS[dir];
-                if (Simple.tryMove(travelDir, rc)){
+                if ((rc.getLocation().add(travelDir).distanceSquaredTo(hqLocation) >= 8)&&(Simple.tryMove(travelDir, rc))){
                     totalDist--;
                     state = MiningState.LOOK;
                     targetLocation = null;
@@ -263,7 +302,7 @@ public class MiningMiner extends MobileUnit {
 
 
         } else {
-            if (Simple.tryMove(travelDir, rc)){
+            if ((rc.getLocation().add(travelDir).distanceSquaredTo(hqLocation) >= 8)&& (Simple.tryMove(travelDir, rc))){
                 totalDist--;
                 state = MiningState.LOOK;
                 targetLocation = null;

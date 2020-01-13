@@ -226,8 +226,9 @@ public class BuzzDroid extends MobileUnit {
 
     private void leaveBase() throws GameActionException {
         if (rc.getLocation().distanceSquaredTo(hqLocation) >= 25){
-            state = DroneState.LOOK;
-            look();
+            //state = DroneState.LOOK;
+            state = DroneState.DEFEND;
+            defend();
             return;
         }
         if (Simple.tryMove(Direction.SOUTH, rc)){
@@ -250,6 +251,9 @@ public class BuzzDroid extends MobileUnit {
 
     //Patrol around the base until enemy spotted then switch to Intercept
     private void patrol() throws GameActionException {
+        if (rc.getRoundNum() > Constants.RAID_START_ROUND) {
+            state = DroneState.LOOK;
+        }
         patrolPoint = patrolPath.get(0);
         RobotInfo robots[] = rc.senseNearbyRobots(-1, enemy);
         if (robots.length > 0) {

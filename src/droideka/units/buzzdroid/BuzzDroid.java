@@ -440,7 +440,6 @@ public class BuzzDroid extends MobileUnit {
                 holding = null;
                 raidState = RaidState.KIDNAP;
                 System.out.println("DROPPING: Switching to KIDNAP state");
-                kidnap();
                 return;
             }
         }
@@ -451,7 +450,6 @@ public class BuzzDroid extends MobileUnit {
                 holding = null;
                 raidState = RaidState.KIDNAP;
                 System.out.println("DROPPING: Switching to KIDNAP state");
-                kidnap();
                 return;
             }
         }
@@ -463,11 +461,12 @@ public class BuzzDroid extends MobileUnit {
     private void moving() throws GameActionException {
         if(rc.getLocation().isAdjacentTo(targetLocation)){
             targetLocation = null;
-            raid();
+            // TODO: This isn't the most effecient, but if we call this we enter an infinite loop sometimes (like if the unit is blocked)
+            //raid();
             return;
         } else {
-            Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc);
-            //Simple.moveToLocationFuzzy(targetLocation, rc);
+            //Simple.tryMove(rc.getLocation().directionTo(targetLocation), rc);
+            Simple.moveToLocationFuzzy(targetLocation, rc);
             return;
         }
     }

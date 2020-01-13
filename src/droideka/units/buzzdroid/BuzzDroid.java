@@ -45,6 +45,7 @@ public class BuzzDroid extends MobileUnit {
 
     enum DroneState {
         GENERATE,
+        LEAVEBASE,
         LOOK,
         MOVE_TO_POINT,
         CAN_SENSE,
@@ -100,6 +101,8 @@ public class BuzzDroid extends MobileUnit {
 
         switch(state){
             case GENERATE: generate(); break;
+
+            case LEAVEBASE: leaveBase(); break;
 
             case LOOK: look(); break;
 
@@ -177,6 +180,7 @@ public class BuzzDroid extends MobileUnit {
                 loc1 = new MapLocation(xOffset, yOffset);
                 loc2 = new MapLocation(hqLocation.x, yOffset);
                 loc4 = new MapLocation(xOffset, hqLocation.y);
+
                 enemyHQLocations.add(loc4);
                 enemyHQLocations.add(loc1);
                 enemyHQLocations.add(loc2);
@@ -192,9 +196,22 @@ public class BuzzDroid extends MobileUnit {
         }
 
 
-        state = DroneState.LOOK;
-        look();
+        state = DroneState.LEAVEBASE;
+        leaveBase();
         return;
+    }
+
+    private void leaveBase() throws GameActionException {
+        if (rc.getLocation().distanceSquaredTo(hqLocation) >= 16){
+            state = DroneState.LOOK;
+            look();
+            return;
+        }
+        if (Simple.tryMove(Direction.SOUTH, rc)){
+            return;
+        } else if (Simple.tryMove(Direction.SOUTHWEST, rc)){
+            return;
+        }
     }
 
     private void look() throws GameActionException {

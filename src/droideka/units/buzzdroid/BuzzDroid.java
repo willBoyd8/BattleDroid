@@ -138,7 +138,7 @@ public class BuzzDroid extends MobileUnit {
 
         //Figure out Home Quadrant
         if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y < (mapHeight/2))){
-            homeQuad = 1;
+            homeQuad = 4;
         }
         else if ((hqLocation.x < (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
             homeQuad = 2;
@@ -147,7 +147,7 @@ public class BuzzDroid extends MobileUnit {
             homeQuad = 3;
         }
         else if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
-            homeQuad = 4;
+            homeQuad = 1;
         }
 
         //Calculate Offsets and instantiate MapLocationObjects
@@ -202,7 +202,7 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void leaveBase() throws GameActionException {
-        if (rc.getLocation().distanceSquaredTo(hqLocation) >= 16){
+        if (rc.getLocation().distanceSquaredTo(hqLocation) >= 25){
             state = DroneState.LOOK;
             look();
             return;
@@ -215,6 +215,11 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void look() throws GameActionException {
+        if ((rc.getLocation().directionTo(hqLocation) == Direction.SOUTH)&&(rc.getLocation().distanceSquaredTo(hqLocation) <= 16)){
+            state = DroneState.LEAVEBASE;
+            leaveBase();
+            return;
+        }
         if (rc.canSenseLocation(enemyHQLocations.get(0))){
             state = DroneState.CAN_SENSE;
             canSense();
@@ -222,7 +227,7 @@ public class BuzzDroid extends MobileUnit {
         } else {
             if (rc.getLocation().distanceSquaredTo(hqLocation) <= 2)
             {
-                Simple.tryMove(Direction.SOUTH, rc);
+                //Simple.tryMove(Direction.SOUTH, rc);
             }
             state = DroneState.MOVE_TO_POINT;
             moveToPoint();
@@ -231,6 +236,7 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void moveToPoint() throws GameActionException {
+        targetLocation = enemyHQLocations.get(0);
         if (Simple.moveToLocationFuzzyNoFlyZone(enemyHQLocations.get(0), GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, rc)){
             state = DroneState.LOOK;
             return;
@@ -245,6 +251,9 @@ public class BuzzDroid extends MobileUnit {
                 return;
             }
             else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.WEST, rc)){
+                state = DroneState.LOOK;
+                return;
+            } else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.NORTH, rc)) {
                 state = DroneState.LOOK;
                 return;
             } else {
@@ -267,6 +276,7 @@ public class BuzzDroid extends MobileUnit {
             enemyHQLocations.clear();
             enemyHQLocations.add(potHQ.getLocation());
             enemyHQ = potHQ.getLocation();
+            targetLocation = null;
             found();
             return;
         }
@@ -312,6 +322,7 @@ public class BuzzDroid extends MobileUnit {
 
     private void removePoint() throws  GameActionException {
         enemyHQLocations.remove(0);
+        targetLocation = enemyHQLocations.get(0);
         state = DroneState.LOOK;
         look();
         return;

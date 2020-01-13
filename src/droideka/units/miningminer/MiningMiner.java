@@ -188,12 +188,13 @@ public class MiningMiner extends MobileUnit {
 
     private void moveToDeposit() throws GameActionException {
         MapLocation closestDepositLocation = getClosestDepositLocation();
-        if(closestDepositLocation.distanceSquaredTo(rc.getLocation()) > Constants.MIN_REFINERY_SPREAD_DISTANCE && hqLocation != null && rc.getLocation().distanceSquaredTo(hqLocation) > Constants.MIN_REFINERY_SPREAD_DISTANCE){
+        if(rc.getTeamSoup() > RobotType.REFINERY.cost && closestDepositLocation.distanceSquaredTo(rc.getLocation()) > Constants.MIN_REFINERY_SPREAD_DISTANCE && hqLocation != null && rc.getLocation().distanceSquaredTo(hqLocation) > Constants.MIN_REFINERY_SPREAD_DISTANCE){
             for(Direction dir : Constants.DIRECTIONS){
                 if(ActionHelper.tryBuild(RobotType.REFINERY, dir, rc)){
                     return;
                 }
             }
+            return;
         }
 
         if(rc.getLocation().isAdjacentTo(closestDepositLocation) || rc.getLocation().equals(closestDepositLocation)){

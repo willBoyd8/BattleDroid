@@ -134,7 +134,7 @@ public class BuzzDroid extends MobileUnit {
         int mapHeight = rc.getMapHeight();
 
         //Figure out Home Quadrant
-        if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
+        if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y < (mapHeight/2))){
             homeQuad = 1;
         }
         else if ((hqLocation.x < (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
@@ -203,6 +203,10 @@ public class BuzzDroid extends MobileUnit {
             canSense();
             return;
         } else {
+            if (rc.getLocation().distanceSquaredTo(hqLocation) <= 2)
+            {
+                Simple.tryMove(Direction.SOUTH, rc);
+            }
             state = DroneState.MOVE_TO_POINT;
             moveToPoint();
             return;
@@ -220,10 +224,12 @@ public class BuzzDroid extends MobileUnit {
                 return;
             }
             else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.EAST, rc)) {
-
+                state = DroneState.LOOK;
+                return;
             }
             else if(rc.getLocation().distanceSquaredTo(hqLocation) < 10 && Simple.tryMove(Direction.WEST, rc)){
-
+                state = DroneState.LOOK;
+                return;
             } else {
                 Simple.tryMove(rc);
             }

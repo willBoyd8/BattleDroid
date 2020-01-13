@@ -234,7 +234,7 @@ public class WallSittingLandscaper extends MobileUnit {
         for(Direction dir : Direction.allDirections()){
             int elev = rc.senseElevation(rc.getLocation().add(dir));
             RobotInfo possibleBot = rc.senseRobotAtLocation(rc.getLocation().add(dir));
-            if(elev < lowest && digUnderEnemy(possibleBot) && !rc.senseFlooding(rc.getLocation().add(dir)) && isAdjacentToWater(rc.getLocation().add(dir))){
+            if(teamworkTile(dir) && !rc.senseFlooding(rc.getLocation().add(dir)) && isAdjacentToWater(rc.getLocation().add(dir))){
                 best = dir;
                 lowest = elev;
             }
@@ -253,6 +253,19 @@ public class WallSittingLandscaper extends MobileUnit {
         if(type == RobotType.MINER || type == RobotType.LANDSCAPER || type == RobotType.COW || type == RobotType.DELIVERY_DRONE){
             return true;
         }
+
+        return false;
+    }
+
+    public boolean teamworkTile(Direction dir) throws GameActionException {
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, myTeam);
+        for (int i = 0; i < robots.length; i++){
+            //Conditions for teamworkTile is it's adjacent to a friendly landscaper and adjacent to water
+            if (((robots[i].type == RobotType.LANDSCAPER) && (rc.getLocation().add(dir).isAdjacentTo(robots[i].location)) && isAdjacentToWater(rc.getLocation().add(dir)))){
+                return true;
+            }
+        }
+
 
         return false;
     }

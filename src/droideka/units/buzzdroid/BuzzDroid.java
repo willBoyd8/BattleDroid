@@ -203,6 +203,10 @@ public class BuzzDroid extends MobileUnit {
             canSense();
             return;
         } else {
+            if (rc.getLocation().distanceSquaredTo(hqLocation) <= 2)
+            {
+                Simple.tryMove(Direction.SOUTH, rc);
+            }
             state = DroneState.MOVE_TO_POINT;
             moveToPoint();
             return;

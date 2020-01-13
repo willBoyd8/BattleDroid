@@ -14,9 +14,12 @@ public class BuzzDroid extends MobileUnit {
     public ArrayList<MapLocation> enemyHQLocations;
     public int homeQuad;
     public RaidState raidState;
+    public DefendState defendState;
     public RobotInfo holding;
     public MapLocation nearestWater;
     public MapLocation enemyHQ;
+    public ArrayList<MapLocation> patrolPath;
+    public MapLocation patrolPoint;
 
     public BuzzDroid (RobotController rc) {
         super(rc);
@@ -25,9 +28,17 @@ public class BuzzDroid extends MobileUnit {
         enemyHQLocations = new ArrayList<MapLocation>();
         homeQuad = 0;
         raidState = null;
+        defendState = null;
         holding = null;
         nearestWater = null;
         enemyHQ = null;
+        patrolPoint = null;
+        patrolPath = new ArrayList<MapLocation>();
+        patrolPath.add(hqLocation.translate(-5,-5));
+        patrolPath.add(hqLocation.translate(-5,5));
+        patrolPath.add(hqLocation.translate(5,5));
+        patrolPath.add(hqLocation.translate(5,-5));
+
     }
 
     // TODO: This isn't 100% safe because it can take any mobile unit
@@ -46,6 +57,7 @@ public class BuzzDroid extends MobileUnit {
     enum DroneState {
         GENERATE,
         LEAVEBASE,
+        DEFEND,
         LOOK,
         MOVE_TO_POINT,
         CAN_SENSE,
@@ -60,6 +72,15 @@ public class BuzzDroid extends MobileUnit {
         KIDNAP,
         DROPPING,
         MOVING,
+    }
+
+    enum DefendState {
+        PATROL,
+        INTERCEPT,
+        //HOLDING,
+        DISPOSINGDRONE,
+        DISPOSINGLANDUNIT,
+        RESUMINGPATROL,
     }
 
     public void turn() throws GameActionException{
@@ -103,6 +124,8 @@ public class BuzzDroid extends MobileUnit {
             case GENERATE: generate(); break;
 
             case LEAVEBASE: leaveBase(); break;
+
+            case DEFEND: defend(); break;
 
             case LOOK: look(); break;
 
@@ -210,6 +233,169 @@ public class BuzzDroid extends MobileUnit {
         if (Simple.tryMove(Direction.SOUTH, rc)){
             return;
         } else if (Simple.tryMove(Direction.SOUTHWEST, rc)){
+            return;
+        }
+    }
+
+    private void defend() throws GameActionException {
+        switch(defendState){
+            case PATROL: patrol(); return;
+            case INTERCEPT: intercept(); return;
+            //case HOLDING: holdState(); return;
+            case DISPOSINGDRONE: disposingDrone(); return;
+            case DISPOSINGLANDUNIT: disposingLandUnit(); return;
+            case RESUMINGPATROL: resumePatrol(); return;
+        }
+    }
+
+    //Patrol around the base until enemy spotted then switch to Intercept
+    private void patrol() throws GameActionException {
+        patrolPoint = patrolPath.get(0);
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, enemy);
+        if (robots.length > 0) {
+            defendState = DefendState.INTERCEPT;
+            intercept();
+            return;
+        }
+        if (rc.getLocation().isAdjacentTo(patrolPoint)){
+            patrolPath.add(patrolPath.get(0));
+            patrolPath.remove(0);
+        }
+        if (Simple.moveToLocationFuzzy(patrolPoint, rc)){
+            return;
+        }
+        if (Simple.tryMove(rc.getLocation().directionTo(patrolPoint).rotateLeft().rotateLeft(), rc)){
+            return;
+        }
+        if (Simple.tryMove(rc.getLocation().directionTo(patrolPoint).rotateRight().rotateRight(), rc)){
+            return;
+        }
+    }
+
+    //Determine Closest enemy unit and move towards it, then pickup when adjacent and switch to Holding
+    private void intercept() throws GameActionException {
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, enemy);
+        int closestDist = 9999;
+        RobotInfo target = null;
+        for (RobotInfo robot : robots) {
+            if (robot.location.distanceSquaredTo(rc.getLocation()) < closestDist) {
+                closestDist = robot.location.distanceSquaredTo(rc.getLocation());
+                target = robot;
+            }
+        }
+        if (rc.canPickUpUnit(target.ID)) {
+            rc.pickUpUnit(target.ID);
+            holding = target;
+            if (holding.type == RobotType.DELIVERY_DRONE) {
+                defendState = DefendState.DISPOSINGDRONE;
+                disposingDrone();
+                return;
+            } else {
+                defendState = DefendState.DISPOSINGLANDUNIT;
+                disposingLandUnit();
+                return;
+            }
+        } else {
+            if (Simple.moveToLocationFuzzy(target.location, rc)) {
+                return;
+            }
+            if (Simple.tryMove(rc.getLocation().directionTo(patrolPoint).rotateLeft().rotateLeft(), rc)){
+                return;
+            }
+            if (Simple.tryMove(rc.getLocation().directionTo(patrolPoint).rotateRight().rotateRight(), rc)){
+                return;
+            }
+        }
+
+    }
+
+    /*private void holdState() throws GameActionException {
+
+    }*/
+
+    private void disposingDrone() throws GameActionException {
+        RobotInfo enemyRobots[] = rc.senseNearbyRobots(-1, enemy);
+        if (enemyRobots.length == 0) {
+            int closestDist = 999;
+            RobotInfo closestNetGun = null;
+            RobotInfo friendlyRobots[] = rc.senseNearbyRobots(-1, myTeam);
+            for (RobotInfo unit : friendlyRobots) {
+                if ((unit.type == RobotType.NET_GUN) || (unit.type == RobotType.HQ)){
+                    if (rc.getLocation().distanceSquaredTo(unit.location) < closestDist) {
+                        closestDist = rc.getLocation().distanceSquaredTo(unit.location);
+                        closestNetGun = unit;
+                    }
+                }
+            }
+            if (rc.getLocation().distanceSquaredTo(closestNetGun.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                if (rc.canDropUnit(rc.getLocation().directionTo(closestNetGun.location))){
+                    rc.dropUnit(rc.getLocation().directionTo(closestNetGun.location));
+                    defendState = DefendState.RESUMINGPATROL;
+                    resumePatrol();
+                    return;
+                }
+                else{
+                    for (Direction dir : Constants.DIRECTIONS){
+                        if (rc.getLocation().add(dir).distanceSquaredTo(closestNetGun.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+                            if (rc.canDropUnit(dir)){
+                                rc.dropUnit(dir);
+                                defendState = DefendState.RESUMINGPATROL;
+                                resumePatrol();
+                                return;
+                            }
+                        }
+                    }
+                    if (Simple.moveToLocationFuzzy(closestNetGun.location, rc)) {
+                        return;
+                    }
+                }
+            }
+
+        }
+    }
+
+    private void disposingLandUnit() throws GameActionException {
+        ArrayList<MapLocation> floodTiles = ActionHelper.getFloodLocations(rc);
+        if (floodTiles.size() > 0) {
+            int closestDist = 999;
+            MapLocation closestFlood = null;
+            ArrayList<MapLocation> adjFloodTiles = new ArrayList<MapLocation>();
+            for (MapLocation flooded : floodTiles) {
+                if (flooded.isAdjacentTo(rc.getLocation())) {
+                    adjFloodTiles.add(flooded);
+                }
+                if ((flooded.distanceSquaredTo(rc.getLocation()) < closestDist) && (flooded.distanceSquaredTo(rc.getLocation()) > 0)) {
+                    closestDist = flooded.distanceSquaredTo(rc.getLocation());
+                    closestFlood = flooded;
+                }
+            }
+            if ((rc.getLocation().isAdjacentTo(closestFlood)) && (rc.canDropUnit(rc.getLocation().directionTo(closestFlood)))) {
+                rc.dropUnit(rc.getLocation().directionTo(closestFlood));
+                defendState = DefendState.RESUMINGPATROL;
+                resumePatrol();
+                return;
+            }
+            for (MapLocation drop : adjFloodTiles) {
+                if (rc.canDropUnit(rc.getLocation().directionTo(drop))) {
+                    rc.dropUnit(rc.getLocation().directionTo(drop));
+                    defendState = DefendState.RESUMINGPATROL;
+                    resumePatrol();
+                    return;
+                }
+            }
+            if (Simple.moveToLocationFuzzy(closestFlood, rc)) {
+                return;
+            }
+        }
+    }
+
+    private void resumePatrol() throws GameActionException {
+        if (rc.getLocation().isAdjacentTo(patrolPoint)) {
+            defendState = DefendState.PATROL;
+            patrol();
+            return;
+        }
+        if (Simple.moveToLocationFuzzy(patrolPoint, rc)) {
             return;
         }
     }

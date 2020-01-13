@@ -78,6 +78,34 @@ public class ActionHelper {
         return soupTiles;
     }
 
+    public static ArrayList<MapLocation> getFloodLocations(RobotController rc) throws GameActionException {
+        MapLocation currentLoc = rc.getLocation();
+
+        int i_sensorActual = (int)Math.sqrt(RobotType.DELIVERY_DRONE.sensorRadiusSquared);
+
+        // TODO: Fix this because we check a lot of unneed tiles (or not visible ones)
+        int lowXLimit = currentLoc.x - i_sensorActual;
+        int highXLimit = currentLoc.x + i_sensorActual;
+        int lowYLimit = currentLoc.y - i_sensorActual;
+        int highYLimit = currentLoc.y + i_sensorActual;
+
+        ArrayList<MapLocation> floodTiles = new ArrayList<>();
+        for (int i = lowXLimit; i < highXLimit; i++){
+            //System.out.println("getVisibleTiles: x");
+            for (int j = lowYLimit; j < highYLimit; j++){
+                //System.out.println("getVisibleTiles: y");
+                MapLocation temp = new MapLocation(i , j);
+                if (rc.canSenseLocation(temp)){
+                    if(rc.senseFlooding(temp)){
+                        floodTiles.add(temp);
+                    }
+                }
+            }
+        }
+
+        return floodTiles;
+    }
+
     public static RobotInfo findHQ(RobotController rc){
         RobotInfo[] robots = rc.senseNearbyRobots(-1, rc.getTeam());
 

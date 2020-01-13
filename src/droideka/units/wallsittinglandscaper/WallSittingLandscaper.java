@@ -1,11 +1,13 @@
 package droideka.units.wallsittinglandscaper;
 
 import battlecode.common.*;
+import droideka.base.KillMeNowException;
 import droideka.base.MobileUnit;
 import droideka.pathing.Simple;
 import droideka.utility.ActionHelper;
 import droideka.utility.Constants;
 import droideka.utility.Unsorted;
+import org.mockito.internal.matchers.Null;
 
 import java.util.ArrayList;
 
@@ -52,7 +54,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
     }
 
-    public void turn() throws GameActionException {
+    public void turn() throws GameActionException, KillMeNowException {
 
         if(rc.getLocation().distanceSquaredTo(hqLocation) > 8){
             state = LandscaperState.RAIDING;
@@ -84,6 +86,10 @@ public class WallSittingLandscaper extends MobileUnit {
             path.add(Direction.WEST);
             hasResetPath = true;
 
+        }
+
+        if(hqLocation == null){
+            throw new KillMeNowException();
         }
 
         if (Math.abs((rc.getLocation().x)-hqLocation.x) == 2 || Math.abs((rc.getLocation().y)-hqLocation.y) == 2){
@@ -151,8 +157,12 @@ public class WallSittingLandscaper extends MobileUnit {
     }
 
     public void generateHQTiles(){
-        for(Direction dir : Constants.DIRECTIONS){
-            hqTiles.add(hqLocation.add(dir));
+        try {
+            for (Direction dir : Constants.DIRECTIONS) {
+                hqTiles.add(hqLocation.add(dir));
+            }
+        } catch (NullPointerException e) {
+
         }
     }
 
@@ -258,7 +268,7 @@ public class WallSittingLandscaper extends MobileUnit {
     }
 
     public boolean teamworkTile(Direction dir) throws GameActionException {
-        RobotInfo robots[] = rc.senseNearbyRobots(-1, myTeam);
+        RobotInfo robots[] = rc.senseNearbyRobots(8, myTeam);
         for (int i = 0; i < robots.length; i++){
             //Conditions for teamworkTile is it's adjacent to a friendly landscaper and adjacent to water
             if (((robots[i].type == RobotType.LANDSCAPER) && (rc.getLocation().add(dir).isAdjacentTo(robots[i].location)) && isAdjacentToWater(rc.getLocation().add(dir)))){
@@ -344,6 +354,10 @@ public class WallSittingLandscaper extends MobileUnit {
             if(elev < highest){
                 best = dir;
                 highest = elev;
+            }
+            if(rc.senseFlooding(rc.getLocation().add(dir))){
+                best = dir;
+                break;
             }
         }
 

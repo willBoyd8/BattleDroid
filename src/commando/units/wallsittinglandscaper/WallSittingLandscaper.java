@@ -5,17 +5,17 @@ import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.pathing.Simple;
 import commando.utility.Constants;
+import commando.utility.DroidList;
 import commando.utility.Unsorted;
 
-import java.util.ArrayList;
 
 public class WallSittingLandscaper extends MobileUnit {
-    ArrayList<Direction> path;
+    DroidList<Direction> path;
     boolean moving;
     boolean hasResetPath;
     int totalMoves;
     public static int maxMoves = Integer.MAX_VALUE;
-    ArrayList<MapLocation> hqTiles;
+    DroidList<MapLocation> hqTiles;
     LandscaperState state;
 
     enum LandscaperState {
@@ -25,7 +25,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
     public WallSittingLandscaper(RobotController rc){
         super(rc);
-        path = new ArrayList<Direction>();
+        path = new DroidList<Direction>();
         path.add(Direction.SOUTH);
         path.add(Direction.SOUTH);
         path.add(Direction.WEST);
@@ -45,7 +45,7 @@ public class WallSittingLandscaper extends MobileUnit {
         moving = false;
         hasResetPath = false;
         totalMoves = 0;
-        hqTiles = new ArrayList<MapLocation>();
+        hqTiles = new DroidList<MapLocation>();
         state = LandscaperState.WALLING;
 
         generateHQTiles();

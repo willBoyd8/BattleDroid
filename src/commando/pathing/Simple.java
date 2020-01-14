@@ -2,14 +2,14 @@ package commando.pathing;
 
 import battlecode.common.*;
 import commando.utility.Constants;
+import commando.utility.DroidList;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class Simple {
 
     public static boolean moveToLocationFuzzyNoFlyZone(MapLocation loc, int noFlyZoneRadius, RobotController rc) throws GameActionException{
-            ArrayList<Direction> possibleDirections = new ArrayList<Direction>();
+            DroidList<Direction> possibleDirections = new DroidList<Direction>();
 
             // Find all directions that are favorable
             int currentDistance = rc.getLocation().distanceSquaredTo(loc);
@@ -27,7 +27,7 @@ public class Simple {
 
             // Attempt to move
             while(possibleDirections.size() > 0){
-                ArrayList<Direction> toRemove = new ArrayList<>();
+                DroidList<Direction> toRemove = new DroidList<>();
 
                 for(Direction dir : possibleDirections){
                     MapLocation tile = rc.getLocation().add(dir);
@@ -50,7 +50,7 @@ public class Simple {
     }
 
     public static boolean moveToLocationFuzzy(MapLocation loc, RobotController rc) throws GameActionException{
-        ArrayList<Direction> possibleDirections = new ArrayList<Direction>();
+        DroidList<Direction> possibleDirections = new DroidList<Direction>();
 
         // Find all directions that are favorable
         int currentDistance = rc.getLocation().distanceSquaredTo(loc);
@@ -68,7 +68,7 @@ public class Simple {
 
         // Attempt to move
         while(possibleDirections.size() > 0){
-            ArrayList<Direction> toRemove = new ArrayList<>();
+            DroidList<Direction> toRemove = new DroidList<>();
 
             for(Direction dir : possibleDirections){
                 MapLocation tile = rc.getLocation().add(dir);
@@ -90,8 +90,8 @@ public class Simple {
         return false;
 
         /*
-        ArrayList<Direction> validDirections = new ArrayList<>();
-        ArrayList<Direction> eqiDist = new ArrayList<>();
+        DroidList<Direction> validDirections = new DroidList<>();
+        DroidList<Direction> eqiDist = new DroidList<>();
         Direction bestDirection = Direction.CENTER;
         Random r = new Random();
         int currentDistSquaredTo = loc.distanceSquaredTo(rc.getLocation());

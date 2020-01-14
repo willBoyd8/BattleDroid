@@ -2,7 +2,6 @@ package commando.utility;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
 
 public class Unsorted {
     /**
@@ -53,7 +52,7 @@ public class Unsorted {
 
     }
 
-    public static MapLocation getClosestMapLocation(ArrayList<MapLocation> locs, RobotController rc){
+    public static MapLocation getClosestMapLocation(DroidList<MapLocation> locs, RobotController rc){
         MapLocation best = null;
         int closest = Integer.MAX_VALUE;
 

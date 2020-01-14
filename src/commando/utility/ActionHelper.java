@@ -2,8 +2,6 @@ package commando.utility;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
-
 public class ActionHelper {
 
     /**
@@ -49,7 +47,7 @@ public class ActionHelper {
         } else return false;
     }
 
-    public static ArrayList<MapLocation> getSoupLocations(RobotController rc) throws GameActionException {
+    public static DroidList<MapLocation> getSoupLocations(RobotController rc) throws GameActionException {
         MapLocation currentLoc = rc.getLocation();
 
         int i_sensorActual = (int)Math.sqrt(RobotType.MINER.sensorRadiusSquared);
@@ -60,7 +58,7 @@ public class ActionHelper {
         int lowYLimit = currentLoc.y - i_sensorActual;
         int highYLimit = currentLoc.y + i_sensorActual;
 
-        ArrayList<MapLocation> soupTiles = new ArrayList<>();
+        DroidList<MapLocation> soupTiles = new DroidList<>();
         for (int i = lowXLimit; i < highXLimit; i++){
             //System.out.println("getVisibleTiles: x");
             for (int j = lowYLimit; j < highYLimit; j++){

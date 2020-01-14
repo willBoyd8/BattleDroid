@@ -8,9 +8,9 @@ import commando.communication.Tell;
 import commando.pathing.Simple;
 import commando.utility.ActionHelper;
 import commando.utility.Constants;
+import commando.utility.DroidList;
 import commando.utility.Unsorted;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class MiningMiner extends MobileUnit {
@@ -19,9 +19,9 @@ public class MiningMiner extends MobileUnit {
     public int distTraveled;
     private boolean announced;
     public Direction travelDir;
-    public ArrayList<MapLocation> depositLocations;
-    public ArrayList<MapLocation> knownSoup;
-    public ArrayList<MapLocation> locationsToSend;
+    public DroidList<MapLocation> depositLocations;
+    public DroidList<MapLocation> knownSoup;
+    public DroidList<MapLocation> locationsToSend;
     private Bucket buck;
     private Tell tell;
     MapLocation[] broadcasted;
@@ -31,9 +31,9 @@ public class MiningMiner extends MobileUnit {
         super(rc);
         state = MiningState.LOOK;
         targetLocation = null;
-        depositLocations = new ArrayList<MapLocation>();
-        knownSoup = new ArrayList<MapLocation>();
-        locationsToSend = new ArrayList<MapLocation>();
+        depositLocations = new DroidList<MapLocation>();
+        knownSoup = new DroidList<MapLocation>();
+        locationsToSend = new DroidList<MapLocation>();
         depositLocations.add(hqLocation);
         totalDist = 0;
         distTraveled = 0;

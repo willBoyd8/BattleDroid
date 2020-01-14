@@ -4,23 +4,23 @@ import battlecode.common.*;
 import commando.base.MobileUnit;
 import commando.pathing.Simple;
 import commando.utility.Constants;
+import commando.utility.DroidList;
 
-import java.util.ArrayList;
 
 public class MouseLandscaper extends MobileUnit {
-    ArrayList<MapLocation> dirtLocations;
-    ArrayList<MapLocation> digLocations;
+    DroidList<MapLocation> dirtLocations;
+    DroidList<MapLocation> digLocations;
     MapLocation hqLocation;
     boolean hasMoved;
     boolean moving;
     MapLocation partnerLocation;
-    ArrayList<Direction> path;
+    DroidList<Direction> path;
 
     public MouseLandscaper(RobotController rc){
         super(rc);
-        dirtLocations = new ArrayList<MapLocation>();
-        digLocations = new ArrayList<MapLocation>();
-        path = new ArrayList<Direction>();
+        dirtLocations = new DroidList<MapLocation>();
+        digLocations = new DroidList<MapLocation>();
+        path = new DroidList<Direction>();
         moving = false;
         hasMoved = false;
         partnerLocation = rc.getLocation().add(Direction.WEST).add(Direction.WEST);

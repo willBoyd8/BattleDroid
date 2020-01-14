@@ -6,12 +6,12 @@ import commando.pathing.Simple;
 import commando.utility.ActionHelper;
 import commando.utility.Constants;
 import commando.utility.DebugHelper;
+import commando.utility.DroidList;
 
-import java.util.ArrayList;
 
 public class BuzzDroid extends MobileUnit {
     public DroneState state;
-    public ArrayList<MapLocation> enemyHQLocations;
+    public DroidList<MapLocation> enemyHQLocations;
     public int homeQuad;
     public RaidState raidState;
     public RobotInfo holding;
@@ -22,7 +22,7 @@ public class BuzzDroid extends MobileUnit {
         super(rc);
         state = DroneState.GENERATE;
         targetLocation = null;
-        enemyHQLocations = new ArrayList<MapLocation>();
+        enemyHQLocations = new DroidList<MapLocation>();
         homeQuad = 0;
         raidState = null;
         holding = null;
@@ -35,7 +35,7 @@ public class BuzzDroid extends MobileUnit {
         super(unit);
         state = DroneState.GENERATE;
         targetLocation = null;
-        enemyHQLocations = new ArrayList<MapLocation>();
+        enemyHQLocations = new DroidList<MapLocation>();
         homeQuad = 0;
         raidState = null;
         holding = null;
@@ -354,7 +354,7 @@ public class BuzzDroid extends MobileUnit {
     }
 
     private void buzz() throws GameActionException {
-        ArrayList<Direction> notFlooded = new ArrayList<>();
+        DroidList<Direction> notFlooded = new DroidList<>();
 
         for(Direction dir : Direction.allDirections()){
             if(!rc.senseFlooding(rc.getLocation().add(dir))){

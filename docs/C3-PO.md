@@ -38,3 +38,9 @@ place it on the wall
 - The Delivery Drone would wait until it could pick up a Landscaper from it's right. It would pick up this landscaper and
 then place it on the wall.
 - It did this by moving in and out of the wall in a method that was fairly inefficient.
+
+#### Ongoing Problems
+- By this time, the rush meta had started to become evident in a lot of the stronger teams. This bot did not hold up well
+to those strategies
+- The bot didn't wall earlier enough to beat some teams
+- This bot had numerous bugs

@@ -2,6 +2,7 @@ package commando.units.laticelandscaper;
 
 import battlecode.common.*;
 import commando.base.MobileUnit;
+import commando.communication.CommunicationHelper;
 import commando.pathing.Simple;
 import commando.utility.ActionHelper;
 import commando.utility.Constants;
@@ -30,10 +31,19 @@ public class LaticeLandscaper extends MobileUnit {
         ATTACKING
     }
 
+    @Override
+    public void onInitialization() throws GameActionException {
+        catchup();
+        wallLocations.addAll(ActionHelper.generateAdjacentTiles(hqLocation, rc));
+    }
+
     public void turn() throws GameActionException {
+        checkMessages();
 
         if(state == LaticeState.EARLY_WALLING && GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFTEY_BARRIER){
             state = LaticeState.LATE_WALLING;
+        } else if(wallLocations.size() <= 0 && state != LaticeState.EARLY_WALLING && state != LaticeState.LATE_WALLING){
+            state = LaticeState.LATICE_BUILDING;
         }
 
         switch(state){
@@ -194,6 +204,45 @@ public class LaticeLandscaper extends MobileUnit {
 
     public void attacking() throws GameActionException {
         // TODO: Implement this state
+    }
+
+    public void catchup() throws GameActionException{
+        int counter = 1;
+        while(counter < rc.getRoundNum()){
+            checkMessages(counter);
+            counter++;
+        }
+    }
+
+    public void checkMessages() throws GameActionException {
+        checkMessages(rc.getRoundNum() - 1);
+    }
+
+    public void checkMessages(int roundNumber) throws GameActionException{
+        Transaction[] transactions = rc.getBlock(roundNumber);
+
+        for(Transaction trans : transactions){
+            int[] message = trans.getMessage();
+            if(message[0] == Constants.MESSAGE_KEY){
+                processMessage(message);
+            }
+        }
+    }
+
+    public void processMessage(int[] message){
+        switch(message[1]){
+            case 0:
+                hqLocation = CommunicationHelper.convertMessageToLocation(message[2]);
+                hqElevation = message[3];
+                break;
+            case 1:
+                wallLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
+                break;
+            case 2:
+                wallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
+                state = LaticeState.MOVING_TO_WALL;
+                break;
+        }
     }
 
 }

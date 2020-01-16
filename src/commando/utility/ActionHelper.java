@@ -167,4 +167,16 @@ public class ActionHelper {
         }
         return best;
     }
+
+    public static DroidList<MapLocation> generateAdjacentTiles(MapLocation loc, RobotController rc) {
+        DroidList<MapLocation> adjacent = new DroidList<>();
+
+        for(Direction dir : Constants.DIRECTIONS){
+            if(rc.onTheMap(loc.add(dir))){
+                adjacent.add(loc.add(dir));
+            }
+        }
+
+        return adjacent;
+    }
 }

@@ -16,4 +16,5 @@ public class Constants {
 
     public static int LATICE_HEIGHT = 11;
     public static int WALL_SAFTEY_BARRIER = 0;
+    public static int MESSAGE_KEY = 0;
 }

@@ -8,10 +8,12 @@ import commando.units.buildingminer.BuildingMiner;
 import commando.units.genericrefinery.GenericRefinery;
 import commando.units.genericvaporator.GenericVaporator;
 import commando.units.laticelandscaper.LaticeLandscaper;
+import commando.units.loudhq.LoudHQ;
 import commando.units.miningminer.MiningMiner;
 import commando.units.mousedesignschool.MouseDesignSchool;
 import commando.units.mousefulfillmentcenter.MouseFulfillmentCenter;
 import commando.units.mouseheadquarters.MouseHeadquarters;
+import commando.units.simpleminer.SimpleMiner;
 import commando.units.speederbike.SpeederBike;
 import commando.units.wallsittinglandscaper.WallSittingLandscaper;
 import commando.utility.Constants;
@@ -26,14 +28,8 @@ public strictfp class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException, KillMeNowException {
 
         switch (rc.getType()) {
-            case HQ:                 new MouseHeadquarters(rc).run();           break;
-            case MINER:
-                if(rc.getRoundNum() < Constants.WALL_START_ROUND) {
-                    new MiningMiner(rc).run();
-                } else {
-                    new BuildingMiner(rc).run();
-                }
-                break;
+            case HQ:                 new LoudHQ(rc).run();           break;
+            case MINER:              new SimpleMiner(rc).run();     break;
             case REFINERY:           new GenericRefinery(rc).run();             break;
             case VAPORATOR:          new GenericVaporator(rc).run();            break;
             case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;

@@ -12,11 +12,14 @@ import java.util.Map;
 public class LoudHQ extends Building {
     DroidList<MapLocation> desiredWallLocations;
     DroidList<MapLocation> occupiedWallLocations;
+    int minerCounter;
 
-    public LoudHQ(RobotController rc){
+    public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
         desiredWallLocations = ActionHelper.generateAdjacentTiles(rc.getLocation(), rc);
-
+        occupiedWallLocations = new DroidList<>();
+        minerCounter = 0;
+        hqLocation = rc.getLocation();
     }
 
     @Override
@@ -25,12 +28,23 @@ public class LoudHQ extends Building {
         message[0] = Constants.MESSAGE_KEY;
         message[1] = 0;
         message[2] = CommunicationHelper.convertLocationToMessage(rc.getLocation());
-        message[3] = rc.senseElevation(rc.getLocation());
+        hqElevation = rc.senseElevation(rc.getLocation());
+        message[3] = hqElevation;
         rc.submitTransaction(message, 3);
     }
 
     public void turn() throws GameActionException {
         checkWall();
+        ActionHelper.tryShoot(rc);
+
+        // TODO: implement better logic for building
+        for(Direction dir : Constants.DIRECTIONS) {
+            if(minerCounter < 5 && ActionHelper.tryBuild(RobotType.MINER, dir, rc)){
+                minerCounter++;
+                break;
+            }
+        }
+
     }
 
     public void checkWall() throws GameActionException {
@@ -38,7 +52,7 @@ public class LoudHQ extends Building {
         for(MapLocation loc : desiredWallLocations){
             if(rc.canSenseLocation(loc)){
                 RobotInfo robot = rc.senseRobotAtLocation(loc);
-                if(robot.getTeam() == myTeam &&  robot.getType() == RobotType.LANDSCAPER){
+                if(robot != null && robot.getTeam() == myTeam &&  robot.getType() == RobotType.LANDSCAPER){
                     toRemove.add(loc);
                     int[] message = new int[7];
                     message[0] = Constants.MESSAGE_KEY;

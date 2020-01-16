@@ -138,6 +138,7 @@ public class ActionHelper {
 
     public static boolean tryDig(Direction dir, RobotController rc) throws GameActionException {
         if(rc.isReady() && rc.canDigDirt(dir)){
+            DebugHelper.setIndicatorDot(rc.getLocation().add(dir), 105, 105, 105, rc);
             rc.digDirt(dir);
             return true;
         }
@@ -146,6 +147,7 @@ public class ActionHelper {
 
     public static boolean tryDepositDirt(Direction dir, RobotController rc) throws GameActionException {
         if(rc.isReady() && rc.canDepositDirt(dir)) {
+            DebugHelper.setIndicatorDot(rc.getLocation().add(dir), 160, 82, 45, rc);
             rc.depositDirt(dir);
             return true;
         }
@@ -168,7 +170,7 @@ public class ActionHelper {
         return best;
     }
 
-    public static DroidList<MapLocation> generateAdjacentTiles(MapLocation loc, RobotController rc) {
+    public static DroidList<MapLocation> generateAdjacentTiles(MapLocation loc, RobotController rc) throws GameActionException{
         DroidList<MapLocation> adjacent = new DroidList<>();
 
         for(Direction dir : Constants.DIRECTIONS){

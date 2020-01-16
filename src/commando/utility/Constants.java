@@ -9,12 +9,12 @@ public class Constants {
     static RobotType[] SPAWNED_BY_MINER = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
     public static int WALL_START_ROUND = 250;
-    public static boolean DEBUGGER_ENABLE = false;
+    public static boolean DEBUGGER_ENABLE = true;
     public static int RAID_START_ROUND = 2000;
     public static int LANDSCAPERS_ON_WALL = 15;
     public static int MIN_REFINERY_SPREAD_DISTANCE = 20;
 
     public static int LATICE_HEIGHT = 11;
-    public static int WALL_SAFTEY_BARRIER = 0;
+    public static int WALL_SAFTEY_BARRIER = 1;
     public static int MESSAGE_KEY = 0;
 }

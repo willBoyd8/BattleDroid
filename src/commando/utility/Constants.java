@@ -13,4 +13,7 @@ public class Constants {
     public static int RAID_START_ROUND = 2000;
     public static int LANDSCAPERS_ON_WALL = 15;
     public static int MIN_REFINERY_SPREAD_DISTANCE = 20;
+
+    public static int LATICE_HEIGHT = 11;
+    public static int WALL_SAFTEY_BARRIER = 0;
 }

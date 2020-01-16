@@ -151,4 +151,20 @@ public class ActionHelper {
         }
         return false;
     }
+
+    public static Direction findLowestElevation(RobotController rc) throws GameActionException {
+        Direction best = Direction.CENTER;
+        int lowest = Integer.MAX_VALUE;
+        for(Direction  dir : Constants.DIRECTIONS){
+            MapLocation loc = rc.getLocation().add(dir);
+            if(rc.canSenseLocation(loc)){
+                int height = rc.senseElevation(loc);
+                if(height < lowest){
+                    lowest = height;
+                    best = dir;
+                }
+            }
+        }
+        return best;
+    }
 }

@@ -135,4 +135,20 @@ public class ActionHelper {
         }
         return false;
     }
+
+    public static boolean tryDig(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDigDirt(dir)){
+            rc.digDirt(dir);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean tryDepositDirt(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDepositDirt(dir)) {
+            rc.depositDirt(dir);
+            return true;
+        }
+        return false;
+    }
 }

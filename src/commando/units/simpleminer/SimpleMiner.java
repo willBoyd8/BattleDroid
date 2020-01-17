@@ -27,6 +27,7 @@ public class SimpleMiner extends MobileUnit {
     private Bucket buck;
     private Tell tell;
     MapLocation[] broadcasted;
+    int gridOffsetX, gridOffsetY;
     // TODO: Implement looking for refineries occasionally
 
     public SimpleMiner(RobotController rc){
@@ -42,10 +43,18 @@ public class SimpleMiner extends MobileUnit {
         buck = new Bucket(rc);
         tell = new Tell(rc);
         broadcasted = null;
+        gridOffsetX = 0;
+        gridOffsetY = 0;
         try {
             catchup();
         } catch (Exception e){
             System.out.println("Couldn't catch up on messages");
+        }
+        if(hqLocation.x % 2 == 0){
+            gridOffsetX = 1;
+        }
+        if(hqLocation.y % 2 == 0){
+            gridOffsetY = 1;
         }
     }
 

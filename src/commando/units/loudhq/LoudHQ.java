@@ -16,8 +16,8 @@ public class LoudHQ extends Building {
 
     public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
-        desiredWallLocations = ActionHelper.generateAdjacentTiles(rc.getLocation(), rc);
-        occupiedWallLocations = new DroidList<>();
+        occupiedWallLocations = ActionHelper.generateAdjacentTiles(rc.getLocation(), rc);
+        desiredWallLocations = new DroidList<>();
         minerCounter = 0;
         hqLocation = rc.getLocation();
     }

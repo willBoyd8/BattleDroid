@@ -4,6 +4,7 @@ import battlecode.common.*;
 import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
+import commando.pathing.Bug;
 import commando.pathing.Simple;
 import commando.utility.*;
 
@@ -14,11 +15,16 @@ public class LaticeLandscaper extends MobileUnit {
 
     LaticeState state;
     DroidList<MapLocation> wallLocations;
+    int gridOffsetX, gridOffsetY;
+    Bug path;
 
     public LaticeLandscaper(RobotController rc){
         super(rc);
         state = LaticeState.MOVING_TO_WALL;
         wallLocations = new DroidList<>();
+        gridOffsetX = 0;
+        gridOffsetY = 0;
+        path = null;
     }
 
     enum LaticeState {
@@ -33,11 +39,21 @@ public class LaticeLandscaper extends MobileUnit {
     @Override
     public void onInitialization() throws GameActionException {
         catchup();
-        wallLocations.addAll(ActionHelper.generateAdjacentTiles(hqLocation, rc));
+//        wallLocations.addAll(ActionHelper.generateAdjacentTiles(hqLocation, rc));
+        if(hqLocation.x % 2 == 0){
+            gridOffsetX = 1;
+        }
+        if(hqLocation.y % 2 == 0){
+            gridOffsetY = 1;
+        }
     }
 
     public void turn() throws GameActionException {
         checkMessages();
+
+        if(rc.getLocation().isAdjacentTo(hqLocation)){
+            state = LaticeState.EARLY_WALLING;
+        }
 
         if(state == LaticeState.EARLY_WALLING && GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFTEY_BARRIER){
             state = LaticeState.LATE_WALLING;
@@ -50,9 +66,9 @@ public class LaticeLandscaper extends MobileUnit {
 
 
         switch(state){
-            case MOVING_TO_WALL: movingToWall(); break;
-            case EARLY_WALLING: earlyWalling(); break;
-            case LATE_WALLING: lateWalling(); break;
+            case MOVING_TO_WALL: DebugHelper.setIndicatorDot(rc.getLocation(), 255, 0, 0, rc); movingToWall(); break;
+            case EARLY_WALLING: DebugHelper.setIndicatorDot(rc.getLocation(), 0, 255, 0, rc); earlyWalling(); break;
+            case LATE_WALLING: DebugHelper.setIndicatorDot(rc.getLocation(), 0, 0, 255, rc); lateWalling(); break;
             case LATICE_BUILDING: laticeBuilding(); break;
             case MOVING_TO_LATICE_EDGE: movingToLaticeEdge(); break;
             case ATTACKING: attacking(); break;
@@ -71,31 +87,39 @@ public class LaticeLandscaper extends MobileUnit {
             return;
         }
 
-        // TODO:  Implement Bug Pathing
-        if(!Simple.moveToLocationFuzzy(wallLocations.get(0), rc) && rc.isReady()){
-            MapLocation loc = rc.getLocation().add(rc.getLocation().directionTo(wallLocations.get(0)));
-            int height = Integer.MIN_VALUE;
-            if(rc.canSenseLocation(loc)){
-                height = rc.senseElevation(loc);
-            }
-
-            if(rc.senseElevation(rc.getLocation()) > height){
-                ActionHelper.tryDig(rc.getLocation().directionTo(loc), rc);
-            } else {
-                if(rc.getDirtCarrying() > 0){
-                    ActionHelper.tryDepositDirt(rc.getLocation().directionTo(loc), rc);
-                } else {
-                    for (Direction dir : Constants.DIRECTIONS) {
-                        MapLocation dirLoc = rc.getLocation().add(dir);
-                        if (rc.onTheMap(dirLoc) && !loc.isAdjacentTo(hqLocation) && dirLoc.x % 2 == 1 && loc.y == 1) {
-                            if(ActionHelper.tryDig(dir, rc)){
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+        if(path == null) {
+            path = new Bug(rc.getLocation(), wallLocations.get(0), rc);
+        } else {
+            path.updateDestination(wallLocations.get(0));
         }
+
+        path.run();
+
+//        // TODO:  Implement Bug Pathing
+//        if(!Simple.moveToLocationFuzzy(wallLocations.get(0), rc) && rc.isReady()){
+//            MapLocation loc = rc.getLocation().add(rc.getLocation().directionTo(wallLocations.get(0)));
+//            int height = Integer.MIN_VALUE;
+//            if(rc.canSenseLocation(loc)){
+//                height = rc.senseElevation(loc);
+//            }
+//
+//            if(rc.senseElevation(rc.getLocation()) > height){
+//                ActionHelper.tryDig(rc.getLocation().directionTo(loc), rc);
+//            } else {
+//                if(rc.getDirtCarrying() > 0){
+//                    ActionHelper.tryDepositDirt(rc.getLocation().directionTo(loc), rc);
+//                } else {
+//                    for (Direction dir : Constants.DIRECTIONS) {
+//                        MapLocation dirLoc = rc.getLocation().add(dir);
+//                        if (rc.onTheMap(dirLoc) && !dirLoc.isAdjacentTo(hqLocation) && (dirLoc.x - gridOffsetX) % 2 == 1 && (dirLoc.y - gridOffsetY) % 2 == 1) {
+//                            if(ActionHelper.tryDig(dir, rc)){
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     /**
@@ -106,7 +130,7 @@ public class LaticeLandscaper extends MobileUnit {
         if(rc.getDirtCarrying() <= 0) {
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && loc.x % 2 == 1 && loc.y % 2 == 1) {
+                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
                     ActionHelper.tryDig(dir, rc);
                 }
             }
@@ -123,7 +147,7 @@ public class LaticeLandscaper extends MobileUnit {
         if(rc.getDirtCarrying() <= 0) {
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && loc.x % 2 == 1 && loc.y % 2 == 1) {
+                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x -gridOffsetX) % 2 == 1 && (loc.y -gridOffsetY) % 2 == 1) {
                     if(ActionHelper.tryDig(dir, rc)){
                         break;
                     }
@@ -132,7 +156,7 @@ public class LaticeLandscaper extends MobileUnit {
         } else {
             Direction best = Direction.CENTER;
             int lowest = Integer.MAX_VALUE;
-            for(Direction  dir : Constants.DIRECTIONS){
+            for(Direction  dir : Direction.allDirections()){
                 MapLocation loc = rc.getLocation().add(dir);
                 if(rc.canSenseLocation(loc)){
                     int height = rc.senseElevation(loc);
@@ -159,7 +183,7 @@ public class LaticeLandscaper extends MobileUnit {
         if(rc.getDirtCarrying() <= 0){
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && loc.x % 2 == 1 && loc.y % 2 == 1) {
+                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
                     if(ActionHelper.tryDig(dir, rc)){
                             return;
                     }
@@ -198,7 +222,7 @@ public class LaticeLandscaper extends MobileUnit {
             if(rc.canSenseLocation(loc)){
                 int height = rc.senseElevation(loc);
                 // TODO: we probably aren't handling all the possible cases here
-                if(height < Constants.LATICE_HEIGHT && (loc.x % 2 == 0 || loc.y % 2 == 0)){
+                if(height < Constants.LATICE_HEIGHT && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
                     adjacent.add(loc);
                 }
             }

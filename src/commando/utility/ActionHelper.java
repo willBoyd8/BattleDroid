@@ -135,4 +135,50 @@ public class ActionHelper {
         }
         return false;
     }
+
+    public static boolean tryDig(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDigDirt(dir)){
+            DebugHelper.setIndicatorDot(rc.getLocation().add(dir), 105, 105, 105, rc);
+            rc.digDirt(dir);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean tryDepositDirt(Direction dir, RobotController rc) throws GameActionException {
+        if(rc.isReady() && rc.canDepositDirt(dir)) {
+            DebugHelper.setIndicatorDot(rc.getLocation().add(dir), 160, 82, 45, rc);
+            rc.depositDirt(dir);
+            return true;
+        }
+        return false;
+    }
+
+    public static Direction findLowestElevation(RobotController rc) throws GameActionException {
+        Direction best = Direction.CENTER;
+        int lowest = Integer.MAX_VALUE;
+        for(Direction  dir : Constants.DIRECTIONS){
+            MapLocation loc = rc.getLocation().add(dir);
+            if(rc.canSenseLocation(loc)){
+                int height = rc.senseElevation(loc);
+                if(height < lowest){
+                    lowest = height;
+                    best = dir;
+                }
+            }
+        }
+        return best;
+    }
+
+    public static DroidList<MapLocation> generateAdjacentTiles(MapLocation loc, RobotController rc) throws GameActionException{
+        DroidList<MapLocation> adjacent = new DroidList<>();
+
+        for(Direction dir : Constants.DIRECTIONS){
+            if(rc.onTheMap(loc.add(dir))){
+                adjacent.add(loc.add(dir));
+            }
+        }
+
+        return adjacent;
+    }
 }

@@ -2,6 +2,7 @@ package commando.base;
 import battlecode.common.*;
 import commando.utility.ActionHelper;
 import commando.utility.DebugHelper;
+import commando.utility.DroidList;
 import commando.utility.ForTheGloryOfTheEmpire;
 
 import java.util.Random;
@@ -18,6 +19,9 @@ public abstract class Unit {
     public int hqElevation;
     public RobotInfo hqInfo;
     public MapLocation targetLocation;
+    public MapLocation enemyHQ;
+    public DroidList<int[]> messageQueue;
+    public DroidList<MapLocation> enemyHQLocations;
 
     public Unit(RobotController rc){
         this.rc = rc;
@@ -25,22 +29,11 @@ public abstract class Unit {
         myTeam = rc.getTeam();
         enemy = myTeam.opponent();
         rand = new Random();
-        hqElevation = 5;
+        hqElevation = Integer.MIN_VALUE;
         targetLocation = null;
+        enemyHQ = null;
+        messageQueue = new DroidList<>();
 
-        if(rc.getType() != RobotType.HQ) {
-            hqInfo = ActionHelper.findHQ(rc);
-            if(hqInfo != null) {
-                hqLocation = hqInfo.getLocation();
-                try {
-                    if (rc.canSenseLocation(hqLocation)) {
-                        hqElevation = rc.senseElevation(hqLocation);
-                    }
-                } catch (Exception e) {
-                    hqElevation = 5;
-                }
-            }
-        }
 
         age = 0;
     }
@@ -112,6 +105,8 @@ public abstract class Unit {
      * This method is run at the end of every round for every unit
      */
     public final void roundEnd() throws GameActionException{
+        trySendMessage();
+
         if(targetLocation != null) {
             DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 0, 0, 255, rc);
         }
@@ -137,4 +132,11 @@ public abstract class Unit {
      * @throws GameActionException
      */
     public void onInitialization() throws GameActionException {}
+
+    public void trySendMessage() throws GameActionException{
+        if(rc.canSubmitTransaction(messageQueue.get(0), 1)){
+            rc.submitTransaction(messageQueue.get(0), 1);
+            messageQueue.remove(0);
+        }
+    }
 }

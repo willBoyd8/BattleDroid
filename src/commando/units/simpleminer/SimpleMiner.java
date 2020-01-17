@@ -37,7 +37,6 @@ public class SimpleMiner extends MobileUnit {
         depositLocations = new DroidList<MapLocation>();
         knownSoup = new DroidList<MapLocation>();
         locationsToSend = new DroidList<MapLocation>();
-        depositLocations.add(hqLocation);
         totalDist = 0;
         distTraveled = 0;
         buck = new Bucket(rc);
@@ -73,19 +72,19 @@ public class SimpleMiner extends MobileUnit {
         if(rand.nextDouble() < 0.05){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
-                if(loc.x % 2 == 0 && loc.y % 2 == 0 && !loc.isAdjacentTo(hqLocation) && ActionHelper.tryBuild(RobotType.DESIGN_SCHOOL, dir, rc)){
+                if((loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0 && !loc.isAdjacentTo(hqLocation) && ActionHelper.tryBuild(RobotType.DESIGN_SCHOOL, dir, rc)){
                     break;
                 }
             }
         }
 
         if(rc.getLocation().distanceSquaredTo(hqLocation) <= 8 && rc.getRoundNum() > Constants.WALL_START_ROUND){
-            state = MiningState.FLOODING;
+//            state = MiningState.FLOODING;
         }
 
-        if(rc.getRoundNum() > Constants.WALL_START_ROUND && hqLocation != null){
-            depositLocations.remove(hqLocation);
-        }
+//        if(rc.getRoundNum() > Constants.WALL_START_ROUND && hqLocation != null){
+//            depositLocations.remove(hqLocation);
+//        }
 
         scanDepositLocations();
         lookForSoup();
@@ -374,6 +373,7 @@ public class SimpleMiner extends MobileUnit {
             case 0:
                 hqLocation = CommunicationHelper.convertMessageToLocation(message[2]);
                 hqElevation = message[3];
+//                depositLocations.add(hqLocation);
                 break;
             case 1:
                 break;
@@ -384,6 +384,10 @@ public class SimpleMiner extends MobileUnit {
                 if(!knownSoup.contains(loc)){
                     knownSoup.add(loc);
                 }
+            case 4:
+                break;
+            case 5:
+                break;
 
         }
 

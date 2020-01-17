@@ -17,6 +17,7 @@ public class LaticeLandscaper extends MobileUnit {
     DroidList<MapLocation> wallLocations;
     int gridOffsetX, gridOffsetY;
     Bug path;
+    DroidList<MapLocation> enemyHQBlacklist;
 
     public LaticeLandscaper(RobotController rc){
         super(rc);
@@ -25,6 +26,7 @@ public class LaticeLandscaper extends MobileUnit {
         gridOffsetX = 0;
         gridOffsetY = 0;
         path = null;
+        enemyHQBlacklist = new DroidList<>();
     }
 
     enum LaticeState {
@@ -46,10 +48,14 @@ public class LaticeLandscaper extends MobileUnit {
         if(hqLocation.y % 2 == 0){
             gridOffsetY = 1;
         }
+
+        enemyHQLocations = Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc);
+        enemyHQBlacklist.removeAll(enemyHQBlacklist);
     }
 
     public void turn() throws GameActionException {
         checkMessages();
+        checkEnemyHQ();
 
         if(rc.getLocation().isAdjacentTo(hqLocation)){
             state = LaticeState.EARLY_WALLING;
@@ -208,7 +214,11 @@ public class LaticeLandscaper extends MobileUnit {
 
         // TODO: This expansion method is sloppy, but might work
         if(targetLocation == null){
-            targetLocation = Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc).get(rand.nextInt(3));
+            if(enemyHQ != null){
+                targetLocation = enemyHQ;
+            } else {
+                targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+            }
         }
 
         Simple.moveToLocationFuzzy(targetLocation, rc);
@@ -222,7 +232,9 @@ public class LaticeLandscaper extends MobileUnit {
             if(rc.canSenseLocation(loc)){
                 int height = rc.senseElevation(loc);
                 // TODO: we probably aren't handling all the possible cases here
-                if(height < Constants.LATICE_HEIGHT && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
+                // height < Constants.LATICE_HEIGHT for a static height
+                // use round number and water elevation for a less static grid
+                if((height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
                     adjacent.add(loc);
                 }
             }
@@ -233,6 +245,29 @@ public class LaticeLandscaper extends MobileUnit {
 
     public void attacking() throws GameActionException {
         // TODO: Implement this state
+    }
+
+    public void checkEnemyHQ() throws GameActionException{
+        if(enemyHQ == null && targetLocation != null){
+            if(rc.canSenseLocation(targetLocation)){
+                RobotInfo robot = rc.senseRobotAtLocation(targetLocation);
+                if(robot == null) {
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 4;
+                    message[2] = CommunicationHelper.convertLocationToMessage(targetLocation);
+                    messageQueue.add(message);
+                } else {
+                    if(robot.getType() == RobotType.HQ){
+                        int[] message = new int[7];
+                        message[0] = Constants.MESSAGE_KEY;
+                        message[1] = 5;
+                        message[2] = CommunicationHelper.convertLocationToMessage(targetLocation);
+                        messageQueue.add(message);
+                    }
+                }
+            }
+        }
     }
 
     public void catchup() throws GameActionException{
@@ -270,6 +305,18 @@ public class LaticeLandscaper extends MobileUnit {
             case 2:
                 wallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
                 state = LaticeState.MOVING_TO_WALL;
+                break;
+            case 3:
+                break;
+            case 4:
+                enemyHQBlacklist.add(CommunicationHelper.convertMessageToLocation(message[2]));
+                if(targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
+                    targetLocation = null;
+                }
+                break;
+            case 5:
+                enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
+                targetLocation = null;
                 break;
         }
 

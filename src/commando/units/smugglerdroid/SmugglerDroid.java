@@ -20,6 +20,7 @@ public class SmugglerDroid extends MobileUnit {
     int gridOffsetX, gridOffsetY;
     boolean initialDesignSchool, initialFulfillmentCenter, initialRefinery;
     boolean economyBuilding;
+    boolean productionLocked;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -33,6 +34,7 @@ public class SmugglerDroid extends MobileUnit {
         initialFulfillmentCenter = false;
         economyBuilding = true;
         initialRefinery = false;
+        productionLocked = false;
     }
 
     enum SmugglerState {
@@ -82,6 +84,16 @@ public class SmugglerDroid extends MobileUnit {
                     message[2] = CommunicationHelper.convertLocationToMessage(loc);
                     message[3] = rc.senseElevation(loc);
                     messageQueue.add(message);
+
+                    if(productionLocked) {
+                        productionLocked = false;
+                        int[] message2 = new int[7];
+                        message2[0] = Constants.MESSAGE_KEY;
+                        message2[1] = 11;
+                        message2[2] = 0;
+                        messageQueue.add(message2);
+                    }
+
                     return true;
                 }
             }
@@ -108,9 +120,31 @@ public class SmugglerDroid extends MobileUnit {
                     message[2] = CommunicationHelper.convertLocationToMessage(loc);
                     message[3] = rc.senseElevation(loc);
                     messageQueue.add(message);
+
+                    if(productionLocked) {
+                        productionLocked = false;
+                        int[] message2 = new int[7];
+                        message2[0] = Constants.MESSAGE_KEY;
+                        message2[1] = 11;
+                        message2[2] = 0;
+                        messageQueue.add(message2);
+                    }
                     return true;
                 }
             }
+            return false;
+        }
+
+        if(!productionLocked && isAdjacentToSoup() && rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE){
+            productionLocked = true;
+            int[] message = new int[7];
+            message[0] = Constants.MESSAGE_KEY;
+            message[1] = 11;
+            message[2] = 1;
+            messageQueue.add(message);
+        }
+
+        if(productionLocked){
             return false;
         }
 
@@ -438,6 +472,13 @@ public class SmugglerDroid extends MobileUnit {
                 break;
             case 10:
                 initialFulfillmentCenter = true;
+                break;
+            case 11:
+                if(message[2] == 0){
+                    productionLocked = false;
+                } else if(message[2] == 1) {
+                    productionLocked = true;
+                }
                 break;
 
         }

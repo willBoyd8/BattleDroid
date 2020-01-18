@@ -11,8 +11,7 @@ public class LaticeDesignSchool extends Building {
     DroidList<DropOffLocation> depositLocations;
     DroidList<MapLocation> knownSoupLocations;
     int gridOffsetX, gridOffsetY;
-    int waitTime;
-    boolean hasWaited;
+    boolean productionLocked;
 
 
     public LaticeDesignSchool(RobotController rc){
@@ -21,8 +20,7 @@ public class LaticeDesignSchool extends Building {
         knownSoupLocations = new DroidList<>();
         gridOffsetX = 0;
         gridOffsetY = 0;
-        waitTime = 0;
-        hasWaited = false;
+        productionLocked = false;
     }
 
     @Override
@@ -38,23 +36,16 @@ public class LaticeDesignSchool extends Building {
     }
 
     public void turn() throws GameActionException {
+        checkMessages();
         updateDepositLocations();
 
-//        if(waitTime > 300){
-//            hasWaited = true;
-//        }
-//
-//        if(depositLocations.size() <= 0 && knownSoupLocations.size() > 0 && !hasWaited){
-//            waitTime++;
-//            return;
-//        } else {
-//            waitTime = 0;
-            for(Direction dir : Constants.DIRECTIONS){
-                if(isOnLatice(rc.getLocation().add(dir)) && rc.canBuildRobot(RobotType.LANDSCAPER, dir)){
+        if(!productionLocked) {
+            for (Direction dir : Constants.DIRECTIONS) {
+                if (isOnLatice(rc.getLocation().add(dir)) && rc.canBuildRobot(RobotType.LANDSCAPER, dir)) {
                     rc.buildRobot(RobotType.LANDSCAPER, dir);
                 }
             }
-//        }
+        }
     }
 
     private void updateDepositLocations() {
@@ -133,6 +124,13 @@ public class LaticeDesignSchool extends Building {
             case 9:
                 break;
             case 10:
+                break;
+            case 11:
+                if(message[2] == 0){
+                    productionLocked = false;
+                } else if (message[2] == 1){
+                    productionLocked = true;
+                }
                 break;
 
         }

@@ -243,7 +243,7 @@ public class LaticeLandscaper extends MobileUnit {
                 // TODO: we probably aren't handling all the possible cases here
                 // height < Constants.LATICE_HEIGHT for a static height
                 // use round number and water elevation for a less static grid
-                if(!isOccupied && (height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
+                if(!isOccupied && height >= Constants.MIN_LATICE_BUILDING_ELEVATION && (height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
                     adjacent.add(loc);
                 }
             }

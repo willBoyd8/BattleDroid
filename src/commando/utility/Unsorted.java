@@ -71,6 +71,29 @@ public class Unsorted {
 
     }
 
+    public static int getHQQuadrant(MapLocation hqLocation, RobotController rc) {
+        int homeQuad = 0;
+
+        int mapWidth = rc.getMapWidth();
+        int mapHeight = rc.getMapHeight();
+
+        //Figure out Home Quadrant
+        if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y < (mapHeight/2))){
+            homeQuad = 4;
+        }
+        else if ((hqLocation.x < (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
+            homeQuad = 2;
+        }
+        else if ((hqLocation.x < (mapWidth/2))&&(hqLocation.y < (mapHeight/2))){
+            homeQuad = 3;
+        }
+        else if ((hqLocation.x > (mapWidth/2))&&(hqLocation.y > (mapHeight/2))){
+            homeQuad = 1;
+        }
+        return homeQuad;
+    }
+
+
     public static DroidList<MapLocation> generatePossibleEnemyHQLocation(MapLocation hqLocation, RobotController rc){
         DroidList<MapLocation> enemyHQLocations = new DroidList<>();
         int homeQuad = 0;

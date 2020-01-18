@@ -30,7 +30,6 @@ public class SmugglerDroid extends MobileUnit {
     }
 
     enum SmugglerState {
-        BUILDING,
         MINING,
         DEPOSITING,
         SEARCHING
@@ -51,21 +50,36 @@ public class SmugglerDroid extends MobileUnit {
     public void turn() throws GameActionException {
         checkMessages();
         updateDepositLocations();
-//        if(rc.getRoundNum() % 10 == 0) {
-            updateSoupLocations();
-//        }
-        //
+        updateSoupLocations();
+        if(building()){
+            return;
+        }
 
         switch (state){
             case MINING: mining(); break;
-            case BUILDING: building(); break;
             case DEPOSITING: depositing(); break;
             case SEARCHING: searching(); break;
         }
     }
 
-    public void building() throws GameActionException{
-
+    public boolean building() throws GameActionException{
+        MapLocation closestDeposit = getClosestMapLocation(depositLocations, rc);
+        if((closestDeposit == null || rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE) && isAdjacentToSoup()){
+            for(Direction dir : Constants.DIRECTIONS){
+                MapLocation loc = rc.getLocation().add(dir);
+                if(rc.canBuildRobot(RobotType.REFINERY, dir) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1){
+                    rc.buildRobot(RobotType.REFINERY, dir);
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 8;
+                    message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                    message[3] = rc.senseElevation(loc);
+                    messageQueue.add(message);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void searching() throws GameActionException{
@@ -158,6 +172,20 @@ public class SmugglerDroid extends MobileUnit {
                 return;
             }
         }
+    }
+
+    private boolean isAdjacentToSoup() throws GameActionException{
+        MapLocation[] soups = null;
+
+        if(rc.canSenseRadiusSquared(2)){
+            soups = rc.senseNearbySoup(2);
+        }
+
+        if(soups == null || soups.length == 0){
+            return false;
+        }
+
+        return true;
     }
 
     private void updateSoupLocations() throws GameActionException {

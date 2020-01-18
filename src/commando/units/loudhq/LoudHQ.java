@@ -13,6 +13,7 @@ public class LoudHQ extends Building {
     DroidList<MapLocation> desiredWallLocations;
     DroidList<MapLocation> occupiedWallLocations;
     int minerCounter;
+    boolean hasAnnouncedWallCompletion;
 
     public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
@@ -20,6 +21,7 @@ public class LoudHQ extends Building {
         desiredWallLocations = new DroidList<>();
         minerCounter = 0;
         hqLocation = rc.getLocation();
+        hasAnnouncedWallCompletion = false;
     }
 
     @Override
@@ -58,7 +60,7 @@ public class LoudHQ extends Building {
                     message[0] = Constants.MESSAGE_KEY;
                     message[1] = 1;
                     message[2] = CommunicationHelper.convertLocationToMessage(loc);
-                    rc.submitTransaction(message, 3);
+                    messageQueue.add(message);
                 }
             }
         }
@@ -75,12 +77,21 @@ public class LoudHQ extends Building {
                     message[0] = Constants.MESSAGE_KEY;
                     message[1] = 2;
                     message[2] = CommunicationHelper.convertLocationToMessage(loc);
-                    rc.submitTransaction(message, 3);
+                    messageQueue.add(message);
                 }
             }
         }
         occupiedWallLocations.removeAll(toRemove);
         desiredWallLocations.addAll(toRemove);
         toRemove.clear();
+
+        if(hasAnnouncedWallCompletion && (desiredWallLocations.size() <= 0 || GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFTEY_BARRIER)) {
+            hasAnnouncedWallCompletion = true;
+            int[] message = new int[7];
+            message[0] = Constants.MESSAGE_KEY;
+            message[1] = 6;
+            message[2] = 1;
+        }
+
     }
 }

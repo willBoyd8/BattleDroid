@@ -111,7 +111,7 @@ public class ActionHelper {
                     nearestDrone = targets[i];
                 }
             }
-            if(rc.isReady() && rc.canShootUnit(nearestDrone.ID)) {
+            if(rc.isReady() && nearestDrone != null && rc.canShootUnit(nearestDrone.ID)) {
                 rc.shootUnit(nearestDrone.ID);
                 return true;
             }

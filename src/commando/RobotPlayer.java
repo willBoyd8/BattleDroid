@@ -14,6 +14,7 @@ import commando.units.mousedesignschool.MouseDesignSchool;
 import commando.units.mousefulfillmentcenter.MouseFulfillmentCenter;
 import commando.units.mouseheadquarters.MouseHeadquarters;
 import commando.units.simpleminer.SimpleMiner;
+import commando.units.smugglerdroid.SmugglerDroid;
 import commando.units.speederbike.SpeederBike;
 import commando.units.wallsittinglandscaper.WallSittingLandscaper;
 import commando.utility.Constants;
@@ -29,7 +30,7 @@ public strictfp class RobotPlayer {
 
         switch (rc.getType()) {
             case HQ:                 new LoudHQ(rc).run();           break;
-            case MINER:              new SimpleMiner(rc).run();     break;
+            case MINER:              new SmugglerDroid(rc).run();     break;
             case REFINERY:           new GenericRefinery(rc).run();             break;
             case VAPORATOR:          new GenericVaporator(rc).run();            break;
             case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;

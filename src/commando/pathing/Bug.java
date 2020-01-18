@@ -1,9 +1,6 @@
 package commando.pathing;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 import commando.utility.DebugHelper;
 
 public class Bug {
@@ -41,7 +38,7 @@ public class Bug {
                     Direction toPrevious = currentLocation.directionTo(previous);
                     Direction best = toPrevious.opposite().rotateRight();
                     while(!best.equals(toPrevious)){
-                        if(rc.canMove(best)){
+                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best))){
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;
@@ -53,7 +50,7 @@ public class Bug {
                     return false;
                 }
             } else {
-                if(rc.canMove(currentLocation.directionTo(end))){
+                if(rc.canMove(currentLocation.directionTo(end)) &&  !isFlooding(rc.getLocation().add(currentLocation.directionTo(end)))){
                     rc.move(currentLocation.directionTo(end));
                     previous = currentLocation;
                     blocked = false;
@@ -65,7 +62,7 @@ public class Bug {
                     for(int i = 0; i < 8; i++){
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
-                        if(rc.canMove(best)){
+                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best))){
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;
@@ -88,6 +85,18 @@ public class Bug {
             return true;
 //        }
 //        return false;
+    }
+
+    public boolean isFlooding(MapLocation loc) throws GameActionException{
+        if(rc.getType() == RobotType.DELIVERY_DRONE){
+            return false;
+        }
+
+        if(rc.canSenseLocation(loc)){
+            return rc.senseFlooding(loc);
+        }
+
+        return true;
     }
 
     public void updateDestination(MapLocation end){

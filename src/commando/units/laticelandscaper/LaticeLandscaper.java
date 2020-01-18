@@ -216,12 +216,14 @@ public class LaticeLandscaper extends MobileUnit {
         if(targetLocation == null){
             if(enemyHQ != null){
                 targetLocation = enemyHQ;
+                path = new Bug(rc.getLocation(), targetLocation, rc);
             } else {
                 targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+                path = new Bug(rc.getLocation(), targetLocation, rc);
             }
         }
 
-        Simple.moveToLocationFuzzy(targetLocation, rc);
+        path.run(gridOffsetX, gridOffsetY);
     }
 
     private DroidList<MapLocation> adjacentUncompletedLaticeTiles() throws GameActionException{

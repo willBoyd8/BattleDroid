@@ -18,6 +18,7 @@ public class SmugglerDroid extends MobileUnit {
     SmugglerState previousState;
     Bug path;
     int gridOffsetX, gridOffsetY;
+    boolean initialDesignSchool, initialFulfillmentCenter;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -27,6 +28,8 @@ public class SmugglerDroid extends MobileUnit {
         previousState = null;
         gridOffsetX = 0;
         gridOffsetY = 0;
+        initialDesignSchool = false;
+        initialFulfillmentCenter = false;
     }
 
     enum SmugglerState {
@@ -64,10 +67,10 @@ public class SmugglerDroid extends MobileUnit {
 
     public boolean building() throws GameActionException{
         MapLocation closestDeposit = getClosestMapLocation(depositLocations, rc);
-        if((closestDeposit == null || rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE) && isAdjacentToSoup()){
+        if((closestDeposit == null || depositLocations.size() <= 0 ||rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE) && isAdjacentToSoup()){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
-                if(rc.canBuildRobot(RobotType.REFINERY, dir) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1){
+                if(rc.canBuildRobot(RobotType.REFINERY, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == (loc.y - gridOffsetY) % 2){
                     rc.buildRobot(RobotType.REFINERY, dir);
                     int[] message = new int[7];
                     message[0] = Constants.MESSAGE_KEY;
@@ -79,6 +82,39 @@ public class SmugglerDroid extends MobileUnit {
                 }
             }
         }
+
+        if(!initialDesignSchool){
+            for(Direction dir : Constants.DIRECTIONS){
+                MapLocation loc = rc.getLocation().add(dir);
+                if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 9;
+                    message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                    message[3] = rc.senseElevation(loc);
+                    messageQueue.add(message);
+                    return true;
+                }
+            }
+        }
+
+        if(!initialFulfillmentCenter){
+            for(Direction dir : Constants.DIRECTIONS){
+                MapLocation loc = rc.getLocation().add(dir);
+                if(rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
+                    rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 10;
+                    message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                    message[3] = rc.senseElevation(loc);
+                    messageQueue.add(message);
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -109,7 +145,8 @@ public class SmugglerDroid extends MobileUnit {
     public void depositing() throws GameActionException {
         MapLocation closest = getClosestMapLocation(depositLocations, rc);
         if(closest == null){
-
+            building();
+            return;
         } else if(targetLocation == null || !targetLocation.equals(closest)){
             targetLocation = closest;
             path = new Bug(rc.getLocation(), targetLocation, rc);
@@ -302,6 +339,7 @@ public class SmugglerDroid extends MobileUnit {
                 }
                 if(targetLocation.equals(hqLocation)){
                     targetLocation = null;
+                    path = null;
                 }
                 break;
             case 7:
@@ -317,6 +355,12 @@ public class SmugglerDroid extends MobileUnit {
                 if(!depositLocations.contains(location)){
                     depositLocations.add(location);
                 }
+                break;
+            case 9:
+                initialDesignSchool = true;
+                break;
+            case 10:
+                initialFulfillmentCenter = true;
                 break;
 
         }

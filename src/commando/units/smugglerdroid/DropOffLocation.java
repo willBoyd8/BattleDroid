@@ -11,4 +11,13 @@ public class DropOffLocation {
         this.elevation = elevation;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof DropOffLocation){
+            return loc.equals(((DropOffLocation) obj).loc);
+        }
+        return false;
+    }
+
+
 }

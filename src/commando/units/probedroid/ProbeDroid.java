@@ -1,9 +1,6 @@
 package commando.units.probedroid;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.Transaction;
+import battlecode.common.*;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Simple;
@@ -170,7 +167,10 @@ public class ProbeDroid extends MobileUnit {
     }
 
     public void patrolling() throws GameActionException {
-
+        RobotInfo threats[] = rc.senseNearbyRobots(-1, enemy);
+        int closest = Integer.MAX_VALUE;
+        RobotInfo target = null;
+        RobotInfo friendlies[] = rc.senseNearbyRobots(-1, myTeam);
     }
 
     public void intercepting() throws GameActionException {

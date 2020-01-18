@@ -319,7 +319,7 @@ public class LaticeLandscaper extends MobileUnit {
                 break;
             case 4:
                 enemyHQBlacklist.add(CommunicationHelper.convertMessageToLocation(message[2]));
-                if(targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
+                if(targetLocation != null && targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
                     targetLocation = null;
                 }
                 break;

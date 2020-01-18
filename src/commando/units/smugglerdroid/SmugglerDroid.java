@@ -17,12 +17,16 @@ public class SmugglerDroid extends MobileUnit {
     SmugglerState state;
     SmugglerState previousState;
     Bug path;
+    int gridOffsetX, gridOffsetY;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
         knownSoupLocations = new DroidList<>();
+        depositLocations = new DroidList<>();
         state = SmugglerState.MINING;
         previousState = null;
+        gridOffsetX = 0;
+        gridOffsetY = 0;
     }
 
     enum SmugglerState {
@@ -32,10 +36,25 @@ public class SmugglerDroid extends MobileUnit {
         SEARCHING
     }
 
+    @Override
+    public void onInitialization() throws GameActionException {
+        catchup();
+        if(hqLocation.x % 2 == 0){
+            gridOffsetX = 1;
+        }
+        if(hqLocation.y % 2 == 0){
+            gridOffsetY = 1;
+        }
+
+    }
+
     public void turn() throws GameActionException {
         checkMessages();
         updateDepositLocations();
-        updateSoupLocations();
+//        if(rc.getRoundNum() % 10 == 0) {
+            updateSoupLocations();
+//        }
+        //
 
         switch (state){
             case MINING: mining(); break;
@@ -60,14 +79,24 @@ public class SmugglerDroid extends MobileUnit {
             return;
         }
 
-        Simple.tryMove(rc);
+        while(targetLocation == null || rc.getLocation().equals(targetLocation)){
+            targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+            path = new Bug(rc.getLocation(), targetLocation, rc);
+        }
+
+        if(rc.isReady() && !path.run()){
+            targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+            path = new Bug(rc.getLocation(), targetLocation, rc);
+            path.run();
+            return;
+        }
     }
 
     public void depositing() throws GameActionException {
         MapLocation closest = getClosestMapLocation(depositLocations, rc);
         if(closest == null){
 
-        } else if(!targetLocation.equals(closest)){
+        } else if(targetLocation == null || !targetLocation.equals(closest)){
             targetLocation = closest;
             path = new Bug(rc.getLocation(), targetLocation, rc);
         }
@@ -80,7 +109,14 @@ public class SmugglerDroid extends MobileUnit {
             mining();
             return;
         } else {
-            path.run();
+            if(rc.getLocation().isAdjacentTo(targetLocation)){
+                if(ActionHelper.tryDeposit(rc.getLocation().directionTo(targetLocation), rc)){
+                    return;
+                }
+            } else {
+                path.run();
+                return;
+            }
         }
     }
 
@@ -90,9 +126,10 @@ public class SmugglerDroid extends MobileUnit {
             state = SmugglerState.SEARCHING;
             previousState = SmugglerState.MINING;
             targetLocation = null;
+            path = null;
             searching();
             return;
-        } else if(!targetLocation.equals(closest)){
+        } else if(targetLocation == null || !targetLocation.equals(closest)){
             targetLocation = closest;
             path = new Bug(rc.getLocation(), targetLocation, rc);
         }
@@ -134,12 +171,16 @@ public class SmugglerDroid extends MobileUnit {
                 message[2] = CommunicationHelper.convertLocationToMessage(loc);
                 messageQueue.add(message);
             }
+            if(Clock.getBytecodesLeft() < 6000){
+                break;
+            }
         }
 
         for(MapLocation loc :knownSoupLocations){
             if(rc.canSenseLocation(loc) && rc.senseSoup(loc) <= 0){
-                if(targetLocation.equals(loc)){
+                if(state == SmugglerState.MINING && targetLocation != null && targetLocation.equals(loc)){
                     targetLocation = null;
+                    path = null;
                 }
 
                 int[] message = new int[7];
@@ -148,13 +189,17 @@ public class SmugglerDroid extends MobileUnit {
                 message[2] = CommunicationHelper.convertLocationToMessage(loc);
                 messageQueue.add(message);
             }
+
+            if(Clock.getBytecodesLeft() < 3000){
+                break;
+            }
         }
     }
 
     private void updateDepositLocations() {
         DroidList<DropOffLocation> toRemove = new DroidList<>();
         for(DropOffLocation loc : depositLocations){
-            if(loc.elevation >= GameConstants.getWaterLevel(rc.getRoundNum())){
+            if(loc.elevation <= GameConstants.getWaterLevel(rc.getRoundNum()) && !loc.equals(hqLocation)){
                 toRemove.add(loc);
             }
         }
@@ -212,10 +257,11 @@ public class SmugglerDroid extends MobileUnit {
             case 2:
                 break;
             case 3:
-                MapLocation loc = new MapLocation(message[1], message[2]);
+                MapLocation loc = CommunicationHelper.convertMessageToLocation(message[2]);
                 if(!knownSoupLocations.contains(loc)){
                     knownSoupLocations.add(loc);
                 }
+                break;
             case 4:
                 break;
             case 5:
@@ -231,7 +277,12 @@ public class SmugglerDroid extends MobileUnit {
                 }
                 break;
             case 7:
-                knownSoupLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
+                MapLocation badSouploc = CommunicationHelper.convertMessageToLocation(message[2]);
+                knownSoupLocations.remove(badSouploc);
+                if(targetLocation != null && targetLocation.equals(badSouploc)){
+                    targetLocation = null;
+                    path = null;
+                }
                 break;
             case 8:
                 DropOffLocation location = new DropOffLocation(CommunicationHelper.convertMessageToLocation(message[2]), message[3]);

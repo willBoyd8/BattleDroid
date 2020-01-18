@@ -1,6 +1,7 @@
 package commando.utility;
 
 import battlecode.common.Direction;
+import battlecode.common.GameConstants;
 import battlecode.common.RobotType;
 
 public class Constants {
@@ -16,6 +17,6 @@ public class Constants {
 
     public static int LATICE_HEIGHT = 11;
     public static int WALL_SAFTEY_BARRIER = 0;
-    public static int MESSAGE_KEY = 0;
-    public static int MAX_SOUP_TO_CARRY = 10;
+    public static int MESSAGE_KEY = 31415926;
+    public static int MAX_SOUP_TO_CARRY = RobotType.MINER.soupLimit;
 }

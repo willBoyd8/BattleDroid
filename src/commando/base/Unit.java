@@ -134,7 +134,7 @@ public abstract class Unit {
     public void onInitialization() throws GameActionException {}
 
     public void trySendMessage() throws GameActionException{
-        if(rc.canSubmitTransaction(messageQueue.get(0), 1)){
+        if(messageQueue.size() > 0 && rc.canSubmitTransaction(messageQueue.get(0), 1)){
             rc.submitTransaction(messageQueue.get(0), 1);
             messageQueue.remove(0);
         }

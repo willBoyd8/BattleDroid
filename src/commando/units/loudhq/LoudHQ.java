@@ -13,6 +13,7 @@ public class LoudHQ extends Building {
     DroidList<MapLocation> desiredWallLocations;
     DroidList<MapLocation> occupiedWallLocations;
     int minerCounter;
+    boolean hasAnnouncedBlocked;
 
     public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
@@ -20,6 +21,7 @@ public class LoudHQ extends Building {
         desiredWallLocations = new DroidList<>();
         minerCounter = 0;
         hqLocation = rc.getLocation();
+        hasAnnouncedBlocked = false;
     }
 
     @Override
@@ -36,6 +38,7 @@ public class LoudHQ extends Building {
     public void turn() throws GameActionException {
         checkWall();
         ActionHelper.tryShoot(rc);
+        checkBlocked();
 
         // TODO: implement better logic for building
         for(Direction dir : Constants.DIRECTIONS) {
@@ -58,7 +61,7 @@ public class LoudHQ extends Building {
                     message[0] = Constants.MESSAGE_KEY;
                     message[1] = 1;
                     message[2] = CommunicationHelper.convertLocationToMessage(loc);
-                    rc.submitTransaction(message, 3);
+                    messageQueue.add(message);
                 }
             }
         }
@@ -75,12 +78,33 @@ public class LoudHQ extends Building {
                     message[0] = Constants.MESSAGE_KEY;
                     message[1] = 2;
                     message[2] = CommunicationHelper.convertLocationToMessage(loc);
-                    rc.submitTransaction(message, 3);
+                    messageQueue.add(message);
                 }
             }
         }
         occupiedWallLocations.removeAll(toRemove);
         desiredWallLocations.addAll(toRemove);
         toRemove.clear();
+
+    }
+
+    public void checkBlocked() throws GameActionException{
+        if(!hasAnnouncedBlocked){
+            for(Direction dir : Constants.DIRECTIONS){
+                MapLocation loc = rc.getLocation().add(dir);
+                if(rc.canSenseLocation(loc) && Math.abs(rc.senseElevation(loc) - hqElevation) <= GameConstants.MAX_DIRT_DIFFERENCE){
+                    return;
+                }
+            }
+        } else {
+            return;
+        }
+
+        hasAnnouncedBlocked = true;
+        int[] message = new int[7];
+        message[0] = Constants.MESSAGE_KEY;
+        message[1] = 6;
+        message[2] = 1;
+        messageQueue.add(message);
     }
 }

@@ -5,6 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import commando.utility.DebugHelper;
+import java.lang.Math.*;
 
 public class Bug {
     MapLocation start;
@@ -82,12 +83,24 @@ public class Bug {
 
     public boolean isOnLine(){
         // TODO: Make this actually good
-        // TODO: Actually, maybe just fix this, because it's broken
+        // TODO: It may work now
         MapLocation loc = rc.getLocation();
-//        if(loc.directionTo(start).equals(loc.directionTo(end).opposite())){
+        // end - start delts
+        Integer delta = Math.abs(end.y-start.y);
+        Integer deltb = Math.abs(end.x-start.x);
+        // end - current delts
+        Integer deltc = Math.abs(end.y-loc.y);
+        Integer deltd = Math.abs(end.x-loc.x);
+        // calc angle
+        double angle = Math.toDegrees(Math.atan2(delta.doubleValue(), deltb.doubleValue()));
+        double currentAngle = Math.toDegrees(Math.atan2(deltc.doubleValue(), deltd.doubleValue()));
+        if(currentAngle == angle)
             return true;
+
+//        if(loc.directionTo(start).equals(loc.directionTo(end).opposite())){
+//            return true;
 //        }
-//        return false;
+        return false;
     }
 
     public void updateDestination(MapLocation end){

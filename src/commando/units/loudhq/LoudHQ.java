@@ -13,7 +13,7 @@ public class LoudHQ extends Building {
     DroidList<MapLocation> desiredWallLocations;
     DroidList<MapLocation> occupiedWallLocations;
     int minerCounter;
-    boolean hasAnnouncedWallCompletion;
+    boolean hasAnnouncedBlocked;
 
     public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
@@ -21,7 +21,7 @@ public class LoudHQ extends Building {
         desiredWallLocations = new DroidList<>();
         minerCounter = 0;
         hqLocation = rc.getLocation();
-        hasAnnouncedWallCompletion = false;
+        hasAnnouncedBlocked = false;
     }
 
     @Override
@@ -38,6 +38,7 @@ public class LoudHQ extends Building {
     public void turn() throws GameActionException {
         checkWall();
         ActionHelper.tryShoot(rc);
+        checkBlocked();
 
         // TODO: implement better logic for building
         for(Direction dir : Constants.DIRECTIONS) {
@@ -85,13 +86,25 @@ public class LoudHQ extends Building {
         desiredWallLocations.addAll(toRemove);
         toRemove.clear();
 
-        if(hasAnnouncedWallCompletion && (desiredWallLocations.size() <= 0 || GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFTEY_BARRIER)) {
-            hasAnnouncedWallCompletion = true;
-            int[] message = new int[7];
-            message[0] = Constants.MESSAGE_KEY;
-            message[1] = 6;
-            message[2] = 1;
+    }
+
+    public void checkBlocked() throws GameActionException{
+        if(!hasAnnouncedBlocked){
+            for(Direction dir : Constants.DIRECTIONS){
+                MapLocation loc = rc.getLocation().add(dir);
+                if(rc.canSenseLocation(loc) && Math.abs(rc.senseElevation(loc) - hqElevation) <= GameConstants.MAX_DIRT_DIFFERENCE){
+                    return;
+                }
+            }
+        } else {
+            return;
         }
 
+        hasAnnouncedBlocked = true;
+        int[] message = new int[7];
+        message[0] = Constants.MESSAGE_KEY;
+        message[1] = 6;
+        message[2] = 1;
+        messageQueue.add(message);
     }
 }

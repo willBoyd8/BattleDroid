@@ -181,4 +181,12 @@ public class ActionHelper {
 
         return adjacent;
     }
+
+    public static boolean isBuilding(RobotInfo robot){
+        RobotType type = robot.getType();
+        if(type != RobotType.DELIVERY_DRONE && type != RobotType.MINER && type != RobotType.LANDSCAPER && type != RobotType.COW){
+            return true;
+        }
+        return false;
+    }
 }

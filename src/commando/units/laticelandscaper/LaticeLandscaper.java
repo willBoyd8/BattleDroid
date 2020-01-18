@@ -216,12 +216,14 @@ public class LaticeLandscaper extends MobileUnit {
         if(targetLocation == null){
             if(enemyHQ != null){
                 targetLocation = enemyHQ;
+                path = new Bug(rc.getLocation(), targetLocation, rc);
             } else {
                 targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+                path = new Bug(rc.getLocation(), targetLocation, rc);
             }
         }
 
-        Simple.moveToLocationFuzzy(targetLocation, rc);
+        path.run(gridOffsetX, gridOffsetY);
     }
 
     private DroidList<MapLocation> adjacentUncompletedLaticeTiles() throws GameActionException{
@@ -231,10 +233,17 @@ public class LaticeLandscaper extends MobileUnit {
             MapLocation loc = rc.getLocation().add(dir);
             if(rc.canSenseLocation(loc)){
                 int height = rc.senseElevation(loc);
+                RobotInfo occupied = rc.senseRobotAtLocation(loc);
+                boolean isOccupied = false;
+                if(occupied != null){
+                    if(ActionHelper.isBuilding(occupied) && occupied.getTeam() == myTeam){
+                        isOccupied = true;
+                    }
+                }
                 // TODO: we probably aren't handling all the possible cases here
                 // height < Constants.LATICE_HEIGHT for a static height
                 // use round number and water elevation for a less static grid
-                if((height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
+                if(!isOccupied && (height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
                     adjacent.add(loc);
                 }
             }

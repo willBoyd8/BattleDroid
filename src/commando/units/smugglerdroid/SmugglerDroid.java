@@ -18,7 +18,8 @@ public class SmugglerDroid extends MobileUnit {
     SmugglerState previousState;
     Bug path;
     int gridOffsetX, gridOffsetY;
-    boolean initialDesignSchool, initialFulfillmentCenter;
+    boolean initialDesignSchool, initialFulfillmentCenter, initialRefinery;
+    boolean economyBuilding;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -30,6 +31,8 @@ public class SmugglerDroid extends MobileUnit {
         gridOffsetY = 0;
         initialDesignSchool = false;
         initialFulfillmentCenter = false;
+        economyBuilding = true;
+        initialRefinery = false;
     }
 
     enum SmugglerState {
@@ -67,11 +70,38 @@ public class SmugglerDroid extends MobileUnit {
 
     public boolean building() throws GameActionException{
         MapLocation closestDeposit = getClosestMapLocation(depositLocations, rc);
-        if((closestDeposit == null || depositLocations.size() <= 0 ||rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE) && isAdjacentToSoup()){
+        if((closestDeposit == null || depositLocations.size() <= 0 || rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE) && isAdjacentToSoup()){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
                 if(rc.canBuildRobot(RobotType.REFINERY, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == (loc.y - gridOffsetY) % 2){
                     rc.buildRobot(RobotType.REFINERY, dir);
+                    int[] message = new int[7];
+                    initialRefinery = true;
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 8;
+                    message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                    message[3] = rc.senseElevation(loc);
+                    messageQueue.add(message);
+                    return true;
+                }
+            }
+
+            if(rc.getTeamSoup() > RobotType.REFINERY.cost) {
+                for (Direction dir : Constants.DIRECTIONS) {
+                    if (Simple.tryMove(dir, rc)) {
+                        // Didn't build but still return true so we dont have to worry
+                        // about trying to run things twice.
+                        return true;
+                    }
+                }
+            }
+
+        } else if(!initialRefinery){
+            for(Direction dir : Constants.DIRECTIONS){
+                MapLocation loc = rc.getLocation().add(dir);
+                if(rc.canBuildRobot(RobotType.REFINERY, dir) && loc.distanceSquaredTo(hqLocation) > 2 && (loc.x - gridOffsetX) % 2 == (loc.y - gridOffsetY) % 2){
+                    rc.buildRobot(RobotType.REFINERY, dir);
+                    initialRefinery = true;
                     int[] message = new int[7];
                     message[0] = Constants.MESSAGE_KEY;
                     message[1] = 8;
@@ -81,6 +111,7 @@ public class SmugglerDroid extends MobileUnit {
                     return true;
                 }
             }
+            return false;
         }
 
         if(!initialDesignSchool){
@@ -112,6 +143,51 @@ public class SmugglerDroid extends MobileUnit {
                     messageQueue.add(message);
                     return true;
                 }
+            }
+        }
+
+        if(economyBuilding) {
+            for (Direction dir : Constants.DIRECTIONS) {
+                MapLocation loc = rc.getLocation().add(dir);
+                if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                    rc.buildRobot(RobotType.VAPORATOR, dir);
+                    economyBuilding = false;
+                    return true;
+                }
+            }
+        } else {
+            // Random choice between netgun, design school, and fulfillment center
+            switch (rand.nextInt(3)){
+                case 0:
+                    for (Direction dir : Constants.DIRECTIONS) {
+                        MapLocation loc = rc.getLocation().add(dir);
+                        if (rc.canBuildRobot(RobotType.NET_GUN, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                            rc.buildRobot(RobotType.NET_GUN, dir);
+                            economyBuilding = true;
+                            return true;
+                        }
+                    }
+                    break;
+                case 1:
+                    for (Direction dir : Constants.DIRECTIONS) {
+                        MapLocation loc = rc.getLocation().add(dir);
+                        if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                            rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
+                            economyBuilding = true;
+                            return true;
+                        }
+                    }
+                    break;
+                case 2:
+                    for (Direction dir : Constants.DIRECTIONS) {
+                        MapLocation loc = rc.getLocation().add(dir);
+                        if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                            rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
+                            economyBuilding = true;
+                            return true;
+                        }
+                    }
+                    break;
             }
         }
 
@@ -355,6 +431,7 @@ public class SmugglerDroid extends MobileUnit {
                 if(!depositLocations.contains(location)){
                     depositLocations.add(location);
                 }
+                initialRefinery = true;
                 break;
             case 9:
                 initialDesignSchool = true;

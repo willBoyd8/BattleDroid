@@ -72,10 +72,11 @@ public class Bug {
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
                         if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best))){
+                            linePoint = rc.getLocation;
+                            closestWallDistance = rc.getLocation().distanceSquaredTo(end);
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;
-                            closestWallDistance = rc.getLocation().distanceSquaredTo(end);
                             return true;
                         }
                     }
@@ -125,59 +126,8 @@ public class Bug {
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
                         if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best)) && ((rc.getLocation().add(best).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(best).y - gridOffsetY) % 2 == 0)){
-                            rc.move(best);
-                            previous = currentLocation;
-                            blocked = false;
-                            closestWallDistance = rc.getLocation().distanceSquaredTo(end);
-                            return true;
-                        }
-                    }
-                    blocked = true;
-                    return false;
-                }
-            }
-        }
-    }
-
-    public boolean run(int gridOffsetX, int gridOffsetY) throws GameActionException {
-        DebugHelper.setIndicatorLine(rc.getLocation(), end, 0, 255, 0, rc);
-        if(!rc.isReady()){
-            return false;
-        } else {
-            MapLocation currentLocation = rc.getLocation();
-            if(following){
-                if(isOnLine() && rc.getLocation().distanceSquaredTo(end) <= closestWallDistance){
-                    following = false;
-                    return run(gridOffsetX, gridOffsetY);
-                } else {
-                    Direction toPrevious = currentLocation.directionTo(previous);
-                    Direction best = toPrevious.opposite().rotateLeft();
-                    while(!best.equals(toPrevious)){
-                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best)) && ((rc.getLocation().add(best).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(best).y - gridOffsetY) % 2 == 0)){
-                            rc.move(best);
-                            previous = currentLocation;
-                            blocked = false;
-                            return true;
-                        }
-                        best = best.rotateRight();
-                    }
-                    blocked = true;
-                    return false;
-                }
-            } else {
-                if(rc.canMove(currentLocation.directionTo(end)) && !isFlooding(rc.getLocation().add(currentLocation.directionTo(end))) && ((rc.getLocation().add(currentLocation.directionTo(end)).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(currentLocation.directionTo(end)).y - gridOffsetY) % 2 == 0) ){
-                    rc.move(currentLocation.directionTo(end));
-                    previous = currentLocation;
-                    blocked = false;
-                    closestWallDistance = rc.getLocation().distanceSquaredTo(end);
-                    return true;
-                } else {
-                    following = true;
-                    Direction best = currentLocation.directionTo(end);
-                    for(int i = 0; i < 8; i++){
-                        // TODO: Make this not always end up in the same circle sometimes
-                        best = best.rotateRight();
-                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best)) && ((rc.getLocation().add(best).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(best).y - gridOffsetY) % 2 == 0)){
+                            linePoint = rc.getLocation();
+                            closestWallDistance = rc.getLocation().distanceSquaredTo(end);                            
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;

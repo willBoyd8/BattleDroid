@@ -83,24 +83,19 @@ public class Bug {
 
     public boolean isOnLine(){
         // TODO: Make this actually good
-        // TODO: It may work now
+        // TODO: It may work now, hopefully
         MapLocation loc = rc.getLocation();
-        // end - start delts
-        Integer delta = Math.abs(end.y-start.y);
-        Integer deltb = Math.abs(end.x-start.x);
-        // end - current delts
-        Integer deltc = Math.abs(end.y-loc.y);
-        Integer deltd = Math.abs(end.x-loc.x);
-        // calc angle
-        double angle = Math.toDegrees(Math.atan2(delta.doubleValue(), deltb.doubleValue()));
-        double currentAngle = Math.toDegrees(Math.atan2(deltc.doubleValue(), deltd.doubleValue()));
-        if(currentAngle == angle)
-            return true;
-
-//        if(loc.directionTo(start).equals(loc.directionTo(end).opposite())){
-//            return true;
-//        }
-        return false;
+        // calc distance
+        double startEndDistance = Math.sqrt(Math.pow(end.y-start.y,2)+Math.pow(end.x-start.x,2));
+        double currentEndDistance = Math.sqrt(Math.pow(end.y-loc.y,2)+Math.pow(end.x-loc.x,2));
+        double startCurrentDistance = Math.sqrt(Math.pow(loc.y-start.y,2)+Math.pow(loc.x-start.x,2));
+        // we now have a triangle, get the area
+        // using heron's formula to get area
+        double perimeter = (startCurrentDistance+currentEndDistance+startEndDistance)/2;
+        double area = Math.sqrt(perimeter*(perimeter-startEndDistance)*(perimeter-currentEndDistance)*(perimeter-startCurrentDistance));
+        // now that we have the area, find the height with h = (2a)/b where b = startEndDistance and a = area
+        double height = (2*area)/startEndDistance;
+        return (height <= 1);
     }
 
     public void updateDestination(MapLocation end){

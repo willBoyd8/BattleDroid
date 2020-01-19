@@ -308,6 +308,29 @@ public class LaticeLandscaper extends MobileUnit {
 
             if(Simple.moveToLocationFuzzy(bestTarget.getLocation(), rc)){
                 return true;
+            } else if (rc.isReady()){
+                MapLocation loc = rc.getLocation().add(rc.getLocation().directionTo(bestTarget.getLocation()));
+                int height = Integer.MIN_VALUE;
+                if(rc.canSenseLocation(loc)){
+                    height = rc.senseElevation(loc);
+                }
+
+                if(rc.senseElevation(rc.getLocation()) < height && !digBlacklist.contains(loc)){
+                    return ActionHelper.tryDig(rc.getLocation().directionTo(loc), rc);
+                } else if (rc.senseElevation(rc.getLocation()) < height){
+                    if (rc.getDirtCarrying() > 0) {
+                        return ActionHelper.tryDepositDirt(rc.getLocation().directionTo(loc), rc);
+                    } else {
+                        for (Direction dir : Constants.DIRECTIONS) {
+                            MapLocation dirLoc = rc.getLocation().add(dir);
+                            if (rc.onTheMap(dirLoc) && !dirLoc.equals(loc) && !dirLoc.isAdjacentTo(hqLocation)/* && (dirLoc.x - gridOffsetX) % 2 == 1 && (dirLoc.y - gridOffsetY) % 2 == 1*/) {
+                                if (ActionHelper.tryDig(dir, rc)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

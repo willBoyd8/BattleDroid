@@ -1,6 +1,7 @@
 package commando.units.probedroid;
 
 import battlecode.common.*;
+import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;
@@ -177,7 +178,7 @@ public class ProbeDroid extends MobileUnit {
         enemyHQBlacklist.removeAll(enemyHQBlacklist);
     }
 
-    public void turn() throws GameActionException {
+    public void turn() throws GameActionException, KillMeNowException {
         Unsorted.updateKnownFlooding(knownFlooding, rc);
         switch(state){
             case PATROL: patrolling(); break;

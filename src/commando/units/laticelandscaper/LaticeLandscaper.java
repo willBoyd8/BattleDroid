@@ -18,6 +18,7 @@ public class LaticeLandscaper extends MobileUnit {
     int gridOffsetX, gridOffsetY;
     Bug path;
     DroidList<MapLocation> enemyHQBlacklist;
+    DroidList<MapLocation> digBlacklist;
 
     public LaticeLandscaper(RobotController rc){
         super(rc);
@@ -27,6 +28,7 @@ public class LaticeLandscaper extends MobileUnit {
         gridOffsetY = 0;
         path = null;
         enemyHQBlacklist = new DroidList<>();
+        digBlacklist = new DroidList<>();
     }
 
     enum LaticeState {
@@ -35,7 +37,6 @@ public class LaticeLandscaper extends MobileUnit {
         LATE_WALLING,
         LATICE_BUILDING,
         MOVING_TO_LATICE_EDGE,
-        ATTACKING
     }
 
     @Override
@@ -69,6 +70,10 @@ public class LaticeLandscaper extends MobileUnit {
             state = LaticeState.MOVING_TO_WALL;
         }
 
+        if(attacking()){
+            return;
+        }
+
 
 
         switch(state){
@@ -77,7 +82,6 @@ public class LaticeLandscaper extends MobileUnit {
             case LATE_WALLING: DebugHelper.setIndicatorDot(rc.getLocation(), 0, 0, 255, rc); lateWalling(); break;
             case LATICE_BUILDING: laticeBuilding(); break;
             case MOVING_TO_LATICE_EDGE: movingToLaticeEdge(); break;
-            case ATTACKING: attacking(); break;
         }
 
     }
@@ -189,7 +193,7 @@ public class LaticeLandscaper extends MobileUnit {
         if(rc.getDirtCarrying() <= 0){
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
+                if (!digBlacklist.contains(loc) && rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
                     if(ActionHelper.tryDig(dir, rc)){
                             return;
                     }
@@ -252,8 +256,86 @@ public class LaticeLandscaper extends MobileUnit {
         return adjacent;
     }
 
-    public void attacking() throws GameActionException {
-        // TODO: Implement this state
+    public boolean attacking() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+        if(robots == null || robots.length <= 0){
+            return false;
+        }
+
+        RobotInfo bestTarget = null;
+        int closest = Integer.MAX_VALUE;
+
+        for(RobotInfo robot : robots){
+            int dist = rc.getLocation().distanceSquaredTo(bestTarget.getLocation());
+            if(dist < closest){
+                bestTarget = robot;
+                closest = dist;
+            }
+
+            if(ActionHelper.isBuilding(robot) && !digBlacklist.contains(robot.getLocation())){
+                digBlacklist.add(robot.getLocation());
+            }
+        }
+
+        if(bestTarget != null && rc.getLocation().isAdjacentTo(bestTarget.getLocation())){
+            if(ActionHelper.isBuilding(bestTarget)){
+                if(rc.getDirtCarrying() > 0){
+                    return ActionHelper.tryDepositDirt(rc.getLocation().directionTo(bestTarget.getLocation()), rc);
+                } else {
+                    for(Direction dir : Constants.DIRECTIONS){
+                        if(!digBlacklist.contains(bestTarget.getLocation()) && ActionHelper.tryDig(dir, rc)){
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                if(rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit){
+                    return ActionHelper.tryDig(rc.getLocation().directionTo(bestTarget.getLocation()), rc);
+                } else {
+                    // TODO: this and the part above might be able to be more intelligent about where they are placing and digging dirt
+                    for(Direction dir : Constants.DIRECTIONS){
+                        if(ActionHelper.tryDepositDirt(dir, rc)){
+                            return true;
+                        }
+                    }
+                }
+            }
+        } else {
+            if(bestTarget == null){
+                return false;
+            }
+
+            if(Simple.moveToLocationFuzzy(bestTarget.getLocation(), rc)){
+                return true;
+            } else if (rc.isReady()){
+                MapLocation loc = rc.getLocation().add(rc.getLocation().directionTo(bestTarget.getLocation()));
+                int height = Integer.MIN_VALUE;
+                if(rc.canSenseLocation(loc)){
+                    height = rc.senseElevation(loc);
+                }
+
+                if(rc.senseElevation(rc.getLocation()) < height && !digBlacklist.contains(loc)){
+                    return ActionHelper.tryDig(rc.getLocation().directionTo(loc), rc);
+                } else if (rc.senseElevation(rc.getLocation()) < height){
+                    if (rc.getDirtCarrying() > 0) {
+                        return ActionHelper.tryDepositDirt(rc.getLocation().directionTo(loc), rc);
+                    } else {
+                        for (Direction dir : Constants.DIRECTIONS) {
+                            MapLocation dirLoc = rc.getLocation().add(dir);
+                            if (rc.onTheMap(dirLoc) && !dirLoc.equals(loc) && !dirLoc.isAdjacentTo(hqLocation)/* && (dirLoc.x - gridOffsetX) % 2 == 1 && (dirLoc.y - gridOffsetY) % 2 == 1*/) {
+                                if (ActionHelper.tryDig(dir, rc)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+
     }
 
     public void checkEnemyHQ() throws GameActionException{

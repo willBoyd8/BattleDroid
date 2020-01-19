@@ -111,7 +111,7 @@ public class ActionHelper {
                     nearestDrone = targets[i];
                 }
             }
-            if(rc.isReady() && rc.canShootUnit(nearestDrone.ID)) {
+            if(rc.isReady() && nearestDrone != null && rc.canShootUnit(nearestDrone.ID)) {
                 rc.shootUnit(nearestDrone.ID);
                 return true;
             }
@@ -180,5 +180,13 @@ public class ActionHelper {
         }
 
         return adjacent;
+    }
+
+    public static boolean isBuilding(RobotInfo robot){
+        RobotType type = robot.getType();
+        if(type != RobotType.DELIVERY_DRONE && type != RobotType.MINER && type != RobotType.LANDSCAPER && type != RobotType.COW){
+            return true;
+        }
+        return false;
     }
 }

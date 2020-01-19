@@ -1,9 +1,6 @@
 package commando.pathing;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 import commando.utility.DebugHelper;
 import java.lang.Math.*;
 
@@ -49,7 +46,7 @@ public class Bug {
                     Direction toPrevious = currentLocation.directionTo(previous);
                     Direction best = toPrevious.opposite().rotateLeft();
                     while(!best.equals(toPrevious)){
-                        if(rc.canMove(best)){
+                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best))){
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;
@@ -62,7 +59,7 @@ public class Bug {
                     return false;
                 }
             } else {
-                if(rc.canMove(currentLocation.directionTo(end))){
+                if(rc.canMove(currentLocation.directionTo(end)) &&  !isFlooding(rc.getLocation().add(currentLocation.directionTo(end)))){
                     rc.move(currentLocation.directionTo(end));
                     previous = currentLocation;
                     blocked = false;
@@ -74,9 +71,60 @@ public class Bug {
                     for(int i = 0; i < 8; i++){
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
-                        if(rc.canMove(best)){
+                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best))){
+                            rc.move(best);
+                            previous = currentLocation;
+                            blocked = false;
                             closestWallDistance = rc.getLocation().distanceSquaredTo(end);
-                            linePoint = rc.getLocation();
+                            return true;
+                        }
+                    }
+                    blocked = true;
+                    return false;
+                }
+            }
+        }
+    }
+
+    public boolean run(int gridOffsetX, int gridOffsetY) throws GameActionException {
+        DebugHelper.setIndicatorLine(rc.getLocation(), end, 0, 255, 0, rc);
+        if(!rc.isReady()){
+            return false;
+        } else {
+            MapLocation currentLocation = rc.getLocation();
+            if(following){
+                if(isOnLine() && rc.getLocation().distanceSquaredTo(end) <= closestWallDistance){
+                    following = false;
+                    return run(gridOffsetX, gridOffsetY);
+                } else {
+                    Direction toPrevious = currentLocation.directionTo(previous);
+                    Direction best = toPrevious.opposite().rotateLeft();
+                    while(!best.equals(toPrevious)){
+                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best)) && ((rc.getLocation().add(best).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(best).y - gridOffsetY) % 2 == 0)){
+                            rc.move(best);
+                            previous = currentLocation;
+                            blocked = false;
+                            return true;
+                        }
+                        best = best.rotateRight();
+                    }
+                    blocked = true;
+                    return false;
+                }
+            } else {
+                if(rc.canMove(currentLocation.directionTo(end)) && !isFlooding(rc.getLocation().add(currentLocation.directionTo(end))) && ((rc.getLocation().add(currentLocation.directionTo(end)).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(currentLocation.directionTo(end)).y - gridOffsetY) % 2 == 0) ){
+                    rc.move(currentLocation.directionTo(end));
+                    previous = currentLocation;
+                    blocked = false;
+                    closestWallDistance = rc.getLocation().distanceSquaredTo(end);
+                    return true;
+                } else {
+                    following = true;
+                    Direction best = currentLocation.directionTo(end);
+                    for(int i = 0; i < 8; i++){
+                        // TODO: Make this not always end up in the same circle sometimes
+                        best = best.rotateRight();
+                        if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best)) && ((rc.getLocation().add(best).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(best).y - gridOffsetY) % 2 == 0)){
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;
@@ -105,6 +153,18 @@ public class Bug {
         // now that we have the area, find the height with h = (2a)/b where b = startEndDistance and a = area
         double height = (2*area)/startEndDistance;
         return (height <= 1);
+    }
+
+    public boolean isFlooding(MapLocation loc) throws GameActionException{
+        if(rc.getType() == RobotType.DELIVERY_DRONE){
+            return false;
+        }
+
+        if(rc.canSenseLocation(loc)){
+            return rc.senseFlooding(loc);
+        }
+
+        return true;
     }
 
     public void updateDestination(MapLocation end){

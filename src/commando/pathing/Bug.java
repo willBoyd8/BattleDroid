@@ -72,7 +72,7 @@ public class Bug {
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
                         if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best))){
-                            linePoint = rc.getLocation;
+                            linePoint = rc.getLocation();
                             closestWallDistance = rc.getLocation().distanceSquaredTo(end);
                             rc.move(best);
                             previous = currentLocation;
@@ -156,18 +156,6 @@ public class Bug {
         // now that we have the area, find the height with h = (2a)/b where b = startEndDistance and a = area
         double height = (2*area)/startEndDistance;
         return (height <= 1);
-    }
-
-    public boolean isFlooding(MapLocation loc) throws GameActionException{
-        if(rc.getType() == RobotType.DELIVERY_DRONE){
-            return false;
-        }
-
-        if(rc.canSenseLocation(loc)){
-            return rc.senseFlooding(loc);
-        }
-
-        return true;
     }
 
     public boolean isFlooding(MapLocation loc) throws GameActionException{

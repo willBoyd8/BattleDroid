@@ -480,13 +480,6 @@ public class SmugglerDroid extends MobileUnit {
                     productionLocked = true;
                 }
                 break;
-            case 9:
-                initialDesignSchool = true;
-                break;
-            case 10:
-                initialFulfillmentCenter = true;
-                break;
-
         }
 
     }

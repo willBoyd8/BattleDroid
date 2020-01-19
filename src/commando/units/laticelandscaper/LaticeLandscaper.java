@@ -61,7 +61,7 @@ public class LaticeLandscaper extends MobileUnit {
             state = LaticeState.EARLY_WALLING;
         }
 
-        if(state == LaticeState.EARLY_WALLING && GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFTEY_BARRIER){
+        if(state == LaticeState.EARLY_WALLING && GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFETY_BARRIER){
             state = LaticeState.LATE_WALLING;
         } else if(wallLocations.size() <= 0 && state != LaticeState.EARLY_WALLING && state != LaticeState.LATE_WALLING){
             state = LaticeState.LATICE_BUILDING;

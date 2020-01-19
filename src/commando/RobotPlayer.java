@@ -13,6 +13,7 @@ import commando.units.miningminer.MiningMiner;
 import commando.units.mousedesignschool.MouseDesignSchool;
 import commando.units.mousefulfillmentcenter.MouseFulfillmentCenter;
 import commando.units.mouseheadquarters.MouseHeadquarters;
+import commando.units.probedroid.ProbeDroid;
 import commando.units.simpleminer.SimpleMiner;
 import commando.units.smugglerdroid.SmugglerDroid;
 import commando.units.speederbike.SpeederBike;
@@ -36,7 +37,7 @@ public strictfp class RobotPlayer {
             case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;
             case FULFILLMENT_CENTER: new MouseFulfillmentCenter(rc).run();    break;
             case LANDSCAPER:         new LaticeLandscaper(rc).run();             break;
-            case DELIVERY_DRONE:     new SpeederBike(rc).run();        break;
+            case DELIVERY_DRONE:     new ProbeDroid(rc).run();        break;
             case NET_GUN:            new AssassinDroid(rc).run();               break;
         }
 

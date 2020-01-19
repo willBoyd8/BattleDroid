@@ -39,7 +39,7 @@ public strictfp class RobotPlayer {
             case DESIGN_SCHOOL:      new MouseDesignSchool(rc).run();           break;
             case FULFILLMENT_CENTER: new MouseFulfillmentCenter(rc).run();    break;
             case LANDSCAPER:         new WallSittingLandscaper(rc).run();             break;
-            case DELIVERY_DRONE:     new ProbeDroid(rc).run();        break;
+            case DELIVERY_DRONE:     new SpeederBike(rc).run();        break;
             case NET_GUN:            new AssassinDroid(rc).run();               break;
         }
 

@@ -16,12 +16,14 @@ public class Bug {
     boolean noPath;
     boolean blocked;
     int closestWallDistance;
+    MapLocation linePoint;
 
     public Bug(MapLocation start, MapLocation end, RobotController rc){
         this.start = start;
         this.end = end;
         this.rc = rc;
         previous = null;
+        linePoint = null;
         following = false;
         noPath = false;
         blocked = false;
@@ -29,18 +31,23 @@ public class Bug {
     }
 
     public boolean run() throws GameActionException {
-        DebugHelper.setIndicatorLine(rc.getLocation(), end, 0, 255, 0, rc);
+//        DebugHelper.setIndicatorLine(rc.getLocation(), end, 0, 255, 0, rc);
         if(!rc.isReady()){
             return false;
         } else {
+            if(previous != null) {
+//                DebugHelper.setIndicatorDot(previous, 255, 255, 0, rc);
+            }
             MapLocation currentLocation = rc.getLocation();
+//            DebugHelper.setIndicatorDot(rc.getLocation(), 0,0,255, rc);
             if(following){
-                if(isOnLine() && rc.getLocation().distanceSquaredTo(end) <= closestWallDistance){
+//                DebugHelper.setIndicatorLine(linePoint, end, 255, 0, 0, rc);
+                if(isOnLine() && rc.getLocation().distanceSquaredTo(end) < closestWallDistance){
                     following = false;
                     return run();
                 } else {
                     Direction toPrevious = currentLocation.directionTo(previous);
-                    Direction best = toPrevious.opposite().rotateRight();
+                    Direction best = toPrevious.opposite().rotateLeft();
                     while(!best.equals(toPrevious)){
                         if(rc.canMove(best)){
                             rc.move(best);
@@ -48,6 +55,7 @@ public class Bug {
                             blocked = false;
                             return true;
                         }
+//                        DebugHelper.setIndicatorDot(rc.getLocation().add(best), 255, 0, 0, rc);
                         best = best.rotateRight();
                     }
                     blocked = true;
@@ -67,10 +75,11 @@ public class Bug {
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
                         if(rc.canMove(best)){
+                            closestWallDistance = rc.getLocation().distanceSquaredTo(end);
+                            linePoint = rc.getLocation();
                             rc.move(best);
                             previous = currentLocation;
                             blocked = false;
-                            closestWallDistance = rc.getLocation().distanceSquaredTo(end);
                             return true;
                         }
                     }
@@ -86,9 +95,9 @@ public class Bug {
         // TODO: It may work now, hopefully
         MapLocation loc = rc.getLocation();
         // calc distance
-        double startEndDistance = Math.sqrt(Math.pow(end.y-start.y,2)+Math.pow(end.x-start.x,2));
+        double startEndDistance = Math.sqrt(Math.pow(end.y-linePoint.y,2)+Math.pow(end.x-linePoint.x,2));
         double currentEndDistance = Math.sqrt(Math.pow(end.y-loc.y,2)+Math.pow(end.x-loc.x,2));
-        double startCurrentDistance = Math.sqrt(Math.pow(loc.y-start.y,2)+Math.pow(loc.x-start.x,2));
+        double startCurrentDistance = Math.sqrt(Math.pow(loc.y-linePoint.y,2)+Math.pow(loc.x-linePoint.x,2));
         // we now have a triangle, get the area
         // using heron's formula to get area
         double perimeter = (startCurrentDistance+currentEndDistance+startEndDistance)/2;

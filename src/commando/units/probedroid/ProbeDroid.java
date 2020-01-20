@@ -229,7 +229,7 @@ public class ProbeDroid extends MobileUnit {
 
             if(targetLocation == null || enemyHQ != null || !targetLocation.equals(closest)){
                 if(enemyHQ != null){
-                    if(!targetLocation.equals(enemyHQ)) {
+                    if(targetLocation == null || !targetLocation.equals(enemyHQ)) {
                         targetLocation = enemyHQ;
                         path = new Bug(rc.getLocation(), targetLocation, rc);
                     }

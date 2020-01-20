@@ -190,6 +190,13 @@ public class ProbeDroid extends MobileUnit {
     public void turn() throws GameActionException, KillMeNowException {
         checkMessages();
         lookForFlooding();
+
+        if(state == DroneState.MOVING_TO_GRID && defenseGridLocations.size() <= 0){
+            state = DroneState.POST_GRID;
+            targetLocation = null;
+            path = null;
+        }
+
         //Unsorted.updateKnownFlooding(knownFlooding, rc);
         switch(state){
             case PATROL: patrolling(); break;
@@ -206,6 +213,12 @@ public class ProbeDroid extends MobileUnit {
     }
 
     public void patrolling() throws GameActionException {
+        if(combineToFormBarrier){
+            state = DroneState.MOVING_TO_GRID;
+            targetLocation = null;
+            path = null;
+        }
+
         //Unsorted.updateKnownNetguns(knownNetGuns, rc);
         System.out.println("I'M IN PATROL MODE!!!");
         RobotInfo[] threats = rc.senseNearbyRobots(-1, enemy);
@@ -476,8 +489,25 @@ public class ProbeDroid extends MobileUnit {
         return;
     }
 
-    public void postGrid() {
+    public void postGrid() throws GameActionException{
+        target = checkForTargets();
+        //target = null;
+        if (target != null) {
+            //There is a target, switch to intercept mode
+            targetLocation = target.getLocation();
+            path = new Bug(rc.getLocation(), target.location, rc);
+            targetSpot = target.location;
+            state = DroneState.INTERCEPT;
+            intercepting();
+            return;
+        }
 
+        if(targetLocation == null || rc.getLocation().equals(targetLocation)){
+            targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+            path = new Bug(rc.getLocation(), targetLocation, rc);
+        }
+
+        path.run();
     }
 
     public void catchup() throws GameActionException{
@@ -533,6 +563,7 @@ public class ProbeDroid extends MobileUnit {
                     state = DroneState.MOVING_TO_GRID;
                     targetLocation = null;
                     path = null;
+                    combineToFormBarrier = true;
                 }
                 break;
             case 12:

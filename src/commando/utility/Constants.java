@@ -46,4 +46,5 @@ public class Constants {
     public static int MIN_SOUP_TO_BUILD = 600;
     public static int MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP = 3;
     public static int NUMBER_OF_MINERS_TO_BUILD = 7;
+    public static int VAPORATOR_COUNT = 3;
 }

@@ -25,6 +25,7 @@ public class SmugglerDroid extends MobileUnit {
     RushState rstate;
     boolean netGunBuilt;
     boolean designSchoolBuilt;
+    int vaporCount;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -41,6 +42,7 @@ public class SmugglerDroid extends MobileUnit {
         productionLocked = false;
         buildingType = Integer.MIN_VALUE;
         rushing = false;
+        vaporCount = 0;
         rstate = RushState.SETUP;
         enemyHQLocations = new DroidList<>();
     }
@@ -214,7 +216,11 @@ public class SmugglerDroid extends MobileUnit {
                 MapLocation loc = rc.getLocation().add(dir);
                 if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                     rc.buildRobot(RobotType.VAPORATOR, dir);
-                    economyBuilding = false;
+                    vaporCount++;
+                    if (vaporCount >= Constants.VAPORATOR_COUNT) {
+                        economyBuilding = false;
+                        vaporCount = 0;
+                    }
                     return true;
                 }
             }

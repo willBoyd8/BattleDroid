@@ -5,13 +5,13 @@ import commando.utility.DebugHelper;
 import java.lang.Math.*;
 
 public class Bug {
-    MapLocation start;
-    MapLocation end;
+    public MapLocation start;
+    public MapLocation end;
     RobotController rc;
     MapLocation previous;
     boolean following;
-    boolean noPath;
-    boolean blocked;
+    public boolean noPath;
+    public boolean blocked;
     int closestWallDistance;
     MapLocation linePoint;
 

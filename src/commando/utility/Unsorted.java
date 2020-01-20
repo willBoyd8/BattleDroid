@@ -350,4 +350,23 @@ public class Unsorted {
 
     }
 
+    public static DroidList<MapLocation> getTilesAtSquareRadius(MapLocation center, int radius, RobotController rc) {
+        DroidList<MapLocation> tiles = new DroidList<>();
+        int x = center.x;
+        int y = center.y;
+
+        for(int i = -radius; i <= radius; i++) {
+            for(int j = -radius; j <= radius; j++) {
+                if(Math.abs(i / radius) == 1 || Math.abs(j / radius) == 1){
+                    MapLocation loc = new MapLocation(x + i, y + j);
+                    if(rc.onTheMap(loc)){
+                        tiles.add(loc);
+                    }
+                }
+            }
+        }
+
+        return tiles;
+    }
+
 }

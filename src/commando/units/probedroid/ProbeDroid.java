@@ -29,6 +29,8 @@ public class ProbeDroid extends MobileUnit {
     DroidList<MapLocation> enemyHQBlacklist;
     DroidList<MapLocation> patrolPath;
     boolean combineToFormBarrier;
+    DroidList<MapLocation> defenseGridLocations;
+    DroidList<MapLocation> allDefenseGridLocations;
 
     public ProbeDroid (RobotController rc) {
         super(rc);
@@ -37,6 +39,8 @@ public class ProbeDroid extends MobileUnit {
         patrolPath = new DroidList<>();
         knownNetGuns = new DroidList<>();
         knownFlooding = new DroidList<>();
+        defenseGridLocations = new DroidList<>();
+        allDefenseGridLocations = new DroidList<>();
         closestNetGun = null;
         target = null;
         targetSpot = null;
@@ -59,6 +63,9 @@ public class ProbeDroid extends MobileUnit {
         DROPOFF_DRONE,
         RETURNING,
         ROAMING,
+        MOVING_TO_GRID,
+        STANDING_ON_GRID,
+        POST_GRID   //This name is a place holder for whatever state we end up with once we get to a point where we do something here
     }
 
 
@@ -181,6 +188,7 @@ public class ProbeDroid extends MobileUnit {
     }
 
     public void turn() throws GameActionException, KillMeNowException {
+        checkMessages();
         //Unsorted.updateKnownFlooding(knownFlooding, rc);
         switch(state){
             case PATROL: patrolling(); break;
@@ -190,6 +198,9 @@ public class ProbeDroid extends MobileUnit {
             case DROPOFF_DRONE: droppingOffDrone(); break;
             case RETURNING: returning(); break;
             case ROAMING: roam(); break;
+            case MOVING_TO_GRID: movingToGrid(); break;
+            case STANDING_ON_GRID: standingOnGrid(); break;
+            case POST_GRID: postGrid(); break;
         }
     }
 
@@ -416,6 +427,35 @@ public class ProbeDroid extends MobileUnit {
 
     }
 
+    public void movingToGrid() throws GameActionException {
+        if(allDefenseGridLocations.contains(rc.getLocation())){
+            state = DroneState.STANDING_ON_GRID;
+            targetLocation = null;
+            path = null;
+            return;
+        }
+
+        MapLocation closest = Unsorted.getClosestMapLocation(defenseGridLocations, rc);
+
+        if(targetLocation == null){
+            targetLocation = closest;
+            path = new Bug(rc.getLocation(), closest, rc);
+        } else if(!targetLocation.equals(path.end)){
+            targetLocation = closest;
+            path = new Bug(rc.getLocation(), closest, rc);
+        }
+
+        path.run();
+    }
+
+    public void standingOnGrid() {
+        return;
+    }
+
+    public void postGrid() {
+
+    }
+
     public void catchup() throws GameActionException{
         int counter = 1;
         while(counter < rc.getRoundNum()){
@@ -463,6 +503,26 @@ public class ProbeDroid extends MobileUnit {
             case 5:
                 enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
                 targetLocation = null;
+                break;
+            case 6:
+                if(message[2] == 2){
+                    state = DroneState.MOVING_TO_GRID;
+                    targetLocation = null;
+                    path = null;
+                }
+                break;
+            case 12:
+                defenseGridLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
+                if(targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
+                    targetLocation = null;
+                    path = null;
+                }
+                break;
+            case 13:
+                defenseGridLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
+                if(!allDefenseGridLocations.contains(CommunicationHelper.convertMessageToLocation(message[2]))){
+                    allDefenseGridLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
+                }
                 break;
         }
 

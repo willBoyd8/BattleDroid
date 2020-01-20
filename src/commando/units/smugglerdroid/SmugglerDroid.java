@@ -377,13 +377,13 @@ public class SmugglerDroid extends MobileUnit {
 
     private void updateSoupLocations() throws GameActionException {
         MapLocation[] soups = rc.senseNearbySoup();
-        for(MapLocation loc : soups){
-            if(!knownSoupLocations.contains(loc)){
-                knownSoupLocations.add(loc);
+        for(int i = 0; i < soups.length; i++){
+            if(!knownSoupLocations.contains(soups[i])){
+                knownSoupLocations.add(soups[i]);
                 int[] message = new int[7];
                 message[0] = Constants.MESSAGE_KEY;
                 message[1] = 3;
-                message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                message[2] = CommunicationHelper.convertLocationToMessage(soups[i]);
                 messageQueue.add(message);
             }
             if(Clock.getBytecodesLeft() < 6000){
@@ -391,7 +391,7 @@ public class SmugglerDroid extends MobileUnit {
             }
         }
 
-        for(MapLocation loc :knownSoupLocations){
+        for(MapLocation loc : knownSoupLocations){
             if(rc.canSenseLocation(loc) && rc.senseSoup(loc) <= 0){
                 if(state == SmugglerState.MINING && targetLocation != null && targetLocation.equals(loc)){
                     targetLocation = null;

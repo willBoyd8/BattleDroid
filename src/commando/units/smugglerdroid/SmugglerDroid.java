@@ -21,6 +21,7 @@ public class SmugglerDroid extends MobileUnit {
     boolean initialDesignSchool, initialFulfillmentCenter, initialRefinery;
     boolean economyBuilding;
     boolean productionLocked;
+    int buildingType;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -35,6 +36,7 @@ public class SmugglerDroid extends MobileUnit {
         economyBuilding = true;
         initialRefinery = false;
         productionLocked = false;
+        buildingType = Integer.MIN_VALUE;
     }
 
     enum SmugglerState {
@@ -190,14 +192,17 @@ public class SmugglerDroid extends MobileUnit {
                 }
             }
         } else {
-            // Random choice between netgun, design school, and fulfillment center
-            switch (rand.nextInt(3)){
+            if(buildingType == Integer.MIN_VALUE){
+                buildingType = rand.nextInt(3);
+            }
+            switch (buildingType){
                 case 0:
                     for (Direction dir : Constants.DIRECTIONS) {
                         MapLocation loc = rc.getLocation().add(dir);
                         if (rc.canBuildRobot(RobotType.NET_GUN, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                             rc.buildRobot(RobotType.NET_GUN, dir);
                             economyBuilding = true;
+                            buildingType = Integer.MIN_VALUE;
                             return true;
                         }
                     }
@@ -208,6 +213,7 @@ public class SmugglerDroid extends MobileUnit {
                         if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                             rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
                             economyBuilding = true;
+                            buildingType = Integer.MIN_VALUE;
                             return true;
                         }
                     }
@@ -218,6 +224,7 @@ public class SmugglerDroid extends MobileUnit {
                         if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                             rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
                             economyBuilding = true;
+                            buildingType = Integer.MIN_VALUE;
                             return true;
                         }
                     }

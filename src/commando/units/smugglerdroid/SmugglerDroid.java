@@ -1,6 +1,7 @@
 package commando.units.smugglerdroid;
 
 import battlecode.common.*;
+import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;
@@ -28,6 +29,7 @@ public class SmugglerDroid extends MobileUnit {
     int vaporCount;
     int lockCounter;
     boolean badLock;
+    boolean walling;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -49,6 +51,7 @@ public class SmugglerDroid extends MobileUnit {
         enemyHQLocations = new DroidList<>();
         badLock = false;
         lockCounter = 0;
+        walling = false;
     }
 
     enum SmugglerState {
@@ -75,7 +78,10 @@ public class SmugglerDroid extends MobileUnit {
 
     }
 
-    public void turn() throws GameActionException {
+    public void turn() throws GameActionException, KillMeNowException {
+        if(walling && rc.getLocation().isAdjacentTo(hqLocation)){
+            throw new KillMeNowException();
+        }
         checkMessages();
         if (!rushing) {
             RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
@@ -497,6 +503,7 @@ public class SmugglerDroid extends MobileUnit {
             case 6:
                 if(message[2] == 1) {
                     depositLocations.remove(new DropOffLocation(hqLocation, hqElevation));
+                    walling = true;
                 }
                 if(targetLocation.equals(hqLocation)){
                     targetLocation = null;

@@ -42,6 +42,7 @@ public class SmugglerDroid extends MobileUnit {
         buildingType = Integer.MIN_VALUE;
         rushing = false;
         rstate = RushState.SETUP;
+        enemyHQLocations = new DroidList<>();
     }
 
     enum SmugglerState {
@@ -63,6 +64,8 @@ public class SmugglerDroid extends MobileUnit {
         if(hqLocation.y % 2 == 0){
             gridOffsetY = 1;
         }
+
+        enemyHQLocations.addAll(Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc));
 
     }
 
@@ -516,7 +519,25 @@ public class SmugglerDroid extends MobileUnit {
     }
 
     public void setup () throws GameActionException {
-        if (enemyHQ == null) {enemyHQ = enemyHQLocations.get(0);} //to avoid null pointer exceptions if for some reason they happen
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+        enemyHQ = null;
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.HQ){
+                enemyHQ = robot.getLocation();
+                break;
+            }
+        }
+
+        if(enemyHQ == null){
+            MapLocation closest = Unsorted.getClosestMapLocation(enemyHQLocations, rc);
+            if(targetLocation == null || !targetLocation.equals(closest)) {
+                targetLocation = closest;
+                path = new Bug(rc.getLocation(), targetLocation, rc);
+            }
+        }
+
         int dist = rc.getLocation().distanceSquaredTo(enemyHQ);
         if (dist <= 20){
 

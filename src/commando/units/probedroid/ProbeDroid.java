@@ -54,7 +54,7 @@ public class ProbeDroid extends MobileUnit {
         gridOffsetX = 0;
         gridOffsetY = 0;
         rushEnable = true;
-        wallAssistEnable = false;
+        wallAssistEnable = true;
 
     }
 

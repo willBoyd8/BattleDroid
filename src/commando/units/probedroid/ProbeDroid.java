@@ -189,6 +189,7 @@ public class ProbeDroid extends MobileUnit {
 
     public void turn() throws GameActionException, KillMeNowException {
         checkMessages();
+        lookForFlooding();
         //Unsorted.updateKnownFlooding(knownFlooding, rc);
         switch(state){
             case PATROL: patrolling(); break;
@@ -361,6 +362,16 @@ public class ProbeDroid extends MobileUnit {
 
     public void droppingOff() throws GameActionException {
         MapLocation nearestWater = Unsorted.getClosestMapLocation(knownFlooding, rc);
+
+        if(nearestWater == null){
+            if(targetLocation == null || rc.getLocation().equals(targetLocation)){
+                targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+                path = new Bug(rc.getLocation(), targetLocation, rc);
+            }
+            path.run();
+            return;
+        }
+
         if (rc.getLocation().isAdjacentTo(nearestWater)) {
             if (rc.canDropUnit(rc.getLocation().directionTo(nearestWater))) {
                 rc.dropUnit(rc.getLocation().directionTo(nearestWater));
@@ -371,7 +382,7 @@ public class ProbeDroid extends MobileUnit {
             }
         }
 
-        if (!(nearestWater.equals(nearestFlooding))) {
+        if (nearestFlooding == null || !(nearestWater.equals(nearestFlooding))) {
             nearestFlooding = nearestWater;
             targetLocation = nearestWater;
             path = new Bug(rc.getLocation(), nearestWater, rc);
@@ -513,7 +524,7 @@ public class ProbeDroid extends MobileUnit {
                 break;
             case 12:
                 defenseGridLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
-                if(targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
+                if(targetLocation != null && targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
                     targetLocation = null;
                     path = null;
                 }
@@ -546,6 +557,24 @@ public class ProbeDroid extends MobileUnit {
         }
 
         return targetFound;
+    }
+
+    public void lookForFlooding() throws GameActionException {
+        DroidList<MapLocation> searchTiles = new DroidList<>();
+        searchTiles.add(rc.getLocation());
+//        searchTiles.addAll(Unsorted.getTilesAtSquareRadius(rc.getLocation(), 1, rc));
+//        searchTiles.addAll(Unsorted.getTilesAtSquareRadius(rc.getLocation(), 2, rc));
+
+        for(MapLocation loc : searchTiles){
+            if(rc.canSenseLocation(loc)){
+                if(!knownFlooding.contains(loc) && rc.senseFlooding(loc)){
+                    knownFlooding.add(loc);
+                    if(knownFlooding.size() > 50){
+                        knownFlooding.remove(0);
+                    }
+                }
+            }
+        }
     }
 
 }

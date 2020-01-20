@@ -120,13 +120,13 @@ public class Bug {
                     closestWallDistance = rc.getLocation().distanceSquaredTo(end);
                     return true;
                 } else {
-                    following = true;
                     Direction best = currentLocation.directionTo(end);
                     for(int i = 0; i < 8; i++){
                         // TODO: Make this not always end up in the same circle sometimes
                         best = best.rotateRight();
                         if(rc.canMove(best) && !isFlooding(rc.getLocation().add(best)) && ((rc.getLocation().add(best).x - gridOffsetX) % 2 == 0 || (rc.getLocation().add(best).y - gridOffsetY) % 2 == 0)){
                             linePoint = rc.getLocation();
+                            following = true;
                             closestWallDistance = rc.getLocation().distanceSquaredTo(end);                            
                             rc.move(best);
                             previous = currentLocation;

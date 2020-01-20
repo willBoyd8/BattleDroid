@@ -206,7 +206,6 @@ public class WallSittingLandscaper extends MobileUnit {
 
             for (Direction dir : Direction.allDirections()) {
                 MapLocation tile = rc.getLocation().add(dir);
-                // TODO: remove this when we handle square more programatically or make it larger
                 if (tile.distanceSquaredTo(hqLocation) <= 8 && tile.distanceSquaredTo(hqLocation) >= 4) {
                     if (rc.senseElevation(tile) < lowest) {
                         lowest = rc.senseElevation(tile);
@@ -339,7 +338,6 @@ public class WallSittingLandscaper extends MobileUnit {
         }
 
         if(rc.getDirtCarrying() >= RobotType.LANDSCAPER.dirtLimit){
-            // TODO: Make this actually smart
             tryDeposit(Unsorted.randomDirection());
             return;
         }

@@ -42,7 +42,7 @@ public class SpeederBike extends MobileUnit {
         CHECK_TO_CONTINUE,
 
         /**
-         * TODO: Make this a whole suite of steps to run for the "Raiding" functionality
+         *
          */
         RAIDING
     }
@@ -130,7 +130,6 @@ public class SpeederBike extends MobileUnit {
                     }
                     else {
                         // THIS IS AN ERROR STATE
-                        // TODO: What do we do here?
                         throw new GameActionException(GameActionExceptionType.CANT_DO_THAT,
                                 "There was something other than a landscaper where I expect the landscapers to appear!");
                     }
@@ -277,7 +276,6 @@ public class SpeederBike extends MobileUnit {
             }
         }
         else {
-            // TODO: This is an error state (We moved too far). What should we do?
             throw new GameActionException(GameActionExceptionType.CANT_DO_THAT,
                     "We appear to have moved too far!");
         }
@@ -332,7 +330,6 @@ public class SpeederBike extends MobileUnit {
             }
         }
         else {
-            // TODO: This is an error state (We moved too far). What should we do?
             throw new GameActionException(GameActionExceptionType.CANT_DO_THAT,
                     "We appear to have moved too far!");
         }

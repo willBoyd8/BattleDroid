@@ -47,12 +47,17 @@ public class ActionHelper {
         } else return false;
     }
 
+    /**
+     * @deprecated
+     * @param rc
+     * @return
+     * @throws GameActionException
+     */
     public static DroidList<MapLocation> getSoupLocations(RobotController rc) throws GameActionException {
         MapLocation currentLoc = rc.getLocation();
 
         int i_sensorActual = (int)Math.sqrt(RobotType.MINER.sensorRadiusSquared);
 
-        // TODO: Fix this because we check a lot of unneed tiles (or not visible ones)
         int lowXLimit = currentLoc.x - i_sensorActual;
         int highXLimit = currentLoc.x + i_sensorActual;
         int lowYLimit = currentLoc.y - i_sensorActual;

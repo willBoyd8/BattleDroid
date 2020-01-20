@@ -28,7 +28,6 @@ public class SimpleMiner extends MobileUnit {
     private Tell tell;
     MapLocation[] broadcasted;
     int gridOffsetX, gridOffsetY;
-    // TODO: Implement looking for refineries occasionally
 
     public SimpleMiner(RobotController rc){
         super(rc);
@@ -255,7 +254,6 @@ public class SimpleMiner extends MobileUnit {
     }
 
     private void search() throws GameActionException {
-        // TODO: implement intelligent searching
         //ActionHelper.tryMove(rc);
         if(broadcasted != null) {
             // DO PATHFINDING to location variable 'broadcasted'

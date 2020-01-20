@@ -105,7 +105,6 @@ public class LaticeLandscaper extends MobileUnit {
 
         path.run();
 
-//        // TODO:  Implement Bug Pathing
 //        if(!Simple.moveToLocationFuzzy(wallLocations.get(0), rc) && rc.isReady()){
 //            MapLocation loc = rc.getLocation().add(rc.getLocation().directionTo(wallLocations.get(0)));
 //            int height = Integer.MIN_VALUE;

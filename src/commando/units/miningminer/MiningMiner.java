@@ -25,7 +25,6 @@ public class MiningMiner extends MobileUnit {
     private Bucket buck;
     private Tell tell;
     MapLocation[] broadcasted;
-    // TODO: Implement looking for refineries occasionally
 
     public MiningMiner(RobotController rc){
         super(rc);
@@ -236,7 +235,6 @@ public class MiningMiner extends MobileUnit {
     }
 
     private void search() throws GameActionException {
-        // TODO: implement intelligent searching
         //ActionHelper.tryMove(rc);
         if(broadcasted != null) {
             // DO PATHFINDING to location variable 'broadcasted'

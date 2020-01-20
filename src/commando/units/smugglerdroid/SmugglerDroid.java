@@ -266,13 +266,13 @@ public class SmugglerDroid extends MobileUnit {
         if(knownSoupLocations.size() > 0){
             state = previousState;
             previousState = SmugglerState.SEARCHING;
-            // TODO: This is broken because I'm only halfway done
             targetLocation = null;
             path = null;
             mining();
             return;
         }
 
+        // TODO: stop things here from not being able to path us to things
         while(targetLocation == null || rc.getLocation().equals(targetLocation)){
             targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
             path = new Bug(rc.getLocation(), targetLocation, rc);

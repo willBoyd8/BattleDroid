@@ -27,6 +27,7 @@ public class Constants {
     public static boolean DEBUGGER_ENABLE = true;
     public static int RAID_START_ROUND = 2000;
     public static int LANDSCAPERS_ON_WALL = 15;
+
     public static int ASSIST_START_ROUND = 1000;
 
     public static int MIN_REFINERY_SPREAD_DISTANCE = 100;
@@ -36,8 +37,10 @@ public class Constants {
     public static int DRONE_LATICE_CHECK_RADIUS = 2;
 
 
+
     public static int LATICE_HEIGHT = 11;
     public static int WALL_SAFETY_BARRIER = 0;
     public static int MESSAGE_KEY = 31415926;
     public static int MAX_SOUP_TO_CARRY = RobotType.MINER.soupLimit;
+    public static int MIN_LATICE_BUILDING_ELEVATION = -150;
 }

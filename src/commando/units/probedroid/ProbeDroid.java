@@ -1,6 +1,7 @@
 package commando.units.probedroid;
 
 import battlecode.common.*;
+import com.sun.tools.internal.jxc.ap.Const;
 import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
@@ -22,7 +23,7 @@ public class ProbeDroid extends MobileUnit {
     MapLocation targetSpot;
     MapLocation patrolPoint;
     MapLocation nearestFlooding;
-    Bug path;
+    Bug path = null;
     DroidList<RobotInfo> knownNetGuns;
     DroidList<MapLocation> knownFlooding;
     DroidList<MapLocation> enemyHQBlacklist;
@@ -41,7 +42,7 @@ public class ProbeDroid extends MobileUnit {
         targetSpot = null;
         patrolPoint = null;
         nearestFlooding = null;
-        path = null;
+        //path = null;
         combineToFormBarrier = false;
         state = DroneState.PATROL;
         homeQuad = 0;
@@ -179,7 +180,7 @@ public class ProbeDroid extends MobileUnit {
     }
 
     public void turn() throws GameActionException, KillMeNowException {
-        Unsorted.updateKnownFlooding(knownFlooding, rc);
+        //Unsorted.updateKnownFlooding(knownFlooding, rc);
         switch(state){
             case PATROL: patrolling(); break;
             case INTERCEPT: intercepting(); break;
@@ -192,33 +193,40 @@ public class ProbeDroid extends MobileUnit {
     }
 
     public void patrolling() throws GameActionException {
-        Unsorted.updateKnownNetguns(knownNetGuns, rc);
+        //Unsorted.updateKnownNetguns(knownNetGuns, rc);
+        System.out.println("I'M IN PATROL MODE!!!");
         target = checkForTargets();
-
+        //target = null;
         if (target != null) {
             //There is a target, switch to intercept mode
-            Bug path = new Bug(rc.getLocation(), target.location, rc);
+            path = new Bug(rc.getLocation(), target.location, rc);
             targetSpot = target.location;
             state = DroneState.INTERCEPT;
             intercepting();
             return;
         } else {
+            System.out.println("NO TARGETS FOUND!!!");
             //There is no target, stay in patrol mode
             if (rc.getLocation().isAdjacentTo(patrolPoint)){
                 //Patrol point reached, setting next patrol point
+                System.out.println("PATROL POINT AT ("+patrolPoint.x+", "+patrolPoint.y+") reached");
                 patrolPath.add(patrolPath.get(0));
                 patrolPath.remove(0);
                 patrolPoint = patrolPath.get(0);
-                Bug path = new Bug(rc.getLocation(), patrolPoint, rc);
+                path = new Bug(rc.getLocation(), patrolPoint, rc);
                 path.run();
             } else {
                 //Patrol point not reached, moving to patrol point
+                if (path == null) {
+                    path = new Bug(rc.getLocation(), patrolPoint, rc);
+                }
                 path.run();
             }
         }
     }
 
     public void intercepting() throws GameActionException {
+        System.out.println("I'M INTERCEPTING A TARGET!!!");
         //If the drone has reached and is adjacent to target
         if (rc.getLocation().isAdjacentTo(target.location)) {
             if (rc.canPickUpUnit(target.ID)) {
@@ -238,26 +246,25 @@ public class ProbeDroid extends MobileUnit {
                 }
             } else {
                 //Shouldn't ever reach this point, but just in case putting in path.run to try and have it move somewhere else and hopefully be able to pick it up
+                if (path == null) {
+                    path = new Bug(rc.getLocation(), closestNetGun.location, rc);
+                }
                 path.run();
             }
         }
         //A quick check of whether it can still sense should solve the potential issue of multiple drones going for a single unit
         if (rc.canSenseRobot(target.ID)) {
-            //For when the target inevitably moves while moving to intercept
-            if (targetSpot != target.location) {
-                //If target changed locations since switching to intercept mode, then update path object
-                targetSpot = target.location;
-                Bug path = new Bug(rc.getLocation(), targetSpot, rc);
+            if (path == null) {
+                Bug path = new Bug(rc.getLocation(), target.location, rc);
             }
-            //Once path has been corrected or if target didn't move, move to target
             path.run();
         } else {
             //Switch targets if there are more targets
             target = checkForTargets();
 
             if (target != null) {
-                Bug path = new Bug(rc.getLocation(), target.location, rc);
-                targetSpot = target.location;
+                path = new Bug(rc.getLocation(), target.location, rc);
+
                 //Since a new target was found, call intercepting() again to go through
                 //1. Checking if it's adjacent to the new target
                 //      - Pick up new target and switch to Dropoff mode
@@ -269,6 +276,8 @@ public class ProbeDroid extends MobileUnit {
                 //No Valid targets found, switching to return state
                 target = null;
                 state = DroneState.RETURNING;
+                returning();
+                return;
             }
         }
     }
@@ -286,7 +295,9 @@ public class ProbeDroid extends MobileUnit {
                 }
             }
         }
-        Bug path = new Bug(rc.getLocation(), hqLocation, rc);
+        if (path == null) {
+            path = new Bug(rc.getLocation(), hqLocation, rc);
+        }
         path.run();
     }
 
@@ -304,17 +315,19 @@ public class ProbeDroid extends MobileUnit {
 
         if (!(nearestWater.equals(nearestFlooding))) {
             nearestFlooding = nearestWater;
-            Bug path = new Bug(rc.getLocation(), nearestWater, rc);
+            path = new Bug(rc.getLocation(), nearestWater, rc);
             path.run();
         } else {
+            if (path == null) {
+                path = new Bug(rc.getLocation(), nearestFlooding, rc);
+            }
             path.run();
         }
     }
 
     public void droppingOffDrone() throws GameActionException {
         if (rc.getLocation().distanceSquaredTo(closestNetGun.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED){
-            boolean ableToDrop;
-            DroidList<Direction> validDrops = new DroidList<Direction>();
+
             for (Direction dropDir : Constants.DIRECTIONS){
                 if (rc.getLocation().add(dropDir).distanceSquaredTo(closestNetGun.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED){
                     if (rc.canDropUnit(dropDir)){
@@ -326,15 +339,22 @@ public class ProbeDroid extends MobileUnit {
                     }
                 }
             }
+            if (path == null){
+                path = new Bug(rc.getLocation(), closestNetGun.location, rc);
+            }
             path.run();
         } else {
+            if (path == null){
+                path = new Bug(rc.getLocation(), closestNetGun.location, rc);
+            }
             path.run();
         }
     }
 
     public void returning() throws GameActionException {
         //Purpose is to reset Bug path to the last patrol point and get it back on its patrol path;
-        Bug path = new Bug(rc.getLocation(), patrolPoint, rc);
+
+        path = new Bug(rc.getLocation(), patrolPoint, rc);
         state = DroneState.PATROL;
         patrolling();
         return;
@@ -406,7 +426,9 @@ public class ProbeDroid extends MobileUnit {
             targetFound = Unsorted.getClosestUnit(threats, rc);
         } else if (!(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc).isEmpty())) {
             //No enemies spotted, Unit in need of assistance spotted
-            targetFound = Unsorted.getClosestUnit(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc), rc);
+            if (rc.getRoundNum()> Constants.ASSIST_START_ROUND) {
+                targetFound = Unsorted.getClosestUnit(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc), rc);
+            }
         } else {
             //No Enemies or Units in need of assistance spotted, should switch to return state
             targetFound = null;

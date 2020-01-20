@@ -27,6 +27,7 @@ public class Constants {
     public static boolean DEBUGGER_ENABLE = true;
     public static int RAID_START_ROUND = 2000;
     public static int LANDSCAPERS_ON_WALL = 15;
+    public static int ASSIST_START_ROUND = 1000;
 
     public static int MIN_REFINERY_SPREAD_DISTANCE = 100;
     public static int MAP_EDGE_PROXIMITY_THRESHOLD = 8;

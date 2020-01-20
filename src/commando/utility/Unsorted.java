@@ -91,28 +91,32 @@ public class Unsorted {
         int unitX = rc.getLocation().x;
         int count = 0;
         int canSeeDebug = 0;
-        for (int i = unitY - radius; i <= (unitY + radius); i++) {
+        int removedDebug = 0;
+        int addDebug = 0;
+        int bottomBound = unitY - radius;
+        int topBound = unitY + radius;
+        //if (bottomBound < 0) { bottomBound = 0; }
+        for (int i = bottomBound; i <= topBound; i++) {
             int leftBound = unitX - ((visionArray[count]-1)/2);
             int rightBound = unitX + ((visionArray[count]-1)/2);
+            //if (leftBound < 0){leftBound = 0;}
+            //if (rightBound > rc.getMapWidth()){rightBound = rc.getMapWidth();}
             for (int j = leftBound; j <= rightBound; j++) {
-                canSeeDebug++;
-                MapLocation temp = new MapLocation(j,i);
-                if (rc.canSenseLocation(temp)) {
-                    boolean matchFound = false;
+                //if (rc.onTheMap(temp)) {
+                if ((j > 0)&&(j < rc.getMapWidth())&&(i > 0)&&(i < rc.getMapHeight())){
+                    canSeeDebug++;
+                    MapLocation temp = new MapLocation(j,i);
+                    boolean matchFound = knownFlooding.contains(temp);
                     boolean flooded = false;
-                    int matchIndex = 0;
-                    for (int k = 0; k < knownFlooding.size(); k++){
-                        if (temp.equals(knownFlooding.get(k))){
-                            matchFound = true;
-                            matchIndex = k;
-                        }
-                    }
+
                     if (rc.senseFlooding(temp)) {flooded = true;}
 
-                    if (matchFound && !flooded){
-                        knownFlooding.remove(matchIndex);
-                    } else if (!matchFound && flooded) {
+                    /*if (matchFound && !flooded){
+                        knownFlooding.remove(temp);
+                        removedDebug++;
+                    } else*/ if (!matchFound && flooded) {
                         knownFlooding.add(temp);
+                        addDebug++;
                     }
                 }
             }
@@ -120,7 +124,8 @@ public class Unsorted {
         }
         System.out.println("I CHECKED " + canSeeDebug + " TILES");
         //Assuming a practically unchanged Squared Vision Radius, canSeeDebug should be 69
-
+        System.out.println("I REMOVED " + removedDebug + " LOCATIONS");
+        System.out.println("I ADDED " + addDebug + " LOCATIONS");
     }
 
     public static void updateKnownNetguns(DroidList<RobotInfo> known, RobotController rc) {

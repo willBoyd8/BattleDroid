@@ -31,6 +31,7 @@ public class ProbeDroid extends MobileUnit {
     boolean combineToFormBarrier;
     DroidList<MapLocation> defenseGridLocations;
     DroidList<MapLocation> allDefenseGridLocations;
+    boolean rushEnable;
 
     public ProbeDroid (RobotController rc) {
         super(rc);
@@ -52,6 +53,7 @@ public class ProbeDroid extends MobileUnit {
         homeQuad = 0;
         gridOffsetX = 0;
         gridOffsetY = 0;
+        rushEnable = true;
 
     }
 
@@ -63,6 +65,7 @@ public class ProbeDroid extends MobileUnit {
         DROPOFF_DRONE,
         RETURNING,
         ROAMING,
+        RUSHING,
         MOVING_TO_GRID,
         STANDING_ON_GRID,
         POST_GRID   //This name is a place holder for whatever state we end up with once we get to a point where we do something here
@@ -197,6 +200,10 @@ public class ProbeDroid extends MobileUnit {
             path = null;
         }
 
+        if(rushEnable){
+            state = DroneState.RUSHING;
+        }
+
         //Unsorted.updateKnownFlooding(knownFlooding, rc);
         switch(state){
             case PATROL: patrolling(); break;
@@ -206,9 +213,70 @@ public class ProbeDroid extends MobileUnit {
             case DROPOFF_DRONE: droppingOffDrone(); break;
             case RETURNING: returning(); break;
             case ROAMING: roam(); break;
+            case RUSHING: rushing(); break;
             case MOVING_TO_GRID: movingToGrid(); break;
             case STANDING_ON_GRID: standingOnGrid(); break;
             case POST_GRID: postGrid(); break;
+        }
+    }
+
+    public void rushing() throws GameActionException {
+        if(rc.isCurrentlyHoldingUnit()){
+
+            checkEnemyHQ();
+
+            MapLocation closest = Unsorted.getClosestMapLocation(enemyHQLocations, rc);
+
+            if(targetLocation == null || enemyHQ != null || !targetLocation.equals(closest)){
+                if(enemyHQ != null){
+                    if(!targetLocation.equals(enemyHQ)) {
+                        targetLocation = enemyHQ;
+                        path = new Bug(rc.getLocation(), targetLocation, rc);
+                    }
+                } else if(targetLocation == null || !targetLocation.equals(closest)){
+                    targetLocation = closest;
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                }
+            }
+            path.run();
+        } else {
+            RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
+
+            RobotInfo target = null;
+            int closest = Integer.MAX_VALUE;
+
+            if(robots != null && robots.length > 0){
+                for(RobotInfo robot : robots){
+                    int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
+                    if(robot.getType() == RobotType.MINER && dist < closest){
+                        target = robot;
+                        closest = dist;
+                    }
+                }
+            }
+
+            if(target == null){
+                state = DroneState.PATROL;
+                patrolling();
+                return;
+            } else {
+                if(rc.canPickUpUnit(target.ID)){
+                    rc.pickUpUnit(target.ID);
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 14;
+                    message[2] = rc.getID();
+                    messageQueue.add(message);
+                    targetLocation = null;
+                    path = null;
+                } else {
+                    if(targetLocation == null || !targetLocation.equals(target.getLocation())){
+                        targetLocation = target.getLocation();
+                        path = new Bug(rc.getLocation(), targetLocation, rc);
+                    }
+                    path.run();
+                }
+            }
         }
     }
 
@@ -550,13 +618,18 @@ public class ProbeDroid extends MobileUnit {
                 break;
             case 4:
                 enemyHQBlacklist.add(CommunicationHelper.convertMessageToLocation(message[2]));
+                enemyHQLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
                 if(targetLocation != null && targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
                     targetLocation = null;
+                    path = null;
                 }
                 break;
             case 5:
                 enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
-                targetLocation = null;
+                if(state == DroneState.RUSHING){
+                    targetLocation = null;
+                    path = null;
+                }
                 break;
             case 6:
                 if(message[2] == 2){
@@ -579,6 +652,17 @@ public class ProbeDroid extends MobileUnit {
                     allDefenseGridLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
                 }
                 break;
+            case 14:
+                if(state == DroneState.RUSHING && rc.getID() > message[2]){
+                    if(rc.isCurrentlyHoldingUnit()){
+                        state = DroneState.HELP;
+                    } else {
+                        state = DroneState.PATROL;
+                    }
+                }
+                rushEnable = false;
+                break;
+
         }
 
     }
@@ -615,6 +699,29 @@ public class ProbeDroid extends MobileUnit {
                     knownFlooding.add(loc);
                     if(knownFlooding.size() > 50){
                         knownFlooding.remove(0);
+                    }
+                }
+            }
+        }
+    }
+
+    public void checkEnemyHQ() throws GameActionException{
+        if(enemyHQ == null && targetLocation != null){
+            if(rc.canSenseLocation(targetLocation)){
+                RobotInfo robot = rc.senseRobotAtLocation(targetLocation);
+                if(robot == null || robot.getType() != RobotType.HQ) {
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 4;
+                    message[2] = CommunicationHelper.convertLocationToMessage(targetLocation);
+                    messageQueue.add(message);
+                } else {
+                    if(robot.getType() == RobotType.HQ){
+                        int[] message = new int[7];
+                        message[0] = Constants.MESSAGE_KEY;
+                        message[1] = 5;
+                        message[2] = CommunicationHelper.convertLocationToMessage(targetLocation);
+                        messageQueue.add(message);
                     }
                 }
             }

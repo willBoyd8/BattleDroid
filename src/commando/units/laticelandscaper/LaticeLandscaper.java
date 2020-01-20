@@ -97,10 +97,10 @@ public class LaticeLandscaper extends MobileUnit {
             return;
         }
 
-        if(path == null) {
-            path = new Bug(rc.getLocation(), wallLocations.get(0), rc);
-        } else {
-            path.updateDestination(wallLocations.get(0));
+        MapLocation closest = Unsorted.getClosestMapLocation(wallLocations, rc);
+
+        if(path == null || path.end.equals(closest)) {
+            path = new Bug(rc.getLocation(), closest, rc);
         }
 
         path.run();
@@ -267,7 +267,7 @@ public class LaticeLandscaper extends MobileUnit {
         int closest = Integer.MAX_VALUE;
 
         for(RobotInfo robot : robots){
-            int dist = rc.getLocation().distanceSquaredTo(bestTarget.getLocation());
+            int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
             if(dist < closest){
                 bestTarget = robot;
                 closest = dist;
@@ -317,7 +317,7 @@ public class LaticeLandscaper extends MobileUnit {
 
                 if(rc.senseElevation(rc.getLocation()) < height && !digBlacklist.contains(loc)){
                     return ActionHelper.tryDig(rc.getLocation().directionTo(loc), rc);
-                } else if (rc.senseElevation(rc.getLocation()) < height){
+                } else if (rc.senseElevation(rc.getLocation()) > height){
                     if (rc.getDirtCarrying() > 0) {
                         return ActionHelper.tryDepositDirt(rc.getLocation().directionTo(loc), rc);
                     } else {

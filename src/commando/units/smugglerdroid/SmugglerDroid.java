@@ -135,7 +135,7 @@ public class SmugglerDroid extends MobileUnit {
             return false;
         }
 
-        if(!productionLocked && isAdjacentToSoup() && rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE){
+        if(closestDeposit == null || (!productionLocked && isAdjacentToSoup() && rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE)){
             productionLocked = true;
             int[] message = new int[7];
             message[0] = Constants.MESSAGE_KEY;

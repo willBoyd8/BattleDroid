@@ -47,7 +47,7 @@ public class Unsorted {
         int closest = Integer.MAX_VALUE;
 
         for(MapLocation loc : locs){
-            if(rc.getLocation().distanceSquaredTo(loc) < closest){
+            if(rc.getLocation().distanceSquaredTo(loc) < closest && !rc.getLocation().equals(loc)){
                 closest = rc.getLocation().distanceSquaredTo(loc);
                 best = loc;
             }
@@ -237,7 +237,7 @@ public class Unsorted {
         int closest = Integer.MAX_VALUE;
 
         for(MapLocation loc : locs){
-            if(rc.getLocation().distanceSquaredTo(loc) < closest){
+            if(rc.getLocation().distanceSquaredTo(loc) < closest && !rc.getLocation().equals(loc)){
                 closest = rc.getLocation().distanceSquaredTo(loc);
                 best = loc;
             }

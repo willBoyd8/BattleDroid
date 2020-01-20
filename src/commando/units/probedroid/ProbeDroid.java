@@ -1,7 +1,6 @@
 package commando.units.probedroid;
 
 import battlecode.common.*;
-import com.sun.tools.internal.jxc.ap.Const;
 import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;

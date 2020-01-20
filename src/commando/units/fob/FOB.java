@@ -1,7 +1,7 @@
 package commando.units.fob;
 
 import battlecode.common.*;
-import bb8.base.Building;
+import commando.base.Building;
 
 public class FOB extends Building {
     int numberOfUnitsBuilt;

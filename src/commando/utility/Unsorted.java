@@ -161,7 +161,7 @@ public class Unsorted {
     public static DroidList<RobotInfo> checkForHelpNeeded(RobotInfo[] robots, int gridOffsetX, int gridOffsetY, RobotController rc) {
         DroidList<RobotInfo> inNeedOfHelp = new DroidList<RobotInfo>();
         for (RobotInfo unit : robots){
-            if (!((unit.location.x - gridOffsetX) % 2 == 0 || (unit.location.y - gridOffsetY) % 2 == 0)) {
+            if (!((unit.location.x - gridOffsetX) % 2 == 0 || (unit.location.y - gridOffsetY) % 2 == 0) && unit.getType() != RobotType.DELIVERY_DRONE && !ActionHelper.isBuilding(unit)) {
                 inNeedOfHelp.add(unit);
             }
         }
@@ -173,21 +173,31 @@ public class Unsorted {
 
     public static DroidList<MapLocation> lookForLatice(int gridOffsetX, int gridOffsetY, RobotController rc) throws GameActionException {
         DroidList<MapLocation> laticeTiles = new DroidList<>();
-        int leftCheckBound = rc.getLocation().x-Constants.DRONE_LATICE_CHECK_RADIUS;
-        int rightCheckBound = rc.getLocation().x+Constants.DRONE_LATICE_CHECK_RADIUS;
-        int topCheckBound = rc.getLocation().y+Constants.DRONE_LATICE_CHECK_RADIUS;
-        int bottomCheckBound = rc.getLocation().y-Constants.DRONE_LATICE_CHECK_RADIUS;
-        for (int i = leftCheckBound; i < rightCheckBound; i++) {
-            for (int j = bottomCheckBound; j < topCheckBound; j++){
-                MapLocation temp = new MapLocation(i,j);
-                if (!((temp.x - gridOffsetX) % 2 == 0 || (temp.y - gridOffsetY) % 2 == 0)) {
-                    if (rc.senseElevation(temp) == Constants.LATICE_HEIGHT){
-                        laticeTiles.add(temp);
-                    }
-                }
+//        int leftCheckBound = rc.getLocation().x-Constants.DRONE_LATICE_CHECK_RADIUS;
+//        int rightCheckBound = rc.getLocation().x+Constants.DRONE_LATICE_CHECK_RADIUS;
+//        int topCheckBound = rc.getLocation().y+Constants.DRONE_LATICE_CHECK_RADIUS;
+//        int bottomCheckBound = rc.getLocation().y-Constants.DRONE_LATICE_CHECK_RADIUS;
+//        for (int i = leftCheckBound; i < rightCheckBound; i++) {
+//            for (int j = bottomCheckBound; j < topCheckBound; j++){
+//                MapLocation temp = new MapLocation(i,j);
+//                if (!((temp.x - gridOffsetX) % 2 == 0 || (temp.y - gridOffsetY) % 2 == 0)) {
+//                    if (!rc.senseFlooding(temp)){
+//                        laticeTiles.add(temp);
+//                    }
+//                }
+//            }
+//        }
+//        return laticeTiles;
+
+        for(Direction dir : Constants.DIRECTIONS){
+            MapLocation loc = rc.getLocation().add(dir);
+            if((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2== 0){
+                laticeTiles.add(loc);
             }
         }
+
         return laticeTiles;
+
     }
 
     public static int[] getLargestValidVisionArray(int pollution) {

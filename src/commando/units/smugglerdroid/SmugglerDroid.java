@@ -21,6 +21,10 @@ public class SmugglerDroid extends MobileUnit {
     boolean economyBuilding;
     boolean productionLocked;
     int buildingType;
+    boolean rushing;
+    RushState rstate;
+    boolean netGunBuilt;
+    boolean designSchoolBuilt;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -36,12 +40,19 @@ public class SmugglerDroid extends MobileUnit {
         initialRefinery = false;
         productionLocked = false;
         buildingType = Integer.MIN_VALUE;
+        rushing = false;
+        rstate = RushState.SETUP;
+        enemyHQLocations = new DroidList<>();
     }
 
     enum SmugglerState {
         MINING,
         DEPOSITING,
         SEARCHING
+    }
+
+    enum RushState {
+        SETUP,
     }
 
     @Override
@@ -54,12 +65,29 @@ public class SmugglerDroid extends MobileUnit {
             gridOffsetY = 1;
         }
 
+        enemyHQLocations.addAll(Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc));
+
     }
 
     public void turn() throws GameActionException {
         checkMessages();
+        if (!rushing) {
+            RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+            for (RobotInfo unit : robots) {
+                if (unit.getType() == RobotType.HQ) {
+                    rushing = true;
+                }
+            }
+        }
         updateDepositLocations();
         updateSoupLocations();
+
+        if (rushing) {
+            switch (rstate) {
+                case SETUP: setup(); break;
+            }
+        }
+
         if(building()){
             return;
         }
@@ -486,6 +514,73 @@ public class SmugglerDroid extends MobileUnit {
                     productionLocked = true;
                 }
                 break;
+        }
+
+    }
+
+    public void setup () throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+        enemyHQ = null;
+
+        for(RobotInfo robot : robots){
+            if(robot.getType() == RobotType.HQ){
+                enemyHQ = robot.getLocation();
+                break;
+            }
+        }
+
+        if(enemyHQ == null){
+            MapLocation closest = Unsorted.getClosestMapLocation(enemyHQLocations, rc);
+            if(targetLocation == null || !targetLocation.equals(closest)) {
+                targetLocation = closest;
+                path = new Bug(rc.getLocation(), targetLocation, rc);
+            }
+        }
+
+        int dist = rc.getLocation().distanceSquaredTo(enemyHQ);
+        if (dist <= 20){
+
+            if (rc.getTeamSoup() >= 250 && !netGunBuilt) {
+                if (rc.canBuildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateLeft())) {
+                    rc.buildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    netGunBuilt = true;
+                } else if (rc.canBuildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateRight())) {
+                    rc.buildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    netGunBuilt = true;
+                } else if (rc.canBuildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateRight().rotateRight())) {
+                    rc.buildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    netGunBuilt = true;
+                } else if (rc.canBuildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateLeft().rotateLeft())) {
+                    rc.buildRobot(RobotType.NET_GUN, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    netGunBuilt = true;
+                }
+
+            }
+            if (rc.getTeamSoup() >= 150 && !designSchoolBuilt) {
+                if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ)) && rc.getLocation().add(rc.getLocation().directionTo(enemyHQ)).distanceSquaredTo(enemyHQ) <= 20){
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ));
+                    designSchoolBuilt = true;
+                }
+                else if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateRight()) && rc.getLocation().add(rc.getLocation().directionTo(enemyHQ).rotateRight()).distanceSquaredTo(enemyHQ) <= 20){
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateRight());
+                    designSchoolBuilt = true;
+                }
+                else if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateLeft()) && rc.getLocation().add(rc.getLocation().directionTo(enemyHQ).rotateLeft()).distanceSquaredTo(enemyHQ) <= 20){
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    designSchoolBuilt = true;
+                }
+                else if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateLeft().rotateLeft()) && rc.getLocation().add(rc.getLocation().directionTo(enemyHQ).rotateLeft().rotateLeft()).distanceSquaredTo(enemyHQ) <= 20){
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    designSchoolBuilt = true;
+                }
+                else if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateRight().rotateRight()) && rc.getLocation().add(rc.getLocation().directionTo(enemyHQ).rotateRight().rotateRight()).distanceSquaredTo(enemyHQ) <= 20){
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, rc.getLocation().directionTo(enemyHQ).rotateLeft());
+                    designSchoolBuilt = true;
+                }
+            }
+
+
         }
 
     }

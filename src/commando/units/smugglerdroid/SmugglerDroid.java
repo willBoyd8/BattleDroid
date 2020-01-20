@@ -58,6 +58,9 @@ public class SmugglerDroid extends MobileUnit {
 
     public void turn() throws GameActionException {
         checkMessages();
+
+
+
         updateDepositLocations();
         updateSoupLocations();
         if(building()){

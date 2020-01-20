@@ -107,7 +107,7 @@ public class FOB extends Building {
     }
 
     public RobotInfo checkForHQ(RobotController rc) {
-        RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
+        RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
         for (RobotInfo unit : robots) {
             if (unit.getType() == RobotType.HQ) {
                 return unit;

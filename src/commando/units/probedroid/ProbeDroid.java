@@ -31,6 +31,7 @@ public class ProbeDroid extends MobileUnit {
     DroidList<MapLocation> defenseGridLocations;
     DroidList<MapLocation> allDefenseGridLocations;
     boolean rushEnable;
+    boolean wallAssistEnable;
 
     public ProbeDroid (RobotController rc) {
         super(rc);
@@ -53,6 +54,7 @@ public class ProbeDroid extends MobileUnit {
         gridOffsetX = 0;
         gridOffsetY = 0;
         rushEnable = true;
+        wallAssistEnable = false;
 
     }
 
@@ -65,6 +67,7 @@ public class ProbeDroid extends MobileUnit {
         RETURNING,
         ROAMING,
         RUSHING,
+        PUTTING_UNIT_ON_WALL,
         MOVING_TO_GRID,
         STANDING_ON_GRID,
         POST_GRID   //This name is a place holder for whatever state we end up with once we get to a point where we do something here
@@ -199,6 +202,10 @@ public class ProbeDroid extends MobileUnit {
             path = null;
         }
 
+        if(wallAssistEnable && wallLocations.size() > 0){
+            state = DroneState.PUTTING_UNIT_ON_WALL;
+        }
+
         if(rushEnable){
             state = DroneState.RUSHING;
         }
@@ -213,9 +220,77 @@ public class ProbeDroid extends MobileUnit {
             case RETURNING: returning(); break;
             case ROAMING: roam(); break;
             case RUSHING: rushing(); break;
+            case PUTTING_UNIT_ON_WALL: puttingUnitOnWall(); break;
             case MOVING_TO_GRID: movingToGrid(); break;
             case STANDING_ON_GRID: standingOnGrid(); break;
             case POST_GRID: postGrid(); break;
+        }
+    }
+
+    public void puttingUnitOnWall() throws GameActionException {
+        if(rc.isCurrentlyHoldingUnit()){
+            if(wallLocations.size() <= 0){
+                state = DroneState.HELP;
+                targetLocation = null;
+                path = null;
+                helping();
+                return;
+            } else {
+                MapLocation closest = Unsorted.getClosestMapLocation(wallLocations, rc);
+                if(rc.getLocation().isAdjacentTo(closest)){
+                    if(rc.canDropUnit(rc.getLocation().directionTo(closest))){
+                        rc.dropUnit(rc.getLocation().directionTo(closest));
+                        state = DroneState.PATROL;
+                        targetLocation = null;
+                        path = null;
+                        return;
+                    }
+                } else if(targetLocation == null || !targetLocation.equals(closest)){
+                    targetLocation = closest;
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                }
+                path.run();
+                return;
+            }
+        } else {
+            RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
+            RobotInfo best = null;
+            int closest = Integer.MAX_VALUE;
+
+            if (robots == null || robots.length <= 0) {
+                state = DroneState.PATROL;
+                targetLocation = null;
+                path = null;
+                patrolling();
+                return;
+            } else {
+                for (RobotInfo robot : robots) {
+                    int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
+                    if (robot.getType() == RobotType.LANDSCAPER && !robot.getLocation().isAdjacentTo(hqLocation) && dist < closest) {
+                        best = robot;
+                        closest = dist;
+                    }
+                }
+            }
+
+            if (best == null) {
+                state = DroneState.PATROL;
+                targetLocation = null;
+                path = null;
+                patrolling();
+                return;
+            } else if (rc.canPickUpUnit(best.getID())){
+                rc.pickUpUnit(best.getID());
+                targetLocation = null;
+                path = null;
+                return;
+            } else {
+                if(targetLocation == null || !targetLocation.equals(best.getLocation())){
+                    targetLocation = best.getLocation();
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                }
+                path.run();
+            }
         }
     }
 
@@ -631,6 +706,10 @@ public class ProbeDroid extends MobileUnit {
                 }
                 break;
             case 6:
+                if(message[2] == 1){
+                    wallAssistEnable = true;
+                }
+
                 if(message[2] == 2){
                     state = DroneState.MOVING_TO_GRID;
                     targetLocation = null;

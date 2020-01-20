@@ -2,6 +2,7 @@ package droideka;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import commando.units.probedroid.ProbeDroid;
 import droideka.base.KillMeNowException;
 import droideka.units.assassindroid.AssassinDroid;
 import droideka.units.buildingminer.BuildingMiner;

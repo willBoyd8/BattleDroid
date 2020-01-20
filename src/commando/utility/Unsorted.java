@@ -1,8 +1,11 @@
 package commando.utility;
 
 import battlecode.common.*;
+import commando.RobotPlayer;
 import commando.units.buzzdroid.BuzzDroid;
 import commando.units.smugglerdroid.DropOffLocation;
+
+import java.util.ArrayList;
 
 
 public class Unsorted {
@@ -53,6 +56,179 @@ public class Unsorted {
         return best;
 
     }
+
+    public static RobotInfo getClosestUnit(RobotInfo[] robots, RobotController rc) {
+        RobotInfo closest = null;
+        int closestDist = Integer.MAX_VALUE;
+        MapLocation currentLoc = rc.getLocation();
+        for (RobotInfo unit: robots) {
+            if (unit.location.distanceSquaredTo(currentLoc) < closestDist){
+                closest = unit;
+                closestDist = unit.location.distanceSquaredTo(currentLoc);
+            }
+        }
+        return closest;
+    }
+
+
+    public static RobotInfo getClosestUnit(DroidList<RobotInfo> robots, RobotController rc) {
+        RobotInfo closest = null;
+        int closestDist = Integer.MAX_VALUE;
+        MapLocation currentLoc = rc.getLocation();
+        for (RobotInfo unit: robots) {
+            if (unit.location.distanceSquaredTo(currentLoc) < closestDist){
+                closest = unit;
+                closestDist = unit.location.distanceSquaredTo(currentLoc);
+            }
+        }
+        return closest;
+    }
+
+    public static void updateKnownFlooding(DroidList<MapLocation> knownFlooding, RobotController rc) throws GameActionException {
+        int[] visionArray = getLargestValidVisionArray(rc.sensePollution(rc.getLocation()));
+        int radius = (visionArray.length - 1)/2;
+        int unitY = rc.getLocation().y;
+        int unitX = rc.getLocation().x;
+        int count = 0;
+        int canSeeDebug = 0;
+        int removedDebug = 0;
+        int addDebug = 0;
+        int bottomBound = unitY - radius;
+        int topBound = unitY + radius;
+        //if (bottomBound < 0) { bottomBound = 0; }
+        for (int i = bottomBound; i <= topBound; i++) {
+            int leftBound = unitX - ((visionArray[count]-1)/2);
+            int rightBound = unitX + ((visionArray[count]-1)/2);
+            //if (leftBound < 0){leftBound = 0;}
+            //if (rightBound > rc.getMapWidth()){rightBound = rc.getMapWidth();}
+            for (int j = leftBound; j <= rightBound; j++) {
+                //if (rc.onTheMap(temp)) {
+                if ((j > 0)&&(j < rc.getMapWidth())&&(i > 0)&&(i < rc.getMapHeight())){
+                    canSeeDebug++;
+                    MapLocation temp = new MapLocation(j,i);
+                    boolean matchFound = knownFlooding.contains(temp);
+                    boolean flooded = false;
+
+                    if (rc.senseFlooding(temp)) {flooded = true;}
+
+                    /*if (matchFound && !flooded){
+                        knownFlooding.remove(temp);
+                        removedDebug++;
+                    } else*/ if (!matchFound && flooded) {
+                        knownFlooding.add(temp);
+                        addDebug++;
+                    }
+                }
+            }
+            count++;
+        }
+        System.out.println("I CHECKED " + canSeeDebug + " TILES");
+        //Assuming a practically unchanged Squared Vision Radius, canSeeDebug should be 69
+        System.out.println("I REMOVED " + removedDebug + " LOCATIONS");
+        System.out.println("I ADDED " + addDebug + " LOCATIONS");
+    }
+
+    public static void updateKnownNetguns(DroidList<RobotInfo> known, RobotController rc) {
+        RobotInfo robots[] = rc.senseNearbyRobots(-1, rc.getTeam());
+        DroidList<RobotInfo> Netguns = new DroidList<RobotInfo>();
+
+        //Filter out anything that doesn't have Net gun capabilities
+        for (RobotInfo unit : robots) {
+            if ((unit.type == RobotType.NET_GUN) || (unit.type == RobotType.HQ)) {
+                Netguns.add(unit);
+            }
+        }
+
+        //For every unit in Netguns, check their IDs against the known DroidList
+        for (RobotInfo viewable : Netguns) {
+            for (RobotInfo stored : known) {
+                if (viewable.ID == stored.ID) {
+                    //If you get a match, then remove it from Netguns
+                    Netguns.remove(viewable);
+                    break;
+                }
+            }
+        }
+
+        //Add whatever is left to the list that was passed in
+        for (RobotInfo newUnit : Netguns) {
+            known.add(newUnit);
+        }
+    }
+
+
+
+    public static DroidList<RobotInfo> checkForHelpNeeded(RobotInfo[] robots, int gridOffsetX, int gridOffsetY, RobotController rc) {
+        DroidList<RobotInfo> inNeedOfHelp = new DroidList<RobotInfo>();
+        for (RobotInfo unit : robots){
+            if (!((unit.location.x - gridOffsetX) % 2 == 0 || (unit.location.y - gridOffsetY) % 2 == 0)) {
+                inNeedOfHelp.add(unit);
+            }
+        }
+
+        return inNeedOfHelp;
+    }
+
+
+
+    public static DroidList<MapLocation> lookForLatice(int gridOffsetX, int gridOffsetY, RobotController rc) throws GameActionException {
+        DroidList<MapLocation> laticeTiles = new DroidList<>();
+        int leftCheckBound = rc.getLocation().x-Constants.DRONE_LATICE_CHECK_RADIUS;
+        int rightCheckBound = rc.getLocation().x+Constants.DRONE_LATICE_CHECK_RADIUS;
+        int topCheckBound = rc.getLocation().y+Constants.DRONE_LATICE_CHECK_RADIUS;
+        int bottomCheckBound = rc.getLocation().y-Constants.DRONE_LATICE_CHECK_RADIUS;
+        for (int i = leftCheckBound; i < rightCheckBound; i++) {
+            for (int j = bottomCheckBound; j < topCheckBound; j++){
+                MapLocation temp = new MapLocation(i,j);
+                if (!((temp.x - gridOffsetX) % 2 == 0 || (temp.y - gridOffsetY) % 2 == 0)) {
+                    if (rc.senseElevation(temp) == Constants.LATICE_HEIGHT){
+                        laticeTiles.add(temp);
+                    }
+                }
+            }
+        }
+        return laticeTiles;
+    }
+
+    public static int[] getLargestValidVisionArray(int pollution) {
+        if (pollution >= 2929) {
+            //Squared Vision Radius of 6
+            return Constants.SQUARED_RADIUS_6;
+        }
+        else if (pollution >= 2533) {
+            //Squared Vision Radius of 8
+            return Constants.SQUARED_RADIUS_8;
+        }
+        else if (pollution >= 2197) {
+            //Squared Vision Radius of 9
+            return Constants.SQUARED_RADIUS_9;
+        }
+        else if (pollution >= 1059) {
+            //Squared Vision Radius of 10
+            return Constants.SQUARED_RADIUS_10;
+        }
+        else if (pollution >= 899) {
+            //Squared Vision Radius of 13
+            return Constants.SQUARED_RADIUS_13;
+        }
+        else if (pollution >= 753) {
+            //Squared Vision Radius of 16
+            return Constants.SQUARED_RADIUS_16;
+        }
+        else if (pollution >= 619) {
+            //Squared Vision Radius of 17
+            return Constants.SQUARED_RADIUS_17;
+        }
+        else if (pollution >= 382) {
+            //Squared Vision Radius of 18
+            return Constants.SQUARED_RADIUS_18;
+        }
+        else{
+            return Constants.SQUARED_RADIUS_20;
+        }
+    }
+
+
 
 
 

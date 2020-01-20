@@ -3,25 +3,28 @@ package commando.units.loudhq;
 import battlecode.common.*;
 import commando.base.Building;
 import commando.communication.CommunicationHelper;
-import commando.utility.ActionHelper;
-import commando.utility.Constants;
-import commando.utility.DroidList;
+import commando.utility.*;
 
 import java.util.Map;
 
 public class LoudHQ extends Building {
     DroidList<MapLocation> desiredWallLocations;
     DroidList<MapLocation> occupiedWallLocations;
+    DroidList<MapLocation> desiredDroneDefenseLocations;
+    DroidList<MapLocation> occupiedDroneDefenseLocations;
     int minerCounter;
-    boolean hasAnnouncedBlocked;
+    boolean hasAnnouncedBlocked, hasAnnouncedFlooded;
 
     public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
         occupiedWallLocations = ActionHelper.generateAdjacentTiles(rc.getLocation(), rc);
         desiredWallLocations = new DroidList<>();
+        occupiedDroneDefenseLocations = Unsorted.getTilesAtSquareRadius(rc.getLocation(), 2, rc);
+        desiredDroneDefenseLocations = new DroidList<>();
         minerCounter = 0;
         hqLocation = rc.getLocation();
         hasAnnouncedBlocked = false;
+        hasAnnouncedFlooded = false;
     }
 
     @Override
@@ -33,16 +36,21 @@ public class LoudHQ extends Building {
         hqElevation = rc.senseElevation(rc.getLocation());
         message[3] = hqElevation;
         rc.submitTransaction(message, 3);
+        checkDroneGrid();
     }
 
     public void turn() throws GameActionException {
         checkWall();
+        checkFlooded();
+        if(hasAnnouncedFlooded) {
+            checkDroneGrid();
+        }
         ActionHelper.tryShoot(rc);
         checkBlocked();
 
         // TODO: implement better logic for building
         for(Direction dir : Constants.DIRECTIONS) {
-            if(minerCounter < 5 && ActionHelper.tryBuild(RobotType.MINER, dir, rc)){
+            if(minerCounter < Constants.NUMBER_OF_MINERS_TO_BUILD && ActionHelper.tryBuild(RobotType.MINER, dir, rc)){
                 minerCounter++;
                 break;
             }
@@ -106,5 +114,72 @@ public class LoudHQ extends Building {
         message[1] = 6;
         message[2] = 1;
         messageQueue.add(message);
+    }
+
+    public void checkFlooded() throws GameActionException {
+        DroidList<MapLocation> tiles = Unsorted.getTilesAtSquareRadius(rc.getLocation(), 2, rc);
+
+        boolean flooded = true;
+
+        for(MapLocation loc : tiles){
+            DebugHelper.setIndicatorDot(loc, 255, 255, 255, rc);
+            if(rc.canSenseLocation(loc)){
+                if(!rc.senseFlooding(loc)){
+                    flooded = false;
+                    break;
+                }
+            } else {
+                flooded = false;
+                break;
+            }
+        }
+
+        if(flooded && !hasAnnouncedFlooded){
+            int[] message = new int[7];
+            message[0] = Constants.MESSAGE_KEY;
+            message[1] = 6;
+            message[2] = 2;
+            if(rc.canSubmitTransaction(message, rc.getTeamSoup())){
+                hasAnnouncedFlooded = true;
+                rc.submitTransaction(message, rc.getTeamSoup());
+            }
+        }
+    }
+
+    public void checkDroneGrid() throws GameActionException {
+        DroidList<MapLocation> toRemove = new DroidList<>();
+        for(MapLocation loc : desiredDroneDefenseLocations){
+            if(rc.canSenseLocation(loc)){
+                RobotInfo robot = rc.senseRobotAtLocation(loc);
+                if(robot != null && robot.getTeam() == myTeam &&  robot.getType() == RobotType.DELIVERY_DRONE){
+                    toRemove.add(loc);
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 12;
+                    message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                    messageQueue.add(message);
+                }
+            }
+        }
+        desiredDroneDefenseLocations.removeAll(toRemove);
+        occupiedDroneDefenseLocations.addAll(toRemove);
+        toRemove.clear();
+
+        for(MapLocation loc : occupiedDroneDefenseLocations){
+            if(rc.canSenseLocation(loc)){
+                RobotInfo robot = rc.senseRobotAtLocation(loc);
+                if(robot == null || robot.getType() != RobotType.DELIVERY_DRONE){
+                    toRemove.add(loc);
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 13;
+                    message[2] = CommunicationHelper.convertLocationToMessage(loc);
+                    messageQueue.add(message);
+                }
+            }
+        }
+        occupiedDroneDefenseLocations.removeAll(toRemove);
+        desiredDroneDefenseLocations.addAll(toRemove);
+        toRemove.clear();
     }
 }

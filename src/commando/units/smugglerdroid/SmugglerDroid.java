@@ -140,7 +140,7 @@ public class SmugglerDroid extends MobileUnit {
         } else if(!initialRefinery){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
-                if(rc.canBuildRobot(RobotType.REFINERY, dir) && loc.distanceSquaredTo(hqLocation) > 2 && (loc.x - gridOffsetX) % 2 == (loc.y - gridOffsetY) % 2){
+                if(rc.canBuildRobot(RobotType.REFINERY, dir) && loc.distanceSquaredTo(hqLocation) > 8 && (loc.x - gridOffsetX) % 2 == (loc.y - gridOffsetY) % 2){
                     rc.buildRobot(RobotType.REFINERY, dir);
                     initialRefinery = true;
                     int[] message = new int[7];
@@ -536,6 +536,8 @@ public class SmugglerDroid extends MobileUnit {
                 targetLocation = closest;
                 path = new Bug(rc.getLocation(), targetLocation, rc);
             }
+            enemyHQ = targetLocation;
+            path.run();
         }
 
         int dist = rc.getLocation().distanceSquaredTo(enemyHQ);

@@ -39,7 +39,7 @@ public class Constants {
 
 
     public static int LATICE_HEIGHT = 11;
-    public static int WALL_SAFETY_BARRIER = 0;
+    public static int WALL_SAFETY_BARRIER = 1;
     public static int MESSAGE_KEY = 31415926;
     public static int MAX_SOUP_TO_CARRY = RobotType.MINER.soupLimit;
     public static int MIN_LATICE_BUILDING_ELEVATION = -150;

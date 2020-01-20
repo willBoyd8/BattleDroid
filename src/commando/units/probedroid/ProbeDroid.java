@@ -174,6 +174,7 @@ public class ProbeDroid extends MobileUnit {
         }
 
         patrolPoint = patrolPath.get(0);
+        targetLocation = patrolPoint;
         Bug path = new Bug(rc.getLocation(), patrolPoint, rc);
         enemyHQLocations = Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc);
         enemyHQBlacklist.removeAll(enemyHQBlacklist);
@@ -195,9 +196,14 @@ public class ProbeDroid extends MobileUnit {
     public void patrolling() throws GameActionException {
         //Unsorted.updateKnownNetguns(knownNetGuns, rc);
         System.out.println("I'M IN PATROL MODE!!!");
-        RobotInfo threats[] = rc.senseNearbyRobots(-1, enemy);
+        RobotInfo[] threats = rc.senseNearbyRobots(-1, enemy);
         if (threats.length > 0){
             state = DroneState.INTERCEPT;
+            target = checkForTargets();
+            if(target == null){
+                target = threats[0];
+            }
+            targetLocation = target.getLocation();
             path = new Bug(rc.getLocation(), target.location, rc);
             //intercepting();
             return;
@@ -206,6 +212,7 @@ public class ProbeDroid extends MobileUnit {
         //target = null;
         if (target != null) {
             //There is a target, switch to intercept mode
+            targetLocation = target.getLocation();
             path = new Bug(rc.getLocation(), target.location, rc);
             targetSpot = target.location;
             state = DroneState.INTERCEPT;
@@ -220,11 +227,13 @@ public class ProbeDroid extends MobileUnit {
                 patrolPath.add(patrolPath.get(0));
                 patrolPath.remove(0);
                 patrolPoint = patrolPath.get(0);
+                targetLocation = patrolPoint;
                 path = new Bug(rc.getLocation(), patrolPoint, rc);
                 path.run();
             } else {
                 //Patrol point not reached, moving to patrol point
                 if (path == null) {
+                    targetLocation = patrolPoint;
                     path = new Bug(rc.getLocation(), patrolPoint, rc);
                 }
                 path.run();
@@ -236,76 +245,80 @@ public class ProbeDroid extends MobileUnit {
         System.out.println("I'M INTERCEPTING A TARGET!!!");
         //If the drone has reached and is adjacent to target
         if (target == null){
-        RobotInfo threats[] = rc.senseNearbyRobots(-1, enemy);
-        for (RobotInfo unit : threats) {
-            if (unit.location.isAdjacentTo(rc.getLocation())){
-                target = unit;
-                break;
+            target = checkForTargets();
+//            RobotInfo threats[] = rc.senseNearbyRobots(-1, enemy);
+//            for (RobotInfo unit : threats) {
+//                if (unit.location.isAdjacentTo(rc.getLocation())){
+//                    target = unit;
+//                    break;
+//
+//                }
+//            }
+//            if (target == null){
+//                target = Unsorted.getClosestUnit(threats, rc);
+//            }
+            //if (rc.getLocation().isAdjacentTo(target.location)) {
 
+                //target = Unsorted.getClosestUnit(threats, rc);
+        }
+
+        if (rc.canPickUpUnit(target.ID)) {
+            rc.pickUpUnit(target.ID);
+            if (target.team == myTeam) {
+                state = DroneState.HELP;
+                helping();
+                return;
+            } else {
+                state = DroneState.DROPOFF;
+                droppingOff();
+                return;
             }
         }
-        if (target == null){
-            target = Unsorted.getClosestUnit(threats, rc);
-        }
-        //if (rc.getLocation().isAdjacentTo(target.location)) {
-
-            //target = Unsorted.getClosestUnit(threats, rc);
-        }
-            if (rc.canPickUpUnit(target.ID)) {
-                rc.pickUpUnit(target.ID);
-                if (target.team == myTeam) {
-                    state = DroneState.HELP;
-                }
-                if (target.type == RobotType.DELIVERY_DRONE) {
-                    closestNetGun = Unsorted.getClosestUnit(knownNetGuns, rc);
-                    path = new Bug(rc.getLocation(), hqLocation, rc);
-                    state = DroneState.DROPOFF_DRONE;
-                    droppingOffDrone();
-                    return;
-                } else {
-                    state = DroneState.DROPOFF;
-                    droppingOff();
-                }
-            }
         //}
         //A quick check of whether it can still sense should solve the potential issue of multiple drones going for a single unit
         if (rc.canSenseRobot(target.ID)) {
             if (path == null) {
+                targetLocation = target.getLocation();
                 path = new Bug(rc.getLocation(), target.location, rc);
             }
-            path.run();
-        } else {
-            //Switch targets if there are more targets
-            //target = checkForTargets();
-            RobotInfo otherThreats[] = rc.senseNearbyRobots(-1, enemy);
-            if (otherThreats.length > 0) {
-                target = otherThreats[0];
-            }
-            if (target != null) {
-                if (target.location.isAdjacentTo(rc.getLocation())){
-                    if (rc.canPickUpUnit(target.ID)) {
-                        System.out.println("I CAN PICK UP A UNIT!!!");
-                        rc.pickUpUnit(target.ID);
-                        state = DroneState.DROPOFF;
-                        return;
-                    }
-                }
-                path = new Bug(rc.getLocation(), target.location, rc);
-
-                //Since a new target was found, call intercepting() again to go through
-                //1. Checking if it's adjacent to the new target
-                //      - Pick up new target and switch to Dropoff mode
-                //2. Otherwise move towards target
-                //Should definitely be able to sense the target if it found a new one, so it theoretically shouldn't reach this point more than once in a turn
-                //intercepting();
+            if(path.run()) {
                 return;
-            } else {
+            }
+        } else {
+//            //Switch targets if there are more targets
+//            //target = checkForTargets();
+//            RobotInfo otherThreats[] = rc.senseNearbyRobots(-1, enemy);
+//            if (otherThreats.length > 0) {
+//                target = otherThreats[0];
+//            }
+//            if (target != null) {
+//                if (target.location.isAdjacentTo(rc.getLocation())){
+//                    if (rc.canPickUpUnit(target.ID)) {
+//                        System.out.println("I CAN PICK UP A UNIT!!!");
+//                        rc.pickUpUnit(target.ID);
+//                        state = DroneState.DROPOFF;
+//                        return;
+//                    }
+//                }
+//                targetLocation = target.getLocation();
+//                path = new Bug(rc.getLocation(), target.getLocation(), rc);
+//
+//                //Since a new target was found, call intercepting() again to go through
+//                //1. Checking if it's adjacent to the new target
+//                //      - Pick up new target and switch to Dropoff mode
+//                //2. Otherwise move towards target
+//                //Should definitely be able to sense the target if it found a new one, so it theoretically shouldn't reach this point more than once in a turn
+//                //intercepting();
+//                return;
+//            } else {
                 //No Valid targets found, switching to return state
                 target = null;
+                targetLocation = null;
+                path = null;
                 state = DroneState.RETURNING;
                 returning();
                 return;
-            }
+//            }
         }
     }
 
@@ -316,16 +329,23 @@ public class ProbeDroid extends MobileUnit {
                 if ((rc.getLocation().isAdjacentTo(spot))&&(rc.canDropUnit(rc.getLocation().directionTo(spot)))){
                     rc.dropUnit(rc.getLocation().directionTo(spot));
                     target = null;
+                    path = null;
+                    targetLocation = null;
                     state = DroneState.RETURNING;
                     returning();
                     return;
                 }
             }
         }
+
         if (path == null) {
+            targetLocation = hqLocation;
             path = new Bug(rc.getLocation(), hqLocation, rc);
         }
-        path.run();
+
+        if(path.run()){
+            return;
+        }
     }
 
     public void droppingOff() throws GameActionException {
@@ -342,10 +362,12 @@ public class ProbeDroid extends MobileUnit {
 
         if (!(nearestWater.equals(nearestFlooding))) {
             nearestFlooding = nearestWater;
+            targetLocation = nearestWater;
             path = new Bug(rc.getLocation(), nearestWater, rc);
             path.run();
         } else {
             if (path == null) {
+                targetLocation = nearestFlooding;
                 path = new Bug(rc.getLocation(), nearestFlooding, rc);
             }
             path.run();
@@ -367,11 +389,13 @@ public class ProbeDroid extends MobileUnit {
                 }
             }
             if (path == null){
+                targetLocation = hqLocation;
                 path = new Bug(rc.getLocation(), hqLocation, rc);
             }
             path.run();
         } else {
             if (path == null){
+                targetLocation = hqLocation;
                 path = new Bug(rc.getLocation(), hqLocation, rc);
             }
             path.run();
@@ -380,7 +404,7 @@ public class ProbeDroid extends MobileUnit {
 
     public void returning() throws GameActionException {
         //Purpose is to reset Bug path to the last patrol point and get it back on its patrol path;
-
+        targetLocation = patrolPoint;
         path = new Bug(rc.getLocation(), patrolPoint, rc);
         state = DroneState.PATROL;
         patrolling();
@@ -432,7 +456,7 @@ public class ProbeDroid extends MobileUnit {
                 break;
             case 4:
                 enemyHQBlacklist.add(CommunicationHelper.convertMessageToLocation(message[2]));
-                if(targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
+                if(targetLocation != null && targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
                     targetLocation = null;
                 }
                 break;

@@ -459,7 +459,20 @@ public class ProbeDroid extends MobileUnit {
         path.run();
     }
 
-    public void standingOnGrid() {
+    public void standingOnGrid() throws GameActionException{
+        if(rc.canSenseRadiusSquared(2)){
+            RobotInfo[] robots = rc.senseNearbyRobots(2, enemy);
+
+            if(robots != null && robots.length > 0){
+                for(RobotInfo robot : robots){
+                    if(rc.canPickUpUnit(robot.ID)){
+                        rc.pickUpUnit(robot.ID);
+                        break;
+                    }
+                }
+            }
+        }
+
         return;
     }
 

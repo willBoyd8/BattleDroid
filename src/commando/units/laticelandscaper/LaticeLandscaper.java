@@ -138,6 +138,11 @@ public class LaticeLandscaper extends MobileUnit {
      */
     public void earlyWalling() throws GameActionException{
         if(rc.getDirtCarrying() <= 0) {
+            if(rc.getLocation().isAdjacentTo(hqLocation) && rc.canDigDirt(rc.getLocation().directionTo(hqLocation))){
+                rc.digDirt(rc.getLocation().directionTo(hqLocation));
+                return;
+            }
+
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
                 if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
@@ -145,6 +150,19 @@ public class LaticeLandscaper extends MobileUnit {
                 }
             }
         } else {
+            RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+            if(robots != null && robots.length > 0){
+                for(RobotInfo robot : robots){
+                    if(ActionHelper.isBuilding(robot) && rc.getLocation().isAdjacentTo(robot.getLocation())){
+                        if(ActionHelper.tryDepositDirt(rc.getLocation().directionTo(robot.getLocation()), rc)){
+                            return;
+                        }
+                    }
+                }
+            }
+
+
             ActionHelper.tryDepositDirt(Direction.CENTER, rc);
         }
     }
@@ -155,6 +173,11 @@ public class LaticeLandscaper extends MobileUnit {
      */
     public void lateWalling() throws GameActionException{
         if(rc.getDirtCarrying() <= 0) {
+            if(rc.getLocation().isAdjacentTo(hqLocation) && rc.canDigDirt(rc.getLocation().directionTo(hqLocation))){
+                rc.digDirt(rc.getLocation().directionTo(hqLocation));
+                return;
+            }
+
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
                 if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x -gridOffsetX) % 2 == 1 && (loc.y -gridOffsetY) % 2 == 1) {
@@ -164,6 +187,18 @@ public class LaticeLandscaper extends MobileUnit {
                 }
             }
         } else {
+            RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+            if(robots != null && robots.length > 0){
+                for(RobotInfo robot : robots){
+                    if(ActionHelper.isBuilding(robot) && rc.getLocation().isAdjacentTo(robot.getLocation())){
+                        if(ActionHelper.tryDepositDirt(rc.getLocation().directionTo(robot.getLocation()), rc)){
+                            return;
+                        }
+                    }
+                }
+            }
+
             Direction best = Direction.CENTER;
             int lowest = Integer.MAX_VALUE;
             for(Direction  dir : Direction.allDirections()){

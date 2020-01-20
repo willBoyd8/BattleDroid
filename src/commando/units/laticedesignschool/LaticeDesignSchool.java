@@ -12,6 +12,8 @@ public class LaticeDesignSchool extends Building {
     DroidList<MapLocation> knownSoupLocations;
     int gridOffsetX, gridOffsetY;
     boolean productionLocked;
+    int numberOfUnitsBuilt;
+    boolean wallBuilt;
 
 
     public LaticeDesignSchool(RobotController rc){
@@ -21,6 +23,8 @@ public class LaticeDesignSchool extends Building {
         gridOffsetX = 0;
         gridOffsetY = 0;
         productionLocked = false;
+        numberOfUnitsBuilt = 0;
+        wallBuilt = false;
     }
 
     @Override
@@ -39,10 +43,11 @@ public class LaticeDesignSchool extends Building {
         checkMessages();
         updateDepositLocations();
 
-        if(!productionLocked) {
+        if(!productionLocked && ((!wallBuilt && rc.getTeamSoup() > 210) || rc.getTeamSoup() > Constants.MIN_SOUP_TO_BUILD || numberOfUnitsBuilt < Constants.MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP)) {
             for (Direction dir : Constants.DIRECTIONS) {
                 if (isOnLatice(rc.getLocation().add(dir)) && rc.canBuildRobot(RobotType.LANDSCAPER, dir)) {
                     rc.buildRobot(RobotType.LANDSCAPER, dir);
+                    numberOfUnitsBuilt++;
                 }
             }
         }
@@ -109,6 +114,7 @@ public class LaticeDesignSchool extends Building {
             case 6:
                 if(message[2] == 1) {
                     depositLocations.remove(new DropOffLocation(hqLocation, hqElevation));
+                    wallBuilt = true;
                 }
                 break;
             case 7:
@@ -129,7 +135,7 @@ public class LaticeDesignSchool extends Building {
                 if(message[2] == 0){
                     productionLocked = false;
                 } else if (message[2] == 1){
-                    productionLocked = true;
+//                    productionLocked = true;
                 }
                 break;
 

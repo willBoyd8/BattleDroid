@@ -42,7 +42,7 @@ public class LoudHQ extends Building {
 
         // TODO: implement better logic for building
         for(Direction dir : Constants.DIRECTIONS) {
-            if(minerCounter < 5 && ActionHelper.tryBuild(RobotType.MINER, dir, rc)){
+            if(minerCounter < Constants.NUMBER_OF_MINERS_TO_BUILD && ActionHelper.tryBuild(RobotType.MINER, dir, rc)){
                 minerCounter++;
                 break;
             }

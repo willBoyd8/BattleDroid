@@ -87,11 +87,11 @@ public class SmugglerDroid extends MobileUnit {
 
                     if(productionLocked) {
                         productionLocked = false;
-                        int[] message2 = new int[7];
-                        message2[0] = Constants.MESSAGE_KEY;
-                        message2[1] = 11;
-                        message2[2] = 0;
-                        messageQueue.add(message2);
+//                        int[] message2 = new int[7];
+//                        message2[0] = Constants.MESSAGE_KEY;
+//                        message2[1] = 11;
+//                        message2[2] = 0;
+//                        messageQueue.add(message2);
                     }
 
                     return true;
@@ -123,11 +123,11 @@ public class SmugglerDroid extends MobileUnit {
 
                     if(productionLocked) {
                         productionLocked = false;
-                        int[] message2 = new int[7];
-                        message2[0] = Constants.MESSAGE_KEY;
-                        message2[1] = 11;
-                        message2[2] = 0;
-                        messageQueue.add(message2);
+//                        int[] message2 = new int[7];
+//                        message2[0] = Constants.MESSAGE_KEY;
+//                        message2[1] = 11;
+//                        message2[2] = 0;
+//                        messageQueue.add(message2);
                     }
                     return true;
                 }
@@ -137,11 +137,11 @@ public class SmugglerDroid extends MobileUnit {
 
         if(closestDeposit == null || (!productionLocked && isAdjacentToSoup() && rc.getLocation().distanceSquaredTo(closestDeposit) > Constants.MIN_REFINERY_SPREAD_DISTANCE)){
             productionLocked = true;
-            int[] message = new int[7];
-            message[0] = Constants.MESSAGE_KEY;
-            message[1] = 11;
-            message[2] = 1;
-            messageQueue.add(message);
+//            int[] message = new int[7];
+//            message[0] = Constants.MESSAGE_KEY;
+//            message[1] = 11;
+//            message[2] = 1;
+//            messageQueue.add(message);
         }
 
         if(productionLocked){

@@ -26,6 +26,8 @@ public class SmugglerDroid extends MobileUnit {
     boolean netGunBuilt;
     boolean designSchoolBuilt;
     int vaporCount;
+    int lockCounter;
+    boolean badLock;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -45,6 +47,8 @@ public class SmugglerDroid extends MobileUnit {
         vaporCount = 0;
         rstate = RushState.SETUP;
         enemyHQLocations = new DroidList<>();
+        badLock = false;
+        lockCounter = 0;
     }
 
     enum SmugglerState {
@@ -117,6 +121,7 @@ public class SmugglerDroid extends MobileUnit {
                     messageQueue.add(message);
 
                     if(productionLocked) {
+                        lockCounter = 0;
                         productionLocked = false;
 //                        int[] message2 = new int[7];
 //                        message2[0] = Constants.MESSAGE_KEY;
@@ -153,6 +158,7 @@ public class SmugglerDroid extends MobileUnit {
                     messageQueue.add(message);
 
                     if(productionLocked) {
+                        lockCounter = 0;
                         productionLocked = false;
 //                        int[] message2 = new int[7];
 //                        message2[0] = Constants.MESSAGE_KEY;
@@ -175,7 +181,12 @@ public class SmugglerDroid extends MobileUnit {
 //            messageQueue.add(message);
         }
 
-        if(productionLocked){
+        if(lockCounter > 100){
+            badLock = true;
+        }
+
+        if(productionLocked && !badLock){
+            lockCounter++;
             return false;
         }
 

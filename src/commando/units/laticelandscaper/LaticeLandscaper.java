@@ -268,13 +268,20 @@ public class LaticeLandscaper extends MobileUnit {
 
         for(RobotInfo robot : robots){
             int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
-            if(dist < closest){
+            if(robot.getType() == RobotType.DELIVERY_DRONE){
+
+            } else if(rc.canSenseLocation(robot.getLocation()) && (rc.senseElevation(rc.getLocation()) > rc.senseElevation(robot.getLocation()) + 10)){
+
+            } else if(dist < closest){
+
                 bestTarget = robot;
                 closest = dist;
             }
 
             if(ActionHelper.isBuilding(robot) && !digBlacklist.contains(robot.getLocation())){
                 digBlacklist.add(robot.getLocation());
+                bestTarget = robot;
+                break;
             }
         }
 
@@ -284,7 +291,7 @@ public class LaticeLandscaper extends MobileUnit {
                     return ActionHelper.tryDepositDirt(rc.getLocation().directionTo(bestTarget.getLocation()), rc);
                 } else {
                     for(Direction dir : Constants.DIRECTIONS){
-                        if(!digBlacklist.contains(bestTarget.getLocation()) && ActionHelper.tryDig(dir, rc)){
+                        if(!digBlacklist.contains(rc.getLocation().add(dir)) && ActionHelper.tryDig(dir, rc)){
                             return true;
                         }
                     }

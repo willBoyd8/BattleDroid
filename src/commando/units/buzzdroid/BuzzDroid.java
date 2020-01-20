@@ -232,7 +232,6 @@ public class BuzzDroid extends MobileUnit {
             return;
         } else {
             System.out.println("ITS NOT RAID TIME YET, SO I AM WAITING TO RAID!!!");
-            // TODO: Wasting time here?
             int friendlyDroneCount = 0;
             RobotInfo robots[] = rc.senseNearbyRobots(-1, myTeam);
             for(RobotInfo robot : robots){
@@ -375,8 +374,6 @@ public class BuzzDroid extends MobileUnit {
 
 
     }
-
-    // TODO: maybe if enough bytecode check for near water
 
     private void dropping() throws GameActionException {
         for (int i = 0; i < Constants.DIRECTIONS.length; i++){

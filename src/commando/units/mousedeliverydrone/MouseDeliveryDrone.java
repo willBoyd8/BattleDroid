@@ -46,7 +46,6 @@ public class MouseDeliveryDrone extends MobileUnit {
             }
             return;
         } else {
-            // TODO: implement raiding mode
             throw new KillMeNowException();
         }
     }

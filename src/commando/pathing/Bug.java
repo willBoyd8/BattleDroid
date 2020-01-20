@@ -142,8 +142,6 @@ public class Bug {
     }
 
     public boolean isOnLine(){
-        // TODO: Make this actually good
-        // TODO: It may work now, hopefully
         MapLocation loc = rc.getLocation();
         // calc distance
         double startEndDistance = Math.sqrt(Math.pow(end.y-linePoint.y,2)+Math.pow(end.x-linePoint.x,2));

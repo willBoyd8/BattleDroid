@@ -11,7 +11,6 @@ public class MouseFulfillmentCenter extends Building {
     }
 
     public void turn() throws GameActionException{
-        // TODO: free up space after we are done with stuff here
         if(safeToBuild()) {
             tryBuild(RobotType.DELIVERY_DRONE, Direction.EAST, rc);
         }

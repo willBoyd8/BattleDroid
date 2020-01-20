@@ -1,7 +1,6 @@
 package commando.units.smugglerdroid;
 
 import battlecode.common.*;
-import c3po.units.miningminer.MiningMiner;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;

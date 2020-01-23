@@ -1,15 +1,11 @@
 package commando.units.laticelandscaper;
 
 import battlecode.common.*;
-import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;
 import commando.pathing.Simple;
 import commando.utility.*;
-
-import javax.swing.*;
-import java.util.Random;
 
 public class LaticeLandscaper extends MobileUnit {
 
@@ -41,7 +37,7 @@ public class LaticeLandscaper extends MobileUnit {
 
     @Override
     public void onInitialization() throws GameActionException {
-        catchup();
+        super.onInitialization();
 //        wallLocations.addAll(ActionHelper.generateAdjacentTiles(hqLocation, rc));
         if(hqLocation.x % 2 == 0){
             gridOffsetX = 1;
@@ -55,7 +51,6 @@ public class LaticeLandscaper extends MobileUnit {
     }
 
     public void turn() throws GameActionException {
-        checkMessages();
         checkEnemyHQ();
 
         if(rc.getLocation().isAdjacentTo(hqLocation)){
@@ -73,8 +68,6 @@ public class LaticeLandscaper extends MobileUnit {
         if(attacking()){
             return;
         }
-
-
 
         switch(state){
             case MOVING_TO_WALL: DebugHelper.setIndicatorDot(rc.getLocation(), 255, 0, 0, rc); movingToWall(); break;
@@ -402,56 +395,31 @@ public class LaticeLandscaper extends MobileUnit {
         }
     }
 
-    public void catchup() throws GameActionException{
-        int counter = 1;
-        while(counter < rc.getRoundNum()){
-            checkMessages(counter);
-            counter++;
+    // MARK: Override some of the implementations for message handling to use our own
+    public void SetEnemyHQLocationHandler(int[] message) {
+        enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
+        targetLocation = null;
+    }
+
+    public  void EnemyHQBlacklistAddMessageHandler(int[] message) {
+        enemyHQBlacklist.add(CommunicationHelper.convertMessageToLocation(message[2]));
+        if(targetLocation != null && targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
+            targetLocation = null;
         }
     }
 
-    public void checkMessages() throws GameActionException {
-        checkMessages(rc.getRoundNum() - 1);
+    public  void AddWallLocationMessageHandler(int[] message) {
+        wallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
+        state = LaticeState.MOVING_TO_WALL;
     }
 
-    public void checkMessages(int roundNumber) throws GameActionException{
-        Transaction[] transactions = rc.getBlock(roundNumber);
-
-        for(Transaction trans : transactions){
-            int[] message = trans.getMessage();
-            if(message[0] == Constants.MESSAGE_KEY){
-                processMessage(message);
-            }
-        }
+    public  void RemoveWallLocationMessageHandler(int[] message) {
+        wallLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
     }
 
-    public void processMessage(int[] message){
-        switch(message[1]){
-            case 0:
-                hqLocation = CommunicationHelper.convertMessageToLocation(message[2]);
-                hqElevation = message[3];
-                break;
-            case 1:
-                wallLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
-                break;
-            case 2:
-                wallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
-                state = LaticeState.MOVING_TO_WALL;
-                break;
-            case 3:
-                break;
-            case 4:
-                enemyHQBlacklist.add(CommunicationHelper.convertMessageToLocation(message[2]));
-                if(targetLocation != null && targetLocation.equals(CommunicationHelper.convertMessageToLocation(message[2]))){
-                    targetLocation = null;
-                }
-                break;
-            case 5:
-                enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
-                targetLocation = null;
-                break;
-        }
-
+    public void SetHQLocationMessageHandler(int[] message) {
+        hqLocation = CommunicationHelper.convertMessageToLocation(message[2]);
+        hqElevation = message[3];
     }
 
 }

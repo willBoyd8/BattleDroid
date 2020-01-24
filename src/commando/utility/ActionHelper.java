@@ -188,6 +188,10 @@ public class ActionHelper {
     }
 
     public static boolean isBuilding(RobotInfo robot){
+        if(robot == null){
+            return false;
+        }
+
         RobotType type = robot.getType();
         if(type != RobotType.DELIVERY_DRONE && type != RobotType.MINER && type != RobotType.LANDSCAPER && type != RobotType.COW){
             return true;

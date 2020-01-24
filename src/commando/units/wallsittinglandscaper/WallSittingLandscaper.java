@@ -4,6 +4,7 @@ import battlecode.common.*;
 import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.pathing.Simple;
+import commando.utility.ActionHelper;
 import commando.utility.Constants;
 import commando.utility.DroidList;
 import commando.utility.Unsorted;
@@ -103,7 +104,7 @@ public class WallSittingLandscaper extends MobileUnit {
 
         for(MapLocation loc : hqTiles){
             if(loc.isAdjacentTo(rc.getLocation())){
-                if(rc.senseElevation(loc) < hqElevation && rc.senseFlooding(loc)){
+                if(rc.senseElevation(loc) < hqElevation){
                     if(rc.getDirtCarrying() > 0){
                         tryDeposit(rc.getLocation().directionTo(loc));
                         return;
@@ -155,6 +156,7 @@ public class WallSittingLandscaper extends MobileUnit {
     }
 
     public void generateHQTiles(){
+        hqTiles.clear();
         try {
             for (Direction dir : Constants.DIRECTIONS) {
                 hqTiles.add(hqLocation.add(dir));
@@ -172,7 +174,7 @@ public class WallSittingLandscaper extends MobileUnit {
             totalMoves++;
 
         } else {
-            if ((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))) == null) {
+            if ((rc.senseElevation(rc.getLocation().add(path.get(0))) < rc.senseElevation(rc.getLocation())) && ActionHelper.isBuilding(rc.senseRobotAtLocation(rc.getLocation().add(path.get(0))))) {
                 if (rc.getDirtCarrying() > 0) {
                     tryDeposit(path.get(0));
                 } else {

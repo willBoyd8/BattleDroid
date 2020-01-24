@@ -604,7 +604,7 @@ public class ProbeDroid extends MobileUnit {
 
         MapLocation closest = Unsorted.getClosestMapLocation(defenseGridLocations, rc);
 
-        if(targetLocation == null){
+        if(targetLocation == null || path == null || path.end == null){
             targetLocation = closest;
             path = new Bug(rc.getLocation(), closest, rc);
         } else if(!targetLocation.equals(path.end)){

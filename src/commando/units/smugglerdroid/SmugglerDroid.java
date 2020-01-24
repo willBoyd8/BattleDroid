@@ -31,6 +31,9 @@ public class SmugglerDroid extends MobileUnit {
     boolean badLock;
     boolean walling;
     DroidList<MapLocation> bases;
+    MapLocation baseBuildingLocation;
+    BaseState baseState;
+    boolean hasAnnouncedBuildingBase;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -54,16 +57,31 @@ public class SmugglerDroid extends MobileUnit {
         badLock = false;
         lockCounter = 0;
         walling = false;
+        baseBuildingLocation = null;
+        baseState = BaseState.NETGUN_1;
+        hasAnnouncedBuildingBase = false;
     }
 
     enum SmugglerState {
         MINING,
         DEPOSITING,
-        SEARCHING
+        SEARCHING,
+        BASE_BUILDING
     }
 
     enum RushState {
         SETUP,
+    }
+
+    enum BaseState {
+        NETGUN_1,
+        SCHOOL,
+        VAPORATOR_1,
+        VAPORATOR_2,
+        VAPORATOR_3,
+        VAPORATOR_4,
+        FULFILLMENT
+
     }
 
     @Override
@@ -102,6 +120,11 @@ public class SmugglerDroid extends MobileUnit {
             }
         }
 
+        if(state == SmugglerState.BASE_BUILDING){
+            baseBuilding();
+            return;
+        }
+
         if(building()){
             return;
         }
@@ -111,6 +134,126 @@ public class SmugglerDroid extends MobileUnit {
             case DEPOSITING: depositing(); break;
             case SEARCHING: searching(); break;
         }
+    }
+
+    public void baseBuilding() throws GameActionException, KillMeNowException{
+        if(bases.size() <= 0){
+            targetLocation = null;
+            path = null;
+            state = previousState;
+            previousState = SmugglerState.MINING;
+            return;
+        }
+
+        if(targetLocation == null){
+            targetLocation = bases.get(0).add(Direction.SOUTH);
+            path = new Bug(rc.getLocation(), targetLocation, rc);
+            baseBuildingLocation = bases.get(0);
+        }
+
+        if(!rc.getLocation().equals(targetLocation)){
+            path.run(); // This could cause some issues potentially, maybe switch it to on the grid eventually?
+            return;
+        }
+
+        switch(baseState){
+            case NETGUN_1:
+                if(!hasAnnouncedBuildingBase){
+                    int[] message = new int[7];
+                    message[0] = Constants.MESSAGE_KEY;
+                    message[1] = 15;
+                    message[2] = CommunicationHelper.convertLocationToMessage(bases.get(0));
+                    message[3] = rc.getID();
+                    messageQueue.add(message);
+                    hasAnnouncedBuildingBase = true;
+                }
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.SOUTH))){
+                    targetLocation = baseBuildingLocation.add(Direction.SOUTH);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.NET_GUN, Direction.NORTH , rc)){
+                    baseState = BaseState.SCHOOL;
+                    return;
+                }
+                break;
+            case SCHOOL:
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.SOUTH))){
+                    targetLocation = baseBuildingLocation.add(Direction.SOUTH);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.DESIGN_SCHOOL, Direction.NORTHEAST , rc)){
+                    baseState = BaseState.VAPORATOR_1;
+                    return;
+                }
+                break;
+            case VAPORATOR_1:
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.WEST))){
+                    targetLocation = baseBuildingLocation.add(Direction.WEST);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.VAPORATOR, Direction.NORTH , rc)){
+                    baseState = BaseState.VAPORATOR_2;
+                    return;
+                }
+                break;
+            case VAPORATOR_2:
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.NORTH))){
+                    targetLocation = baseBuildingLocation.add(Direction.NORTH);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.VAPORATOR, Direction.EAST , rc)){
+                    baseState = BaseState.VAPORATOR_3;
+                    return;
+                }
+                break;
+            case VAPORATOR_3:
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.WEST))){
+                    targetLocation = baseBuildingLocation.add(Direction.WEST);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.VAPORATOR, Direction.NORTHEAST, rc)){
+                    baseState = BaseState.VAPORATOR_4;
+                    return;
+                }
+                break;
+            case VAPORATOR_4:
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.SOUTH))){
+                    targetLocation = baseBuildingLocation.add(Direction.SOUTH);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.VAPORATOR, Direction.NORTHWEST , rc)){
+                    baseState = BaseState.FULFILLMENT;
+                    return;
+                }
+                break;
+            case FULFILLMENT:
+                if(!targetLocation.equals(baseBuildingLocation.add(Direction.SOUTH))){
+                    targetLocation = baseBuildingLocation.add(Direction.SOUTH);
+                    path = new Bug(rc.getLocation(), targetLocation, rc);
+                    baseBuilding();
+                    return;
+                }
+                if(ActionHelper.tryBuild(RobotType.FULFILLMENT_CENTER, Direction.WEST, rc)){
+                    baseState = BaseState.VAPORATOR_1;
+                    throw new KillMeNowException();
+                }
+                break;
+
+        }
+        return;
+
     }
 
     public boolean building() throws GameActionException{
@@ -507,7 +650,7 @@ public class SmugglerDroid extends MobileUnit {
                     depositLocations.remove(new DropOffLocation(hqLocation, hqElevation));
                     walling = true;
                 }
-                if(targetLocation.equals(hqLocation)){
+                if(targetLocation != null && targetLocation.equals(hqLocation)){
                     targetLocation = null;
                     path = null;
                 }
@@ -541,6 +684,27 @@ public class SmugglerDroid extends MobileUnit {
                 }
                 break;
             case 15:
+                MapLocation baseLocation = CommunicationHelper.convertMessageToLocation(message[2]);
+                if(message[3] == 0 && !bases.contains(baseLocation) && Constants.SECONDARY_BASE_ENABLE){
+                    bases.add(baseLocation);
+                    targetLocation = null;
+                    path = null;
+                    previousState = state;
+                    state = SmugglerState.BASE_BUILDING;
+                } else if(rc.getID() != message[3]){
+                    bases.remove(baseLocation);
+                    targetLocation = null;
+                    path = null;
+                    state = previousState;
+                    baseBuildingLocation = null;
+                    previousState = SmugglerState.BASE_BUILDING;
+                } else if (rc.getID() == message[3] && !bases.contains(baseLocation)){
+//                    bases.add(baseLocation);
+//                    targetLocation = null;
+//                    path = null;
+//                    previousState = state;
+//                    state = SmugglerState.BASE_BUILDING;
+                }
 
 
         }

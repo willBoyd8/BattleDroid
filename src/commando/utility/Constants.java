@@ -49,5 +49,6 @@ public class Constants {
     public static int VAPORATOR_COUNT = 3;
 
     public static int SECONDARY_BASE_MIN_HEIGHT = 10;
-    public static int SECONDARY_BASE_MIN_SPREAD_DISTANCE = 36;
+    public static int SECONDARY_BASE_MIN_SPREAD_DISTANCE = 64;
+    public static boolean SECONDARY_BASE_ENABLE = true;
 }

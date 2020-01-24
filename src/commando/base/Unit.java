@@ -131,7 +131,7 @@ public abstract class Unit {
      * Run once on startup, immediately before the main loop begins
      * @throws GameActionException
      */
-    public void onInitialization() throws GameActionException {}
+    public void onInitialization() throws GameActionException, KillMeNowException {}
 
     public void trySendMessage() throws GameActionException{
         if(messageQueue.size() > 0 && rc.canSubmitTransaction(messageQueue.get(0), 1)){

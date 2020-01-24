@@ -1,10 +1,12 @@
 package commando.units.laticelandscaper;
 
 import battlecode.common.*;
+import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;
 import commando.pathing.Simple;
+import commando.units.wallsittinglandscaper.WallSittingLandscaper;
 import commando.utility.*;
 
 public class LaticeLandscaper extends MobileUnit {
@@ -43,7 +45,7 @@ public class LaticeLandscaper extends MobileUnit {
     }
 
     @Override
-    public void onInitialization() throws GameActionException {
+    public void onInitialization() throws GameActionException, KillMeNowException {
         catchup();
 //        wallLocations.addAll(ActionHelper.generateAdjacentTiles(hqLocation, rc));
         if(hqLocation.x % 2 == 0){
@@ -55,6 +57,20 @@ public class LaticeLandscaper extends MobileUnit {
 
         enemyHQLocations = Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc);
         enemyHQBlacklist.removeAll(enemyHQBlacklist);
+        bases.add(hqLocation);
+
+        for(MapLocation base : bases){
+            if(spawn.add(Direction.WEST).add(Direction.WEST).equals(base) || spawn.add(Direction.NORTHWEST).equals(base)){
+                state = LaticeState.SECONDARY_WALL;
+                // TODO: do this better;
+                WallSittingLandscaper landscaper = new WallSittingLandscaper(rc);
+                landscaper.hqLocation = base;
+                landscaper.hqElevation = rc.senseElevation(base);
+                landscaper.generateHQTiles();
+                landscaper.run();
+                throw new KillMeNowException();
+            }
+        }
     }
 
     public void turn() throws GameActionException {
@@ -77,7 +93,9 @@ public class LaticeLandscaper extends MobileUnit {
             return;
         }
 
-        checkBase();
+        if(wallLocations.size() <= 0 && bases.size() < (rc.getRoundNum() / 500) + 1) {
+            checkBase();
+        }
 
         switch(state){
             case MOVING_TO_WALL: DebugHelper.setIndicatorDot(rc.getLocation(), 255, 0, 0, rc); movingToWall(); break;
@@ -269,20 +287,22 @@ public class LaticeLandscaper extends MobileUnit {
 
     public boolean checkBase() throws GameActionException {
 
+        for(Direction dir : Direction.allDirections()) {
 
-        if(isGoodBaseLocation(rc.getLocation())){
-            int[] message = new int[7];
-            message[0] = Constants.MESSAGE_KEY;
-            message[1] = 15;
-            message[2] = CommunicationHelper.convertLocationToMessage(rc.getLocation());
-            messageQueue.add(message);
+            if (isGoodBaseLocation(rc.getLocation().add(dir))) {
+                int[] message = new int[7];
+                message[0] = Constants.MESSAGE_KEY;
+                message[1] = 15;
+                message[2] = CommunicationHelper.convertLocationToMessage(rc.getLocation().add(dir));
+                messageQueue.add(message);
 
-            bases.add(rc.getLocation());
+                bases.add(rc.getLocation());
 
-            return true;
-        } else {
-            return false;
+                return true;
+            }
         }
+
+        return false;
 
     }
 
@@ -290,11 +310,30 @@ public class LaticeLandscaper extends MobileUnit {
 //        boolean good = true;
 
         if((loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
-            // TODO: Make this more robust
             for(MapLocation base : bases){
                 if(rc.getLocation().distanceSquaredTo(base) < Constants.SECONDARY_BASE_MIN_SPREAD_DISTANCE){
                     return false;
                 }
+            }
+
+            DroidList<MapLocation> possibleTiles = new DroidList<>();
+            possibleTiles.add(rc.getLocation());
+            possibleTiles.addAll(Unsorted.getTilesAtSquareRadius(rc.getLocation(), 1, rc));
+            possibleTiles.addAll(Unsorted.getTilesAtSquareRadius(rc.getLocation(), 2, rc));
+
+
+            try{
+                for(MapLocation tile : possibleTiles){
+                    // TODO: conditions here can be more precise.
+                    if(((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0) && rc.senseFlooding(tile)){
+                        return false;
+                    }
+                    if(!rc.onTheMap(tile)){
+                        return false;
+                    }
+                }
+            } catch (GameActionException e){
+                return false;
             }
             return true;
 
@@ -322,10 +361,19 @@ public class LaticeLandscaper extends MobileUnit {
                         isOccupied = true;
                     }
                 }
+
+                boolean baseCheck = false;
+
+                for(MapLocation base : bases){
+                    if(loc.distanceSquaredTo(base) < 16){
+                        baseCheck = true;
+                        break;
+                    }
+                }
                 // TODO: we probably aren't handling all the possible cases here
                 // height < Constants.LATICE_HEIGHT for a static height
                 // use round number and water elevation for a less static grid
-                if(!isOccupied && height >= Constants.MIN_LATICE_BUILDING_ELEVATION && (height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
+                if(!baseCheck && !isOccupied && height >= Constants.MIN_LATICE_BUILDING_ELEVATION && (height < GameConstants.getWaterLevel(rc.getRoundNum()) + 4 || height < 5) && ((loc.x - gridOffsetX) % 2 == 0 || (loc.y - gridOffsetY) % 2 == 0)){
                     adjacent.add(loc);
                 }
             }
@@ -499,6 +547,12 @@ public class LaticeLandscaper extends MobileUnit {
                 MapLocation loc = CommunicationHelper.convertMessageToLocation(message[2]);
                 if(!bases.contains(loc)){
                     bases.add(loc);
+                }
+
+                for(int x = -3; x <= 3; x++){
+                    for(int y = -3; y <= 3; y++){
+                        digBlacklist.add(new MapLocation(loc.x + x, loc.y + y));
+                    }
                 }
                 break;
         }

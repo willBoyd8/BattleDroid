@@ -42,6 +42,7 @@ public class ProbeDroid extends MobileUnit {
         knownFlooding = new DroidList<>();
         defenseGridLocations = new DroidList<>();
         allDefenseGridLocations = new DroidList<>();
+        enemyHQLocations = new DroidList<>();
         closestNetGun = null;
         target = null;
         targetSpot = null;

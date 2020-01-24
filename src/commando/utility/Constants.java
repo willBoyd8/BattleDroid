@@ -47,4 +47,8 @@ public class Constants {
     public static int MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP = 3;
     public static int NUMBER_OF_MINERS_TO_BUILD = 7;
     public static int VAPORATOR_COUNT = 3;
+
+    public static int SECONDARY_BASE_MIN_HEIGHT = 10;
+    public static int SECONDARY_BASE_MIN_SPREAD_DISTANCE = 64;
+    public static boolean SECONDARY_BASE_ENABLE = false;
 }

@@ -76,7 +76,7 @@ public class SpeederBike extends MobileUnit {
     }
 
     @Override
-    public void onInitialization() throws GameActionException {
+    public void onInitialization() throws GameActionException, KillMeNowException {
         super.onInitialization();
 
         RobotType type = RobotType.LANDSCAPER;

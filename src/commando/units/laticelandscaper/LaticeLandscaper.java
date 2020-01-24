@@ -1,15 +1,11 @@
 package commando.units.laticelandscaper;
 
 import battlecode.common.*;
-import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;
 import commando.pathing.Simple;
 import commando.utility.*;
-
-import javax.swing.*;
-import java.util.Random;
 
 public class LaticeLandscaper extends MobileUnit {
 
@@ -19,6 +15,9 @@ public class LaticeLandscaper extends MobileUnit {
     Bug path;
     DroidList<MapLocation> enemyHQBlacklist;
     DroidList<MapLocation> digBlacklist;
+    DroidList<MapLocation> baseTiles;
+    DroidList<MapLocation> bases;
+    MapLocation baseBuildingLocation;
 
     public LaticeLandscaper(RobotController rc){
         super(rc);
@@ -29,6 +28,9 @@ public class LaticeLandscaper extends MobileUnit {
         path = null;
         enemyHQBlacklist = new DroidList<>();
         digBlacklist = new DroidList<>();
+        baseTiles = new DroidList<>();
+        bases = new DroidList<>();
+        baseBuildingLocation = null;
     }
 
     enum LaticeState {
@@ -37,6 +39,7 @@ public class LaticeLandscaper extends MobileUnit {
         LATE_WALLING,
         LATICE_BUILDING,
         MOVING_TO_LATICE_EDGE,
+        SECONDARY_WALL,
     }
 
     @Override
@@ -74,7 +77,7 @@ public class LaticeLandscaper extends MobileUnit {
             return;
         }
 
-
+        checkBase();
 
         switch(state){
             case MOVING_TO_WALL: DebugHelper.setIndicatorDot(rc.getLocation(), 255, 0, 0, rc); movingToWall(); break;
@@ -264,6 +267,47 @@ public class LaticeLandscaper extends MobileUnit {
         path.run(gridOffsetX, gridOffsetY);
     }
 
+    public boolean checkBase() throws GameActionException {
+
+
+        if(isGoodBaseLocation(rc.getLocation())){
+            int[] message = new int[7];
+            message[0] = Constants.MESSAGE_KEY;
+            message[1] = 15;
+            message[2] = CommunicationHelper.convertLocationToMessage(rc.getLocation());
+            messageQueue.add(message);
+
+            bases.add(rc.getLocation());
+
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    private boolean isGoodBaseLocation(MapLocation loc){
+//        boolean good = true;
+
+        if((loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
+            // TODO: Make this more robust
+            for(MapLocation base : bases){
+                if(rc.getLocation().distanceSquaredTo(base) < Constants.SECONDARY_BASE_MIN_SPREAD_DISTANCE){
+                    return false;
+                }
+            }
+            return true;
+
+        } else {
+
+            return false;
+
+        }
+
+
+
+    }
+
     private DroidList<MapLocation> adjacentUncompletedLaticeTiles() throws GameActionException{
         DroidList<MapLocation> adjacent = new DroidList<>();
 
@@ -430,6 +474,7 @@ public class LaticeLandscaper extends MobileUnit {
             case 0:
                 hqLocation = CommunicationHelper.convertMessageToLocation(message[2]);
                 hqElevation = message[3];
+                bases.add(hqLocation);
                 break;
             case 1:
                 wallLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
@@ -449,6 +494,12 @@ public class LaticeLandscaper extends MobileUnit {
             case 5:
                 enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
                 targetLocation = null;
+                break;
+            case 15:
+                MapLocation loc = CommunicationHelper.convertMessageToLocation(message[2]);
+                if(!bases.contains(loc)){
+                    bases.add(loc);
+                }
                 break;
         }
 

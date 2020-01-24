@@ -30,11 +30,13 @@ public class SmugglerDroid extends MobileUnit {
     int lockCounter;
     boolean badLock;
     boolean walling;
+    DroidList<MapLocation> bases;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
         knownSoupLocations = new DroidList<>();
         depositLocations = new DroidList<>();
+        bases = new DroidList<>();
         state = SmugglerState.MINING;
         previousState = null;
         gridOffsetX = 0;
@@ -538,6 +540,9 @@ public class SmugglerDroid extends MobileUnit {
                     productionLocked = true;
                 }
                 break;
+            case 15:
+
+
         }
 
     }

@@ -6,22 +6,30 @@ import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
 import commando.pathing.Bug;
 import commando.pathing.Simple;
-import commando.units.laticelandscaper.LaticeLandscaper;
 import commando.utility.*;
+
+import java.util.Map;
+import java.util.Random;
 
 
 public class ProbeDroid extends MobileUnit {
 
     DroidList<MapLocation> enemyHQLocations;
     DroneState state;
+    attackState roamState;
     DroidList<MapLocation> wallLocations;
     int gridOffsetX, gridOffsetY;
     int homeQuad;
+    int prepRoundStart;
     RobotInfo closestNetGun;
     RobotInfo target;
+    RobotInfo transportTarget;
     MapLocation targetSpot;
     MapLocation patrolPoint;
     MapLocation nearestFlooding;
+    MapLocation roamingWayPoint;
+    MapLocation dropPoint;
+    MapLocation transportRally;
     Bug path = null;
     DroidList<RobotInfo> knownNetGuns;
     DroidList<MapLocation> knownFlooding;
@@ -30,9 +38,15 @@ public class ProbeDroid extends MobileUnit {
     boolean combineToFormBarrier;
     DroidList<MapLocation> defenseGridLocations;
     DroidList<MapLocation> allDefenseGridLocations;
+    DroidList<RobotInfo> loggedFriendlies;
     boolean rushEnable;
+    boolean roamEnable;
+    boolean noMoreHelp;
+    boolean advanceDrone;
+    boolean troopTransport;
+    boolean endGame;
+    boolean ready;
     boolean wallAssistEnable;
-    boolean laticeAssistEnable;
 
     public ProbeDroid (RobotController rc) {
         super(rc);
@@ -44,20 +58,32 @@ public class ProbeDroid extends MobileUnit {
         defenseGridLocations = new DroidList<>();
         allDefenseGridLocations = new DroidList<>();
         enemyHQLocations = new DroidList<>();
+        loggedFriendlies = new DroidList<>();
         closestNetGun = null;
         target = null;
+        transportTarget = null;
         targetSpot = null;
         patrolPoint = null;
         nearestFlooding = null;
+        roamingWayPoint = null;
+        dropPoint = null;
         path = null;
         combineToFormBarrier = false;
         state = DroneState.PATROL;
+        roamState = attackState.RANDOM_MOVE;
         homeQuad = 0;
         gridOffsetX = 0;
         gridOffsetY = 0;
-        rushEnable = true;
+        rushEnable = false;
+        roamEnable = false;
+        noMoreHelp = false;
+        advanceDrone = false;
+        troopTransport = false;
+        endGame = false;
+        ready = false;
+        prepRoundStart = 0;
         wallAssistEnable = true;
-        laticeAssistEnable = false;
+
     }
 
     enum DroneState {
@@ -65,7 +91,6 @@ public class ProbeDroid extends MobileUnit {
         INTERCEPT,
         HELP,
         DROPOFF,
-        DROPOFF_DRONE,
         RETURNING,
         ROAMING,
         RUSHING,
@@ -74,6 +99,19 @@ public class ProbeDroid extends MobileUnit {
         STANDING_ON_GRID,
         POST_GRID   //This name is a place holder for whatever state we end up with once we get to a point where we do something here
     }
+
+    enum attackState {
+        RANDOM_MOVE,
+        KIDNAP,
+        ROAM_DROP,
+        PICK_TRANSPORT_TARGET,
+        SWARM_PROTOCOL_PREP,
+        SWARM_PROTOCOL_STAGING_ADVANCE,
+        SWARM_PROTOCAL_STAGING_TRANSPORT,
+        SWARM_PROTOCOL_EXECUTE,
+    }
+
+
 
 
     public void onInitialization() throws GameActionException {
@@ -192,16 +230,35 @@ public class ProbeDroid extends MobileUnit {
         Bug path = new Bug(rc.getLocation(), patrolPoint, rc);
         enemyHQLocations = Unsorted.generatePossibleEnemyHQLocation(hqLocation, rc);
         enemyHQBlacklist.removeAll(enemyHQBlacklist);
+
+
+
+        if (homeQuad == 1){
+            transportRally = new MapLocation(hqLocation.x - Constants.TRANSPORT_RALLY_OFFSET, hqLocation.y - Constants.TRANSPORT_RALLY_OFFSET);
+        } else if (homeQuad == 2) {
+            transportRally = new MapLocation(hqLocation.x + Constants.TRANSPORT_RALLY_OFFSET, hqLocation.y - Constants.TRANSPORT_RALLY_OFFSET);
+        } else if (homeQuad == 3) {
+            transportRally = new MapLocation(hqLocation.x + Constants.TRANSPORT_RALLY_OFFSET, hqLocation.y + Constants.TRANSPORT_RALLY_OFFSET);
+        } else if (homeQuad == 4) {
+            transportRally = new MapLocation(hqLocation.x - Constants.TRANSPORT_RALLY_OFFSET, hqLocation.y + Constants.TRANSPORT_RALLY_OFFSET);
+        }
+
+
+
+
+
     }
 
     public void turn() throws GameActionException, KillMeNowException {
         checkMessages();
         lookForFlooding();
-
-
-        if(rushEnable){
-            state = DroneState.RUSHING;
+        RobotInfo friendlies[] = rc.senseNearbyRobots(-1, myTeam);
+        for (RobotInfo unit : friendlies) {
+            if (!(loggedFriendlies.contains(unit))){
+                loggedFriendlies.add(unit);
+            }
         }
+
 
         if(state == DroneState.MOVING_TO_GRID && defenseGridLocations.size() <= 0){
             state = DroneState.POST_GRID;
@@ -209,8 +266,16 @@ public class ProbeDroid extends MobileUnit {
             path = null;
         }
 
-        if(wallAssistEnable && wallLocations.size() > 0 && state == DroneState.PATROL){
+        if(wallAssistEnable && wallLocations.size() > 0){
             state = DroneState.PUTTING_UNIT_ON_WALL;
+        } else {
+            roamEnable = true;
+        }
+
+        if(rushEnable){
+            state = DroneState.RUSHING;
+        } else if (roamEnable && state != DroneState.MOVING_TO_GRID){
+            state = DroneState.ROAMING;
         }
 
         //Unsorted.updateKnownFlooding(knownFlooding, rc);
@@ -219,7 +284,6 @@ public class ProbeDroid extends MobileUnit {
             case INTERCEPT: intercepting(); break;
             case HELP: helping(); break;
             case DROPOFF: droppingOff(); break;
-            case DROPOFF_DRONE: droppingOffDrone(); break;
             case RETURNING: returning(); break;
             case ROAMING: roam(); break;
             case RUSHING: rushing(); break;
@@ -232,7 +296,7 @@ public class ProbeDroid extends MobileUnit {
 
     public void puttingUnitOnWall() throws GameActionException {
         if(rc.isCurrentlyHoldingUnit()){
-            if(wallLocations.size() <= 0 || rc.senseRobot(rc.senseRobot(rc.getID()).getHeldUnitID()).getType() != RobotType.LANDSCAPER){
+            if(wallLocations.size() <= 0){
                 state = DroneState.HELP;
                 targetLocation = null;
                 path = null;
@@ -429,7 +493,7 @@ public class ProbeDroid extends MobileUnit {
 //            }
             //if (rc.getLocation().isAdjacentTo(target.location)) {
 
-                //target = Unsorted.getClosestUnit(threats, rc);
+            //target = Unsorted.getClosestUnit(threats, rc);
         }
 
         if (rc.canPickUpUnit(target.ID)) {
@@ -481,13 +545,13 @@ public class ProbeDroid extends MobileUnit {
 //                //intercepting();
 //                return;
 //            } else {
-                //No Valid targets found, switching to return state
-                target = null;
-                targetLocation = null;
-                path = null;
-                state = DroneState.RETURNING;
-                returning();
-                return;
+            //No Valid targets found, switching to return state
+            target = null;
+            targetLocation = null;
+            path = null;
+            state = DroneState.RETURNING;
+            returning();
+            return;
 //            }
         }
     }
@@ -501,6 +565,13 @@ public class ProbeDroid extends MobileUnit {
                     target = null;
                     path = null;
                     targetLocation = null;
+                    roamingWayPoint = null;
+                    if (roamEnable){
+                        state = DroneState.ROAMING;
+                        roamState = attackState.RANDOM_MOVE;
+
+                        return;
+                    }
                     state = DroneState.RETURNING;
                     returning();
                     return;
@@ -554,46 +625,33 @@ public class ProbeDroid extends MobileUnit {
         }
     }
 
-    public void droppingOffDrone() throws GameActionException {
-        if (rc.getLocation().distanceSquaredTo(hqLocation) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED){
-
-            for (Direction dropDir : Constants.DIRECTIONS){
-                if (rc.getLocation().add(dropDir).distanceSquaredTo(closestNetGun.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED){
-                    if (rc.canDropUnit(dropDir)){
-                        rc.dropUnit(dropDir);
-                        target = null;
-                        state = DroneState.RETURNING;
-                        returning();
-                        return;
-                    }
-                }
-            }
-            if (path == null){
-                targetLocation = hqLocation;
-                path = new Bug(rc.getLocation(), hqLocation, rc);
-            }
-            path.run();
-        } else {
-            if (path == null){
-                targetLocation = hqLocation;
-                path = new Bug(rc.getLocation(), hqLocation, rc);
-            }
-            path.run();
-        }
-    }
-
     public void returning() throws GameActionException {
         //Purpose is to reset Bug path to the last patrol point and get it back on its patrol path;
-        targetLocation = patrolPoint;
-        path = new Bug(rc.getLocation(), patrolPoint, rc);
-        state = DroneState.PATROL;
-        patrolling();
-        return;
+        if (!roamEnable) {
+            targetLocation = patrolPoint;
+            path = new Bug(rc.getLocation(), patrolPoint, rc);
+            state = DroneState.PATROL;
+            patrolling();
+            return;
+        } else {
+            state = DroneState.ROAMING;
+            roam();
+            return;
+        }
 
     }
 
     public void roam() throws GameActionException {
-
+        switch (roamState) {
+            case RANDOM_MOVE: randomRoaming(); break;
+            case KIDNAP: kidnap(); break;
+            case ROAM_DROP: roamDrop(); break;
+            case PICK_TRANSPORT_TARGET: pickTransportTarget(); break;
+            case SWARM_PROTOCOL_PREP: swarmPrep();break;
+            case SWARM_PROTOCOL_STAGING_ADVANCE: swarmStagingAdvance(); break;
+            case SWARM_PROTOCAL_STAGING_TRANSPORT: swarmStagingTransport();
+            case SWARM_PROTOCOL_EXECUTE: swarmExecute(); break;
+        }
     }
 
     public void movingToGrid() throws GameActionException {
@@ -606,7 +664,7 @@ public class ProbeDroid extends MobileUnit {
 
         MapLocation closest = Unsorted.getClosestMapLocation(defenseGridLocations, rc);
 
-        if(targetLocation == null || path == null || path.end == null){
+        if(targetLocation == null){
             targetLocation = closest;
             path = new Bug(rc.getLocation(), closest, rc);
         } else if(!targetLocation.equals(path.end)){
@@ -635,15 +693,16 @@ public class ProbeDroid extends MobileUnit {
     }
 
     public void postGrid() throws GameActionException{
-        target = checkForTargets();
+        /*target = checkForTargets();
         //target = null;
         if (target != null) {
             //There is a target, switch to intercept mode
             targetLocation = target.getLocation();
             path = new Bug(rc.getLocation(), target.location, rc);
             targetSpot = target.location;
-            state = DroneState.INTERCEPT;
-            intercepting();
+            state = DroneState.ROAMING;
+            roamState = attackState.SWARM_PROTOCOL_STAGING;
+
             return;
         }
 
@@ -652,7 +711,14 @@ public class ProbeDroid extends MobileUnit {
             path = new Bug(rc.getLocation(), targetLocation, rc);
         }
 
-        path.run();
+        path.run();*/
+
+        state = DroneState.ROAMING;
+        roamState = attackState.PICK_TRANSPORT_TARGET;
+        endGame = true;
+        noMoreHelp = true;
+        pickTransportTarget();
+
     }
 
     public void catchup() throws GameActionException{
@@ -711,7 +777,6 @@ public class ProbeDroid extends MobileUnit {
             case 6:
                 if(message[2] == 1){
                     wallAssistEnable = true;
-                    laticeAssistEnable = true;
                 }
 
                 if(message[2] == 2){
@@ -753,12 +818,19 @@ public class ProbeDroid extends MobileUnit {
         RobotInfo targetFound = null;
         RobotInfo threats[] = rc.senseNearbyRobots(-1, enemy);
         RobotInfo friendlies[] = rc.senseNearbyRobots(-1, myTeam);
+        DroidList<RobotInfo> nonDrones = new DroidList<>();
         if (threats.length >= 1){
-            //Enemy spotted
-            targetFound = Unsorted.getClosestUnit(threats, rc);
-        } else if (!(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc).isEmpty())) {
+            for (RobotInfo unit : threats){
+                if (unit.type != RobotType.DELIVERY_DRONE){
+                    nonDrones.add(unit);
+                }
+            }
+            if (nonDrones.size() > 0) {
+                targetFound = Unsorted.getClosestUnit(nonDrones, rc);
+            }
+        } else if (!(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc).isEmpty())&&!noMoreHelp) {
             //No enemies spotted, Unit in need of assistance spotted
-            if (laticeAssistEnable) {
+            if (rc.getRoundNum()> Constants.ASSIST_START_ROUND) {
                 targetFound = Unsorted.getClosestUnit(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc), rc);
             }
         } else {
@@ -767,6 +839,14 @@ public class ProbeDroid extends MobileUnit {
         }
 
         return targetFound;
+    }
+
+    public void tryTerminate(RobotController rc) throws GameActionException{
+        for (Direction dir : Constants.DIRECTIONS){
+            if (rc.senseFlooding(rc.getLocation().add(dir)) && rc.canDropUnit(dir)){
+                rc.dropUnit(dir);
+            }
+        }
     }
 
     public void lookForFlooding() throws GameActionException {
@@ -807,6 +887,189 @@ public class ProbeDroid extends MobileUnit {
                     }
                 }
             }
+        }
+    }
+
+    public void randomRoaming() throws GameActionException {
+        //Step 1: check if there is a wayPoint or not
+        if ((Unsorted.getNumberOfThisType(loggedFriendlies, RobotType.LANDSCAPER) > Constants.SWARM_PREP_LANDSCAPER_COUNT) || (rc.getRoundNum() > Constants.SWARM_PREP_ROUND_OVERIDE)){
+            prepRoundStart = rc.getRoundNum();
+            roamState = attackState.PICK_TRANSPORT_TARGET;
+            pickTransportTarget();
+            return;
+        }
+
+        RobotInfo[] threats = rc.senseNearbyRobots(-1, enemy);
+        if (threats.length > 0){
+            roamState = attackState.KIDNAP;
+            target = checkForTargets();
+            if(target == null){
+                target = threats[0];
+            }
+            targetLocation = target.getLocation();
+            path = new Bug(rc.getLocation(), target.location, rc);
+            kidnap();
+            return;
+        }
+
+
+        randomSearch();
+
+
+    }
+
+    public void kidnap() throws GameActionException {
+        if (target == null) {
+            target = checkForTargets();
+            if (target == null) {
+                roamState = attackState.RANDOM_MOVE;
+                return;
+            }
+        }
+        if (rc.canSenseRobot(target.ID)) {
+
+
+            if (path == null) {
+                path = new Bug(rc.getLocation(), target.location, rc);
+            }
+            if (rc.getLocation().isAdjacentTo(target.location) && rc.canPickUpUnit(target.ID)) {
+                rc.pickUpUnit(target.ID);
+                roamState = attackState.ROAM_DROP;
+                return;
+            }
+            path.run();
+        } else {
+            roamState = attackState.RANDOM_MOVE;
+            randomRoaming();
+            return;
+        }
+
+
+
+    }
+
+    public void roamDrop() throws GameActionException {
+        tryTerminate(rc);
+        if (!(rc.isCurrentlyHoldingUnit())){
+            roamState = attackState.RANDOM_MOVE;
+        }
+        randomSearch();
+
+
+
+
+    }
+
+    public void pickTransportTarget() throws GameActionException {
+        if (transportTarget == null) {
+            RobotInfo[] friendlies = rc.senseNearbyRobots(-1, myTeam);
+            if (friendlies.length > 0) {
+                DroidList<RobotInfo> landscapers = Unsorted.filterByType(friendlies, RobotType.LANDSCAPER);
+                if (landscapers.size() > 0) {
+                    transportTarget = Unsorted.getClosestUnit(landscapers, rc);
+                    path = new Bug(rc.getLocation(), transportTarget.location, rc);
+                }
+            }
+        }
+        if(transportTarget != null && rc.canSenseRobot(transportTarget.ID)) {
+            if (rc.canPickUpUnit(transportTarget.ID)){
+                rc.pickUpUnit(transportTarget.ID);
+            }
+            if (rc.isCurrentlyHoldingUnit()) {
+                roamState = attackState.SWARM_PROTOCOL_PREP;
+                swarmPrep();
+                return;
+            }
+            if (path == null){
+                path = new Bug(rc.getLocation(), transportTarget.location, rc);
+            }
+            path.run();
+
+
+
+        } else {
+            transportTarget = null;
+        }
+        if ((rc.getRoundNum() - prepRoundStart > 50) && (transportTarget == null)){ //They have 50 rounds to find and pickup their target
+            roamState = attackState.SWARM_PROTOCOL_PREP;
+            path = new Bug(rc.getLocation(), enemyHQ, rc);
+            swarmPrep();
+            return;
+        }
+
+        randomSearch();
+
+
+    }
+
+    public void swarmPrep() throws GameActionException {
+        if (rc.isCurrentlyHoldingUnit()){
+            troopTransport = true;
+        } else {
+            advanceDrone = true;
+        }
+        int distBetweenHQ = hqLocation.distanceSquaredTo(enemyHQ);
+
+        if (rc.getLocation().distanceSquaredTo(enemyHQ) > distBetweenHQ/2){
+            if(path == null){
+                path = new Bug(rc.getLocation(), enemyHQ, rc);
+            }
+            path.run();
+        } else {
+            if (troopTransport){
+                roamState = attackState.SWARM_PROTOCAL_STAGING_TRANSPORT;
+            }
+            if (advanceDrone) {
+                roamState = attackState.SWARM_PROTOCOL_STAGING_ADVANCE;
+            }
+
+        }
+
+
+
+    }
+
+    public void swarmStagingAdvance() throws GameActionException {
+
+        if (rc.getRoundNum() - prepRoundStart > 200){
+            roamState = attackState.SWARM_PROTOCOL_EXECUTE;
+            swarmExecute();
+            return;
+        }
+        Simple.moveToLocationFuzzyNoFlyZone(enemyHQ, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, rc);
+    }
+
+    public void swarmStagingTransport() throws GameActionException {
+        if (rc.getRoundNum() - prepRoundStart > 200){
+            roamState = attackState.SWARM_PROTOCOL_EXECUTE;
+            swarmExecute();
+            return;
+        }
+        Simple.moveToLocationFuzzyNoFlyZone(enemyHQ, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED+7, rc);
+    }
+
+    public void swarmExecute() throws GameActionException {
+
+    }
+
+    public void randomSearch() throws GameActionException {
+        Random rand = new Random();
+        int wayPointX = rand.nextInt(rc.getMapWidth());
+        int wayPointY = rand.nextInt(rc.getMapHeight());
+        if (roamingWayPoint == null){
+            roamingWayPoint = new MapLocation(wayPointX, wayPointY);
+            path = new Bug(rc.getLocation(), roamingWayPoint, rc);
+            path.run();
+
+        } else if (rc.getLocation().isAdjacentTo(roamingWayPoint)){
+            roamingWayPoint = new MapLocation(wayPointX, wayPointY);
+            path = new Bug(rc.getLocation(), roamingWayPoint, rc);
+            path.run();
+        } else {
+            if (path == null) {
+                path = new Bug(rc.getLocation(), roamingWayPoint, rc);
+            }
+            path.run();
         }
     }
 

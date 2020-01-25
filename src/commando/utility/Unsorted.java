@@ -369,4 +369,35 @@ public class Unsorted {
         return tiles;
     }
 
+    public static int getNumberOfThisType(DroidList<RobotInfo> robots, RobotType unitType){
+        int count = 0;
+        for (RobotInfo unit : robots) {
+            if (unit.type == unitType) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static DroidList<RobotInfo> filterByType(DroidList<RobotInfo> robots, RobotType unitType){
+        DroidList<RobotInfo> filteredList = new DroidList<>();
+        for (RobotInfo unit : robots) {
+            if (unit.type == unitType) {
+                filteredList.add(unit);
+            }
+        }
+        return filteredList;
+    }
+
+    public static DroidList<RobotInfo> filterByType(RobotInfo[] robots, RobotType unitType){
+        DroidList<RobotInfo> filteredList = new DroidList<>();
+        for (RobotInfo unit : robots) {
+            if (unit.type == unitType) {
+                filteredList.add(unit);
+            }
+        }
+        return filteredList;
+    }
+
+
 }

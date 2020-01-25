@@ -32,6 +32,7 @@ public class ProbeDroid extends MobileUnit {
     DroidList<MapLocation> allDefenseGridLocations;
     boolean rushEnable;
     boolean wallAssistEnable;
+    boolean laticeAssistEnable;
 
     public ProbeDroid (RobotController rc) {
         super(rc);
@@ -54,9 +55,9 @@ public class ProbeDroid extends MobileUnit {
         homeQuad = 0;
         gridOffsetX = 0;
         gridOffsetY = 0;
-        rushEnable = false;
+        rushEnable = true;
         wallAssistEnable = true;
-
+        laticeAssistEnable = false;
     }
 
     enum DroneState {
@@ -197,18 +198,19 @@ public class ProbeDroid extends MobileUnit {
         checkMessages();
         lookForFlooding();
 
+
+        if(rushEnable){
+            state = DroneState.RUSHING;
+        }
+
         if(state == DroneState.MOVING_TO_GRID && defenseGridLocations.size() <= 0){
             state = DroneState.POST_GRID;
             targetLocation = null;
             path = null;
         }
 
-        if(wallAssistEnable && wallLocations.size() > 0){
+        if(wallAssistEnable && wallLocations.size() > 0 && state == DroneState.PATROL){
             state = DroneState.PUTTING_UNIT_ON_WALL;
-        }
-
-        if(rushEnable){
-            state = DroneState.RUSHING;
         }
 
         //Unsorted.updateKnownFlooding(knownFlooding, rc);
@@ -230,7 +232,7 @@ public class ProbeDroid extends MobileUnit {
 
     public void puttingUnitOnWall() throws GameActionException {
         if(rc.isCurrentlyHoldingUnit()){
-            if(wallLocations.size() <= 0){
+            if(wallLocations.size() <= 0 || rc.senseRobot(rc.senseRobot(rc.getID()).getHeldUnitID()).getType() != RobotType.LANDSCAPER){
                 state = DroneState.HELP;
                 targetLocation = null;
                 path = null;
@@ -709,6 +711,7 @@ public class ProbeDroid extends MobileUnit {
             case 6:
                 if(message[2] == 1){
                     wallAssistEnable = true;
+                    laticeAssistEnable = true;
                 }
 
                 if(message[2] == 2){
@@ -755,7 +758,7 @@ public class ProbeDroid extends MobileUnit {
             targetFound = Unsorted.getClosestUnit(threats, rc);
         } else if (!(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc).isEmpty())) {
             //No enemies spotted, Unit in need of assistance spotted
-            if (rc.getRoundNum()> Constants.ASSIST_START_ROUND) {
+            if (laticeAssistEnable) {
                 targetFound = Unsorted.getClosestUnit(Unsorted.checkForHelpNeeded(friendlies, gridOffsetX, gridOffsetY, rc), rc);
             }
         } else {

@@ -34,6 +34,7 @@ public class SmugglerDroid extends MobileUnit {
     MapLocation baseBuildingLocation;
     BaseState baseState;
     boolean hasAnnouncedBuildingBase;
+    int waitCounter, buildRatioCounter;
 
     public SmugglerDroid(RobotController rc){
         super(rc);
@@ -49,7 +50,7 @@ public class SmugglerDroid extends MobileUnit {
         economyBuilding = true;
         initialRefinery = false;
         productionLocked = false;
-        buildingType = Integer.MIN_VALUE;
+        buildingType = 2;
         rushing = false;
         vaporCount = 0;
         rstate = RushState.SETUP;
@@ -60,6 +61,8 @@ public class SmugglerDroid extends MobileUnit {
         baseBuildingLocation = null;
         baseState = BaseState.NETGUN_1;
         hasAnnouncedBuildingBase = false;
+        waitCounter = 0;
+        buildRatioCounter = 1;
     }
 
     enum SmugglerState {
@@ -376,14 +379,32 @@ public class SmugglerDroid extends MobileUnit {
         if(economyBuilding) {
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
-                    rc.buildRobot(RobotType.VAPORATOR, dir);
-                    vaporCount++;
-                    if (vaporCount >= Constants.VAPORATOR_COUNT) {
-                        economyBuilding = false;
-                        vaporCount = 0;
+                if(rc.canSenseLocation(loc)) {
+                    int elevation = rc.senseElevation(loc);
+                    if (elevation > GameConstants.getWaterLevel(rc.getRoundNum()) + 4 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                        if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation)) {
+                            rc.buildRobot(RobotType.VAPORATOR, dir);
+                            vaporCount++;
+                            if(buildRatioCounter <= vaporCount) {
+//                            if (vaporCount >= Constants.VAPORATOR_COUNT) {
+                                economyBuilding = false;
+                                vaporCount = 0;
+                                buildRatioCounter++;
+                                buildRatioCounter++;
+                            }
+                            return true;
+                        }
+                    } else if ((loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1 && rc.senseNearbyRobots(1, myTeam).length < 1) {
+                        if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation)) {
+                            rc.buildRobot(RobotType.VAPORATOR, dir);
+                            vaporCount++;
+                            if (vaporCount >= Constants.VAPORATOR_COUNT) {
+                                economyBuilding = false;
+                                vaporCount = 0;
+                            }
+                            return true;
+                        }
                     }
-                    return true;
                 }
             }
         } else {
@@ -441,9 +462,10 @@ public class SmugglerDroid extends MobileUnit {
         }
 
         // TODO: stop things here from not being able to path us to things
-        while(targetLocation == null || rc.getLocation().equals(targetLocation)){
+        while(targetLocation == null || rc.getLocation().equals(targetLocation) || waitCounter > 20){
             targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
             path = new Bug(rc.getLocation(), targetLocation, rc);
+            waitCounter = 0;
         }
 
         if(rc.isReady() && !path.run()){
@@ -452,6 +474,8 @@ public class SmugglerDroid extends MobileUnit {
             path.run();
             return;
         }
+
+        waitCounter++;
     }
 
     public void depositing() throws GameActionException {

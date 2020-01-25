@@ -89,6 +89,10 @@ public class LaticeLandscaper extends MobileUnit {
             state = LaticeState.MOVING_TO_WALL;
         }
 
+        if(rc.getRoundNum() > 500 && wallLocations.size() < 3 && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_LATICE_EDGE || state == LaticeState.SECONDARY_WALL)) {
+            state = LaticeState.LATICE_BUILDING;
+        }
+
         if(attacking()){
             return;
         }
@@ -277,7 +281,11 @@ public class LaticeLandscaper extends MobileUnit {
                 targetLocation = enemyHQ;
                 path = new Bug(rc.getLocation(), targetLocation, rc);
             } else {
-                targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+                try {
+                    targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+                } catch (IllegalArgumentException e){
+                    targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+                }
                 path = new Bug(rc.getLocation(), targetLocation, rc);
             }
         }

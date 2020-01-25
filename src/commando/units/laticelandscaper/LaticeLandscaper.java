@@ -402,11 +402,13 @@ public class LaticeLandscaper extends MobileUnit {
 
         for(RobotInfo robot : robots){
             int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
+
             if(robot.getType() == RobotType.DELIVERY_DRONE){
 
             } else if(rc.canSenseLocation(robot.getLocation()) && (rc.senseElevation(rc.getLocation()) > rc.senseElevation(robot.getLocation()) + 10)){
 
             } else if(dist < closest){
+
 
                 bestTarget = robot;
                 closest = dist;

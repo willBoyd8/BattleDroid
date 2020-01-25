@@ -5,6 +5,7 @@ import commando.RobotPlayer;
 import commando.units.buzzdroid.BuzzDroid;
 import commando.units.smugglerdroid.DropOffLocation;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 
@@ -379,20 +380,20 @@ public class Unsorted {
         return count;
     }
 
-    public static DroidList<RobotInfo> filterByType(DroidList<RobotInfo> robots, RobotType unitType){
+    public static DroidList<RobotInfo> filterByType(DroidList<RobotInfo> robots, MapLocation hq, RobotType unitType){
         DroidList<RobotInfo> filteredList = new DroidList<>();
         for (RobotInfo unit : robots) {
-            if (unit.type == unitType) {
+            if (unit.type == unitType && !unit.location.isAdjacentTo(hq)) {
                 filteredList.add(unit);
             }
         }
         return filteredList;
     }
 
-    public static DroidList<RobotInfo> filterByType(RobotInfo[] robots, RobotType unitType){
+    public static DroidList<RobotInfo> filterByType(RobotInfo[] robots, MapLocation hq, RobotType unitType){
         DroidList<RobotInfo> filteredList = new DroidList<>();
         for (RobotInfo unit : robots) {
-            if (unit.type == unitType) {
+            if (unit.type == unitType && !unit.location.isAdjacentTo(hq)) {
                 filteredList.add(unit);
             }
         }

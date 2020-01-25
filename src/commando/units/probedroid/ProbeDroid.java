@@ -964,7 +964,7 @@ public class ProbeDroid extends MobileUnit {
         if (transportTarget == null) {
             RobotInfo[] friendlies = rc.senseNearbyRobots(-1, myTeam);
             if (friendlies.length > 0) {
-                DroidList<RobotInfo> landscapers = Unsorted.filterByType(friendlies, RobotType.LANDSCAPER);
+                DroidList<RobotInfo> landscapers = Unsorted.filterByType(friendlies, hqLocation, RobotType.LANDSCAPER);
                 if (landscapers.size() > 0) {
                     transportTarget = Unsorted.getClosestUnit(landscapers, rc);
                     path = new Bug(rc.getLocation(), transportTarget.location, rc);

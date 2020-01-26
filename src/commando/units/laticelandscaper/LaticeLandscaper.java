@@ -20,6 +20,7 @@ public class LaticeLandscaper extends MobileUnit {
     DroidList<MapLocation> baseTiles;
     DroidList<MapLocation> bases;
     MapLocation baseBuildingLocation;
+    boolean laticeOverride;
 
     public LaticeLandscaper(RobotController rc){
         super(rc);
@@ -33,6 +34,7 @@ public class LaticeLandscaper extends MobileUnit {
         baseTiles = new DroidList<>();
         bases = new DroidList<>();
         baseBuildingLocation = null;
+        laticeOverride = false;
     }
 
     enum LaticeState {
@@ -85,7 +87,7 @@ public class LaticeLandscaper extends MobileUnit {
             state = LaticeState.LATE_WALLING;
         } else if(wallLocations.size() <= 0 && state != LaticeState.EARLY_WALLING && state != LaticeState.LATE_WALLING){
             state = LaticeState.LATICE_BUILDING;
-        } else if(wallLocations.size() > 0 && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_WALL)){
+        } else if(wallLocations.size() > 0 && !laticeOverride && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_WALL)){
             state = LaticeState.MOVING_TO_WALL;
         }
 
@@ -169,7 +171,7 @@ public class LaticeLandscaper extends MobileUnit {
 
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
+                if (rc.onTheMap(loc) && loc.distanceSquaredTo(hqLocation) == 4 && (loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1) {
                     ActionHelper.tryDig(dir, rc);
                 }
             }
@@ -204,7 +206,7 @@ public class LaticeLandscaper extends MobileUnit {
 
             for (Direction dir : Constants.DIRECTIONS) {
                 MapLocation loc = rc.getLocation().add(dir);
-                if (rc.onTheMap(loc) && !loc.isAdjacentTo(hqLocation) && (loc.x -gridOffsetX) % 2 == 1 && (loc.y -gridOffsetY) % 2 == 1) {
+                if (rc.onTheMap(loc) && loc.distanceSquaredTo(hqLocation) == 4 && (loc.x -gridOffsetX) % 2 == 1 && (loc.y -gridOffsetY) % 2 == 1) {
                     if(ActionHelper.tryDig(dir, rc)){
                         break;
                     }
@@ -552,6 +554,14 @@ public class LaticeLandscaper extends MobileUnit {
             case 5:
                 enemyHQ = CommunicationHelper.convertMessageToLocation(message[2]);
                 targetLocation = null;
+                break;
+            case 6:
+                if(message[2] == 1){
+                    targetLocation = null;
+                    path = null;
+                    laticeOverride = true;
+                    state = LaticeState.LATICE_BUILDING;
+                }
                 break;
             case 15:
                 MapLocation loc = CommunicationHelper.convertMessageToLocation(message[2]);

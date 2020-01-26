@@ -344,7 +344,7 @@ public class SmugglerDroid extends MobileUnit {
             return false;
         }
 
-        if(!initialDesignSchool){
+        if(!initialDesignSchool && !economyBuilding){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
                 if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
@@ -360,7 +360,7 @@ public class SmugglerDroid extends MobileUnit {
             }
         }
 
-        if(!initialFulfillmentCenter){
+        if(!initialFulfillmentCenter && !economyBuilding){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
                 if(rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){

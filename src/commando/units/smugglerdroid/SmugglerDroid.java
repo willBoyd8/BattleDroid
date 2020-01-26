@@ -1,6 +1,7 @@
 package commando.units.smugglerdroid;
 
 import battlecode.common.*;
+import commando.utility.DebugHelper;
 import commando.base.KillMeNowException;
 import commando.base.MobileUnit;
 import commando.communication.CommunicationHelper;
@@ -102,6 +103,9 @@ public class SmugglerDroid extends MobileUnit {
     }
 
     public void turn() throws GameActionException, KillMeNowException {
+
+        DebugHelper.setIndicatorDot(rc.getLocation(), 0, 255, 255, rc);
+
         if(walling && rc.getLocation().isAdjacentTo(hqLocation)){
             throw new KillMeNowException();
         }
@@ -118,24 +122,36 @@ public class SmugglerDroid extends MobileUnit {
         updateSoupLocations();
 
         if (rushing) {
+            DebugHelper.setIndicatorDot(rc.getLocation(), 255, 255, 0, rc);
             switch (rstate) {
                 case SETUP: setup(); break;
             }
         }
 
         if(state == SmugglerState.BASE_BUILDING){
+            DebugHelper.setIndicatorDot(rc.getLocation(), 255, 255, 255, rc);
             baseBuilding();
             return;
         }
 
         if(building()){
+            DebugHelper.setIndicatorDot(rc.getLocation(), 0, 0, 0, rc);
             return;
         }
 
         switch (state){
-            case MINING: mining(); break;
-            case DEPOSITING: depositing(); break;
-            case SEARCHING: searching(); break;
+            case MINING:
+                DebugHelper.setIndicatorDot(rc.getLocation(), 255, 0, 0, rc);
+                mining();
+                break;
+            case DEPOSITING:
+                DebugHelper.setIndicatorDot(rc.getLocation(), 0, 255, 0, rc);
+                depositing();
+                break;
+            case SEARCHING:
+                DebugHelper.setIndicatorDot(rc.getLocation(), 0, 0, 255, rc);
+                searching();
+                break;
         }
     }
 
@@ -481,6 +497,7 @@ public class SmugglerDroid extends MobileUnit {
     public void depositing() throws GameActionException {
         MapLocation closest = getClosestMapLocation(depositLocations, rc);
         if(closest == null){
+            System.out.println("No Available Deposit Location");
             building();
             return;
         } else if(targetLocation == null || !targetLocation.equals(closest)){
@@ -600,7 +617,7 @@ public class SmugglerDroid extends MobileUnit {
     private void updateDepositLocations() {
         DroidList<DropOffLocation> toRemove = new DroidList<>();
         for(DropOffLocation loc : depositLocations){
-            if(loc.elevation <= GameConstants.getWaterLevel(rc.getRoundNum()) && !loc.equals(hqLocation)){
+            if(loc.elevation <= GameConstants.getWaterLevel(rc.getRoundNum()) && !loc.loc.equals(hqLocation)){
                 toRemove.add(loc);
             }
         }

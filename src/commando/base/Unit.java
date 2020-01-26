@@ -110,6 +110,7 @@ public abstract class Unit {
         if(targetLocation != null) {
             DebugHelper.setIndicatorLine(rc.getLocation(), targetLocation, 0, 0, 255, rc);
         }
+//        System.out.println("Ending Round " + rc.getRoundNum() + " Normally");
         Clock.yield();
     }
 

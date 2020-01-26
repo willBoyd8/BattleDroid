@@ -51,4 +51,7 @@ public class Constants {
     public static int SECONDARY_BASE_MIN_HEIGHT = 10;
     public static int SECONDARY_BASE_MIN_SPREAD_DISTANCE = 64;
     public static boolean SECONDARY_BASE_ENABLE = false;
+
+    public static int SECONDARY_WALL_LAYER_RATIO = 4;
+    public static int SECONDARY_WALL_START_ROUND = 1200;
 }

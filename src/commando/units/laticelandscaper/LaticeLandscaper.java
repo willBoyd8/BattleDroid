@@ -21,6 +21,9 @@ public class LaticeLandscaper extends MobileUnit {
     DroidList<MapLocation> bases;
     MapLocation baseBuildingLocation;
     boolean laticeOverride;
+    DroidList<MapLocation> secondaryWall;
+    boolean onSecondaryWall;
+    int secondaryPlacementCounter;
 
     public LaticeLandscaper(RobotController rc){
         super(rc);
@@ -33,8 +36,11 @@ public class LaticeLandscaper extends MobileUnit {
         digBlacklist = new DroidList<>();
         baseTiles = new DroidList<>();
         bases = new DroidList<>();
+        secondaryWall = new DroidList<>();
+        onSecondaryWall = false;
         baseBuildingLocation = null;
         laticeOverride = false;
+        int secondaryPlacementCounter = 0;
     }
 
     enum LaticeState {
@@ -43,7 +49,8 @@ public class LaticeLandscaper extends MobileUnit {
         LATE_WALLING,
         LATICE_BUILDING,
         MOVING_TO_LATICE_EDGE,
-        SECONDARY_WALL,
+        SECONDARY_WALL_LAYER,
+        SECONDARY_BASE_WALL
     }
 
     @Override
@@ -63,7 +70,7 @@ public class LaticeLandscaper extends MobileUnit {
 
         for(MapLocation base : bases){
             if(spawn.add(Direction.WEST).add(Direction.WEST).equals(base) || spawn.add(Direction.NORTHWEST).equals(base)){
-                state = LaticeState.SECONDARY_WALL;
+                state = LaticeState.SECONDARY_BASE_WALL;
                 // TODO: do this better;
                 WallSittingLandscaper landscaper = new WallSittingLandscaper(rc);
                 landscaper.hqLocation = base;
@@ -83,15 +90,20 @@ public class LaticeLandscaper extends MobileUnit {
             state = LaticeState.EARLY_WALLING;
         }
 
+        if(secondaryWall.contains(rc.getLocation())){
+            state = LaticeState.SECONDARY_WALL_LAYER;
+            onSecondaryWall = true;
+        }
+
         if(state == LaticeState.EARLY_WALLING && GameConstants.getWaterLevel(rc.getRoundNum()) >= hqElevation - Constants.WALL_SAFETY_BARRIER){
             state = LaticeState.LATE_WALLING;
-        } else if(wallLocations.size() <= 0 && state != LaticeState.EARLY_WALLING && state != LaticeState.LATE_WALLING){
+        } else if(wallLocations.size() <= 0 && state != LaticeState.EARLY_WALLING && state != LaticeState.LATE_WALLING && state != LaticeState.SECONDARY_WALL_LAYER){
             state = LaticeState.LATICE_BUILDING;
-        } else if(wallLocations.size() > 0 && !laticeOverride && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_WALL)){
+        } else if(wallLocations.size() > 0 && !laticeOverride && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_WALL || state == LaticeState.SECONDARY_WALL_LAYER)){
             state = LaticeState.MOVING_TO_WALL;
         }
 
-        if(rc.getRoundNum() > 500 && wallLocations.size() < 3 && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_LATICE_EDGE || state == LaticeState.SECONDARY_WALL)) {
+        if(rc.getRoundNum() > 500 && wallLocations.size() < 3 && !(state == LaticeState.EARLY_WALLING || state == LaticeState.LATE_WALLING || state == LaticeState.MOVING_TO_LATICE_EDGE || state == LaticeState.SECONDARY_BASE_WALL || state == LaticeState.SECONDARY_WALL_LAYER)) {
             state = LaticeState.LATICE_BUILDING;
         }
 
@@ -109,6 +121,7 @@ public class LaticeLandscaper extends MobileUnit {
             case LATE_WALLING: DebugHelper.setIndicatorDot(rc.getLocation(), 0, 0, 255, rc); lateWalling(); break;
             case LATICE_BUILDING: laticeBuilding(); break;
             case MOVING_TO_LATICE_EDGE: movingToLaticeEdge(); break;
+            case SECONDARY_WALL_LAYER: secondaryWall(); break;
         }
 
     }
@@ -188,8 +201,82 @@ public class LaticeLandscaper extends MobileUnit {
                 }
             }
 
+            for(Direction dir : Direction.allDirections()){
+                if(rc.canSenseLocation(rc.getLocation().add(dir)) && rc.getRoundNum() < Constants.SECONDARY_WALL_START_ROUND + 500){
+                    if (rc.senseFlooding(rc.getLocation().add(dir)) && wallLocations.contains(rc.getLocation().add(dir)) && ActionHelper.tryDepositDirt(dir, rc)) {
+                        return;
+                    }
+                }
+            }
 
             ActionHelper.tryDepositDirt(Direction.CENTER, rc);
+        }
+    }
+
+    public void secondaryWall() throws GameActionException{
+        if(rc.getDirtCarrying() <= 0) {
+//            if(rc.getLocation().isAdjacentTo(hqLocation) && rc.canDigDirt(rc.getLocation().directionTo(hqLocation))){
+//                rc.digDirt(rc.getLocation().directionTo(hqLocation));
+//                return;
+//            }
+
+            for (Direction dir : Constants.DIRECTIONS) {
+                MapLocation loc = rc.getLocation().add(dir);
+                if (rc.onTheMap(loc) && loc.distanceSquaredTo(hqLocation) == 4 && (loc.x -gridOffsetX) % 2 == 1 && (loc.y -gridOffsetY) % 2 == 1) {
+                    if(ActionHelper.tryDig(dir, rc)){
+                        return;
+                    }
+                }
+            }
+
+            if(ActionHelper.tryDig(rc.getLocation().directionTo(hqLocation).opposite(), rc)){
+                return;
+            }
+        } else {
+            RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+            if(robots != null && robots.length > 0){
+                for(RobotInfo robot : robots){
+                    if(ActionHelper.isBuilding(robot) && rc.getLocation().isAdjacentTo(robot.getLocation())){
+                        if(ActionHelper.tryDepositDirt(rc.getLocation().directionTo(robot.getLocation()), rc)){
+                            return;
+                        }
+                    }
+                }
+            }
+
+            for(Direction dir : Direction.allDirections()){
+                if(rc.canSenseLocation(rc.getLocation().add(dir)) && rc.getRoundNum() < Constants.SECONDARY_WALL_START_ROUND + 500){
+                    if (rc.senseFlooding(rc.getLocation().add(dir)) && wallLocations.contains(rc.getLocation().add(dir)) && ActionHelper.tryDepositDirt(dir, rc)) {
+                        return;
+                    }
+                }
+            }
+
+            if(secondaryPlacementCounter > Constants.SECONDARY_WALL_LAYER_RATIO){
+                if(ActionHelper.tryDepositDirt(Direction.CENTER, rc)){
+                    secondaryPlacementCounter = 0;
+                    return;
+                }
+            }
+
+            Direction best = rc.getLocation().directionTo(hqLocation);
+            int lowest = Integer.MAX_VALUE;
+            for (Direction dir : Direction.allDirections()) {
+                MapLocation loc = rc.getLocation().add(dir);
+                if (rc.canSenseLocation(loc)) {
+                    int height = rc.senseElevation(loc);
+                    if (height < lowest && !loc.equals(hqLocation) && loc.isAdjacentTo(hqLocation)) {
+                        lowest = height;
+                        best = dir;
+                    }
+                }
+            }
+
+            if (ActionHelper.tryDepositDirt(best, rc)) {
+                secondaryPlacementCounter++;
+                return;
+            }
         }
     }
 
@@ -221,6 +308,14 @@ public class LaticeLandscaper extends MobileUnit {
                         if(ActionHelper.tryDepositDirt(rc.getLocation().directionTo(robot.getLocation()), rc)){
                             return;
                         }
+                    }
+                }
+            }
+
+            for(Direction dir : Direction.allDirections()){
+                if(rc.canSenseLocation(rc.getLocation().add(dir)) && rc.getRoundNum() < Constants.SECONDARY_WALL_START_ROUND + 500){
+                    if (rc.senseFlooding(rc.getLocation().add(dir)) && wallLocations.contains(rc.getLocation().add(dir)) && ActionHelper.tryDepositDirt(dir, rc)) {
+                        return;
                     }
                 }
             }
@@ -284,7 +379,11 @@ public class LaticeLandscaper extends MobileUnit {
                 path = new Bug(rc.getLocation(), targetLocation, rc);
             } else {
                 try {
-                    targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+                    if(rand.nextBoolean()) {
+                        targetLocation = enemyHQLocations.get(rand.nextInt(enemyHQLocations.size()));
+                    } else {
+                        targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+                    }
                 } catch (IllegalArgumentException e){
                     targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
                 }
@@ -540,8 +639,12 @@ public class LaticeLandscaper extends MobileUnit {
                 wallLocations.remove(CommunicationHelper.convertMessageToLocation(message[2]));
                 break;
             case 2:
-                wallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
+                MapLocation location = CommunicationHelper.convertMessageToLocation(message[2]);
+                wallLocations.add(location);
                 state = LaticeState.MOVING_TO_WALL;
+                if(location.distanceSquaredTo(hqLocation) > 2){
+                    secondaryWall.add(location);
+                }
                 break;
             case 3:
                 break;

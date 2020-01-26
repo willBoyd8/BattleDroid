@@ -51,7 +51,7 @@ public class SmugglerDroid extends MobileUnit {
         economyBuilding = true;
         initialRefinery = false;
         productionLocked = false;
-        buildingType = 2;
+        buildingType = rand.nextInt(2) + 1;
         rushing = false;
         vaporCount = 0;
         rstate = RushState.SETUP;
@@ -363,7 +363,7 @@ public class SmugglerDroid extends MobileUnit {
         if(!initialDesignSchool && !economyBuilding){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
-                if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
+                if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && loc.distanceSquaredTo(hqLocation) > 8 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
                     rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
                     int[] message = new int[7];
                     message[0] = Constants.MESSAGE_KEY;
@@ -379,7 +379,7 @@ public class SmugglerDroid extends MobileUnit {
         if(!initialFulfillmentCenter && !economyBuilding){
             for(Direction dir : Constants.DIRECTIONS){
                 MapLocation loc = rc.getLocation().add(dir);
-                if(rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
+                if(rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && loc.distanceSquaredTo(hqLocation) > 8 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0){
                     rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
                     int[] message = new int[7];
                     message[0] = Constants.MESSAGE_KEY;
@@ -398,7 +398,7 @@ public class SmugglerDroid extends MobileUnit {
                 if(rc.canSenseLocation(loc)) {
                     int elevation = rc.senseElevation(loc);
                     if (elevation > GameConstants.getWaterLevel(rc.getRoundNum()) + 4 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
-                        if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation)) {
+                        if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && loc.distanceSquaredTo(hqLocation) > 8) {
                             rc.buildRobot(RobotType.VAPORATOR, dir);
                             vaporCount++;
                             if(buildRatioCounter <= vaporCount) {
@@ -411,7 +411,7 @@ public class SmugglerDroid extends MobileUnit {
                             return true;
                         }
                     } else if ((loc.x - gridOffsetX) % 2 == 1 && (loc.y - gridOffsetY) % 2 == 1 && rc.senseNearbyRobots(1, myTeam).length < 1) {
-                        if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && !loc.isAdjacentTo(hqLocation)) {
+                        if (rc.canBuildRobot(RobotType.VAPORATOR, dir) && loc.distanceSquaredTo(hqLocation) > 8) {
                             rc.buildRobot(RobotType.VAPORATOR, dir);
                             vaporCount++;
                             if (vaporCount >= Constants.VAPORATOR_COUNT) {
@@ -431,7 +431,7 @@ public class SmugglerDroid extends MobileUnit {
                 case 0:
                     for (Direction dir : Constants.DIRECTIONS) {
                         MapLocation loc = rc.getLocation().add(dir);
-                        if (rc.canBuildRobot(RobotType.NET_GUN, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                        if (rc.canBuildRobot(RobotType.NET_GUN, dir) && loc.distanceSquaredTo(hqLocation) > 8 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                             rc.buildRobot(RobotType.NET_GUN, dir);
                             economyBuilding = true;
                             buildingType = Integer.MIN_VALUE;
@@ -442,7 +442,7 @@ public class SmugglerDroid extends MobileUnit {
                 case 1:
                     for (Direction dir : Constants.DIRECTIONS) {
                         MapLocation loc = rc.getLocation().add(dir);
-                        if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                        if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir) && loc.distanceSquaredTo(hqLocation) > 8 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                             rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
                             economyBuilding = true;
                             buildingType = Integer.MIN_VALUE;
@@ -453,7 +453,7 @@ public class SmugglerDroid extends MobileUnit {
                 case 2:
                     for (Direction dir : Constants.DIRECTIONS) {
                         MapLocation loc = rc.getLocation().add(dir);
-                        if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && !loc.isAdjacentTo(hqLocation) && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
+                        if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir) && loc.distanceSquaredTo(hqLocation) > 8 && (loc.x - gridOffsetX) % 2 == 0 && (loc.y - gridOffsetY) % 2 == 0) {
                             rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
                             economyBuilding = true;
                             buildingType = Integer.MIN_VALUE;

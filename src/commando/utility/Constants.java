@@ -23,7 +23,7 @@ public class Constants {
     public static int[] SQUARED_RADIUS_8  =       {5, 5, 5, 5, 5};          //Valid until greater than 2928 pollution
     public static int[] SQUARED_RADIUS_6  =       {3, 5, 5, 5, 3};          //Valid until greater than 4000 pollution Half Standard Vision Radius
 
-    public static int WALL_START_ROUND = 50;
+    public static int WALL_START_ROUND = 10;
     public static boolean DEBUGGER_ENABLE = true;
     public static int RAID_START_ROUND = 2000;
     public static int LANDSCAPERS_ON_WALL = 15;
@@ -43,10 +43,10 @@ public class Constants {
     public static int MESSAGE_KEY = 31415926;
     public static int MAX_SOUP_TO_CARRY = RobotType.MINER.soupLimit;
     public static int MIN_LATICE_BUILDING_ELEVATION = -150;
-    public static int MIN_SOUP_TO_BUILD = 200;
-    public static int MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP = 3;
-    public static int NUMBER_OF_MINERS_TO_BUILD = 3;
-    public static int VAPORATOR_COUNT = 3;
+    public static int MIN_SOUP_TO_BUILD = 100;
+    public static int MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP = 4;
+    public static int NUMBER_OF_MINERS_TO_BUILD = 4;
+    public static int VAPORATOR_COUNT = 2;
 
     public static int SECONDARY_BASE_MIN_HEIGHT = 10;
     public static int SECONDARY_BASE_MIN_SPREAD_DISTANCE = 64;

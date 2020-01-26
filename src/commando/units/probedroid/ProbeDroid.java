@@ -15,6 +15,7 @@ public class ProbeDroid extends MobileUnit {
     DroidList<MapLocation> enemyHQLocations;
     DroneState state;
     DroidList<MapLocation> wallLocations;
+    DroidList<MapLocation> allWallLocations;
     int gridOffsetX, gridOffsetY;
     int homeQuad;
     RobotInfo closestNetGun;
@@ -37,6 +38,7 @@ public class ProbeDroid extends MobileUnit {
     public ProbeDroid (RobotController rc) {
         super(rc);
         wallLocations = new DroidList<>();
+        allWallLocations = new DroidList<>();
         enemyHQBlacklist = new DroidList<>();
         patrolPath = new DroidList<>();
         knownNetGuns = new DroidList<>();
@@ -241,16 +243,20 @@ public class ProbeDroid extends MobileUnit {
             } else {
                 MapLocation closest = Unsorted.getClosestMapLocation(wallLocations, rc);
                 if(rc.getLocation().isAdjacentTo(closest)){
-                    if(rc.canDropUnit(rc.getLocation().directionTo(closest))){
+                    if(rc.canDropUnit(rc.getLocation().directionTo(closest)) && !rc.senseFlooding(closest)){
                         rc.dropUnit(rc.getLocation().directionTo(closest));
                         state = DroneState.PATROL;
                         targetLocation = null;
                         path = null;
                         return;
                     }
+                    return;
                 } else if(targetLocation == null || !targetLocation.equals(closest)){
                     targetLocation = closest;
                     path = new Bug(rc.getLocation(), targetLocation, rc);
+//                } else if(rc.getLocation().equals(targetLocation)){
+//                    targetLocation = new MapLocation(rand.nextInt(rc.getMapWidth()), rand.nextInt(rc.getMapHeight()));
+//                    path = new Bug(rc.getLocation(), targetLocation, rc);
                 }
                 path.run();
                 return;
@@ -269,7 +275,7 @@ public class ProbeDroid extends MobileUnit {
             } else {
                 for (RobotInfo robot : robots) {
                     int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
-                    if (robot.getType() == RobotType.LANDSCAPER && !robot.getLocation().isAdjacentTo(hqLocation) && dist < closest) {
+                    if (robot.getType() == RobotType.LANDSCAPER && !allWallLocations.contains(robot.getLocation()) && dist < closest) {
                         best = robot;
                         closest = dist;
                     }
@@ -432,7 +438,7 @@ public class ProbeDroid extends MobileUnit {
                 //target = Unsorted.getClosestUnit(threats, rc);
         }
 
-        if (rc.canPickUpUnit(target.ID)) {
+        if (rc.canPickUpUnit(target.ID) && !(target.getType() == RobotType.LANDSCAPER && target.getTeam() == myTeam && allWallLocations.contains(target.getLocation()))) {
             rc.pickUpUnit(target.ID);
             if (target.team == myTeam) {
                 state = DroneState.HELP;
@@ -690,6 +696,7 @@ public class ProbeDroid extends MobileUnit {
             case 2:
                 wallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
                 //state = LaticeLandscaper.LaticeState.MOVING_TO_WALL;
+                allWallLocations.add(CommunicationHelper.convertMessageToLocation(message[2]));
                 break;
             case 3:
                 break;

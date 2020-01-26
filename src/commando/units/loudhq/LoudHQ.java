@@ -12,8 +12,10 @@ public class LoudHQ extends Building {
     DroidList<MapLocation> occupiedWallLocations;
     DroidList<MapLocation> desiredDroneDefenseLocations;
     DroidList<MapLocation> occupiedDroneDefenseLocations;
+    DroidList<MapLocation> secondaryWallLocations;
+    DroidList<MapLocation> occupiedSecondaryWallLocations;
     int minerCounter;
-    boolean hasAnnouncedBlocked, hasAnnouncedFlooded;
+    boolean hasAnnouncedBlocked, hasAnnouncedFlooded, hasAnnouncedSecondary;
 
     public LoudHQ(RobotController rc) throws GameActionException{
         super(rc);
@@ -21,10 +23,16 @@ public class LoudHQ extends Building {
         desiredWallLocations = new DroidList<>();
         occupiedDroneDefenseLocations = Unsorted.getTilesAtSquareRadius(rc.getLocation(), 2, rc);
         desiredDroneDefenseLocations = new DroidList<>();
+        occupiedSecondaryWallLocations = Unsorted.getTilesAtSquareRadius(rc.getLocation(), 2, rc);
+        secondaryWallLocations = new DroidList<>();
         minerCounter = 0;
         hqLocation = rc.getLocation();
+        for(Direction dir : Direction.cardinalDirections()){
+            occupiedSecondaryWallLocations.remove(hqLocation.add(dir).add(dir));
+        }
         hasAnnouncedBlocked = false;
         hasAnnouncedFlooded = false;
+        hasAnnouncedSecondary = false;
     }
 
     @Override
@@ -94,6 +102,17 @@ public class LoudHQ extends Building {
         desiredWallLocations.addAll(toRemove);
         toRemove.clear();
 
+        if(!hasAnnouncedSecondary && desiredWallLocations.size() <= 0 && rc.getRoundNum() > Constants.SECONDARY_WALL_START_ROUND){
+            for(MapLocation loc : occupiedSecondaryWallLocations){
+                int[] secondaryWallMessage = new int[7];
+                secondaryWallMessage[0] = Constants.MESSAGE_KEY;
+                secondaryWallMessage[1] = 2;
+                secondaryWallMessage[2] = CommunicationHelper.convertLocationToMessage(loc);
+                messageQueue.add(secondaryWallMessage);
+                hasAnnouncedSecondary = true;
+            }
+        }
+
     }
 
     public void checkBlocked() throws GameActionException{
@@ -114,6 +133,7 @@ public class LoudHQ extends Building {
         message[1] = 6;
         message[2] = 1;
         messageQueue.add(message);
+
     }
 
     public void checkFlooded() throws GameActionException {
@@ -134,7 +154,7 @@ public class LoudHQ extends Building {
             }
         }
 
-        if(flooded && !hasAnnouncedFlooded){
+        if(flooded && !hasAnnouncedFlooded && rc.getRoundNum() > Constants.SECONDARY_WALL_START_ROUND + 100){
             int[] message = new int[7];
             message[0] = Constants.MESSAGE_KEY;
             message[1] = 6;

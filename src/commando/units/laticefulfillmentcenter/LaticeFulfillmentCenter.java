@@ -13,6 +13,7 @@ public class LaticeFulfillmentCenter extends Building {
     int gridOffsetX, gridOffsetY;
     boolean productionLocked;
     int numberOfUnitsBuilt;
+    int cooldownSoup;
 
 
 
@@ -24,6 +25,7 @@ public class LaticeFulfillmentCenter extends Building {
         gridOffsetY = 0;
         productionLocked = false;
         numberOfUnitsBuilt = 0;
+        int cooldownSoup = Constants.MIN_SOUP_TO_BUILD;
     }
 
     @Override
@@ -42,13 +44,18 @@ public class LaticeFulfillmentCenter extends Building {
         checkMessages();
         updateDepositLocations();
 
-        if(!productionLocked && (rc.getTeamSoup() > Constants.MIN_SOUP_TO_BUILD || numberOfUnitsBuilt < Constants.MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP)){
+        if(!productionLocked && (rc.getTeamSoup() > cooldownSoup || numberOfUnitsBuilt < Constants.MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP)){
             for(Direction dir : Constants.DIRECTIONS){
                 if(isOnLatice(rc.getLocation().add(dir)) && rc.canBuildRobot(RobotType.DELIVERY_DRONE, dir)){
                     rc.buildRobot(RobotType.DELIVERY_DRONE, dir);
                     numberOfUnitsBuilt++;
+                    cooldownSoup += Constants.PRODUCTION_SOUP_INTERVAL;
+                    return;
                 }
             }
+        }
+        if(cooldownSoup > Constants.MIN_SOUP_TO_BUILD) {
+            cooldownSoup--;
         }
     }
 

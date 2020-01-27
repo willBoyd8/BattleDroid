@@ -14,6 +14,7 @@ public class LaticeDesignSchool extends Building {
     boolean productionLocked;
     int numberOfUnitsBuilt;
     boolean wallBuilt;
+    int cooldownSoup;
 
 
     public LaticeDesignSchool(RobotController rc){
@@ -25,6 +26,7 @@ public class LaticeDesignSchool extends Building {
         productionLocked = false;
         numberOfUnitsBuilt = 0;
         wallBuilt = false;
+        cooldownSoup = Constants.MIN_SOUP_TO_BUILD;
     }
 
     @Override
@@ -43,14 +45,17 @@ public class LaticeDesignSchool extends Building {
         checkMessages();
         updateDepositLocations();
 
-        if(!productionLocked && ((!wallBuilt && rc.getTeamSoup() > 210) || rc.getTeamSoup() > Constants.MIN_SOUP_TO_BUILD || numberOfUnitsBuilt < Constants.MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP)) {
+        if(!productionLocked && ((!wallBuilt && rc.getTeamSoup() > 210) || rc.getTeamSoup() > cooldownSoup || numberOfUnitsBuilt < Constants.MAX_NUMBER_UNITS_BEFORE_WAITING_FOR_SOUP)) {
             for (Direction dir : Constants.DIRECTIONS) {
-                if (isOnLatice(rc.getLocation().add(dir)) && rc.canBuildRobot(RobotType.LANDSCAPER, dir)) {
+                if ((!wallBuilt || isOnLatice(rc.getLocation().add(dir))) && rc.canBuildRobot(RobotType.LANDSCAPER, dir) && !rc.senseFlooding(rc.getLocation().add(dir))) {
                     rc.buildRobot(RobotType.LANDSCAPER, dir);
                     numberOfUnitsBuilt++;
+//                    cooldownSoup += Constants.PRODUCTION_SOUP_INTERVAL;
+                    return;
                 }
             }
         }
+//        cooldownSoup--;
     }
 
     private void updateDepositLocations() {
